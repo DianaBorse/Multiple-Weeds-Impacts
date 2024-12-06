@@ -56,39 +56,48 @@ SurveyData_Combined <- SurveyData_united %>%
 # My data needs to change to presence/absence by plot. Plot needs to be the 
 # columns, and all species are rows with presence/absence denoted as a 0 or a 1
 
+# The following are lines of code to make a tibble, but I don't think that's as
+# useful as a dataframe will be
+
+#rbind(as.matrix(SurveyData_Combined[, -2]), as.matrix(SurveyData_Combined[, -1])) %>%
+# as_tibble() %>% 
+#distinct() %>% 
+#na.omit() %>% 
+
+# This creates a new data frame that is presence/absence
+
 library(tidyr)
 library(dplyr)
 
-rbind(as.matrix(SurveyData_Combined[, -2]), as.matrix(SurveyData_Combined[, -1])) %>%
-  as_tibble() %>% 
-  distinct() %>% 
-  na.omit() %>% 
-  pivot_wider(id_cols = Plot, names_from=ScientificName, values_from=ScientificName,
+PresenceAbsence <-SurveyData_Combined %>%
+  pivot_wider(id_cols = ScientificName, names_from=Plot, values_from=Plot,
               values_fn=function(x) any(unique(x) == x) * 1, values_fill = 0)
+
 
 
 #### Co-occur ####
 
-install.packages("cooccur")
+# install.packages("cooccur")
 library(cooccur)
 
-data(SurveyData_Combined)
 
-# Practicing with sample data.
+data(PresenceAbsence)
 
-
-data(SurveyData_Combined)
-
-cooccur.Survey <- cooccur(SurveyData_Combined,
+cooccur.Survey <- cooccur(PresenceAbsence,
                          type = "Plot",
                           thresh = TRUE,
-                             spp_names = TRUE)
+                             spp_name = TRUE)
 class(cooccur.Survey)
 
 
 
+data(finches)
 
-
+cooccur.finches <- cooccur(finches,
+          type = "spp_site",
+            thresh = TRUE,
+            spp_names = TRUE)
+class(cooccur.finches)
 
 
 
