@@ -33,23 +33,6 @@ library("tidyverse")
 tidyverse_update()
 
 
-#### Calculating Summary Statistics ####
-
-summary(DataFileName)
-
-summ_VariableName <- DataFileName %>%
-  summarise(mean_VariableName = mean(VariableName),
-            median_VariableName = median(VariableName),
-            IQR_VariableName = IQR(VariableName),
-            sd_VariableName = sd(VariableName),
-            var_VariableName = var(VariableName),
-            se_VariableName = sd(VariableName)/sqrt(39))
-
-DataFileName %>%
-  descr()
-
-view(summ_VariableName)
-
 #### Cleaning up the data ####
 
 library(dplyr)
@@ -80,11 +63,8 @@ rbind(as.matrix(SurveyData_Combined[, -2]), as.matrix(SurveyData_Combined[, -1])
   as_tibble() %>% 
   distinct() %>% 
   na.omit() %>% 
-  pivot_wider(Plot, names_from=ScientificName, values_from=ScientificName, 
+  pivot_wider(id_cols = Plot, names_from=ScientificName, values_from=ScientificName,
               values_fn=function(x) any(unique(x) == x) * 1, values_fill = 0)
-
-
-
 
 
 #### Co-occur ####
@@ -119,9 +99,22 @@ class(cooccur.Survey)
 
 
 
+#### Calculating Summary Statistics ####
 
+summary(DataFileName)
 
+summ_VariableName <- DataFileName %>%
+  summarise(mean_VariableName = mean(VariableName),
+            median_VariableName = median(VariableName),
+            IQR_VariableName = IQR(VariableName),
+            sd_VariableName = sd(VariableName),
+            var_VariableName = var(VariableName),
+            se_VariableName = sd(VariableName)/sqrt(39))
 
+DataFileName %>%
+  descr()
+
+view(summ_VariableName)
 
 #### Visualizing the Data ####
 
