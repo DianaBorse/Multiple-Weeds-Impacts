@@ -54,16 +54,22 @@ library(tidyr)
 SurveyData_Combined <- SurveyData_united %>%
   unite(Plot, Plot, W_N, sep = " - ")
 
+# Next I need to add a column to give each plot a unique numerical ID
+
+
+
 # My data needs to change to presence/absence by plot. Plot needs to be the 
 # columns, and all species are rows with presence/absence denoted as a 0 or a 1
 
 # The following are lines of code to make a tibble, but I don't think that's as
 # useful as a dataframe will be
 
-#rbind(as.matrix(SurveyData_Combined[, -2]), as.matrix(SurveyData_Combined[, -1])) %>%
+
+# PresenceAbsence <-SurveyData_Combined %>%
+# rbind(as.matrix(SurveyData_Combined[, 2]), as.matrix(SurveyData_Combined[, -1])) %>%
 # as_tibble() %>% 
-#distinct() %>% 
-#na.omit() %>% 
+# distinct() %>% 
+# na.omit()
 
 # This creates a new data frame that is presence/absence
 
@@ -71,13 +77,21 @@ library(tidyr)
 library(dplyr)
 
 PresenceAbsence <-SurveyData_Combined %>%
-  pivot_wider(id_cols = ScientificName, names_from=Plot, values_from=Plot,
+  pivot_wider(id_cols = Plot, names_from=ScientificName, values_from=ScientificName,
               values_fn=function(x) any(unique(x) == x) * 1, values_fill = 0)
 
-
+# instead of being a tibble, I wanted to convert it back to a data frame
 PresenceAbsence_df = as.data.frame(PresenceAbsence)
-PresenceAbsence_df["row.names"] = NULL
-PresenceAbsence_Matrix <- data.matrix(PresenceAbsence_df)
+
+# I am trying to get rid of the rownames column, I think that this may be the 
+# reason that the probalistic code is not running because this appears to be the 
+# main difference between my presence/absence matrix and the sample data
+
+rownames(PresenceAbsence_df) <- NULL
+
+# The following line of code makes it into a matrix, but this leads to my 
+# species names becoming numbers and that does not seem like it's going to work
+# PresenceAbsence_Matrix <- data.matrix(PresenceAbsence_df)
 
 
 #### Co-occur ####
@@ -85,10 +99,10 @@ PresenceAbsence_Matrix <- data.matrix(PresenceAbsence_df)
 # install.packages("cooccur")
 library(cooccur)
 
-data(PresenceAbsence_Matrix)
+data(PresenceAbsence_df)
 
 
-cooccur.Survey <- cooccur(PresenceAbsence_Matrix,
+cooccur.Survey <- cooccur(PresenceAbsence_df,
                          type = "spp_site",
                           thresh = TRUE,
                              spp_name = TRUE)
