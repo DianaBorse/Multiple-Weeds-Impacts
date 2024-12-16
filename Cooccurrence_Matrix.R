@@ -25,6 +25,7 @@ if(!require(tidyverse)){install.packages("broom")}
 if(!require(tidyverse)){install.packages("ggmosaic")}
 if(!require(tidyverse)){install.packages("epitools")}
 if(!require(tidyverse)){install.packages("swirl")}
+if(!require(tidyverse)){install.packages("corrplot")}
 
 
 # Load tidyverse
@@ -74,22 +75,33 @@ PresenceAbsence <-SurveyData_Combined %>%
               values_fn=function(x) any(unique(x) == x) * 1, values_fill = 0)
 
 
+PresenceAbsence_df = as.data.frame(PresenceAbsence)
+PresenceAbsence_df["row.names"] = NULL
+PresenceAbsence_Matrix <- data.matrix(PresenceAbsence_df)
+
 
 #### Co-occur ####
 
 # install.packages("cooccur")
 library(cooccur)
 
+data(PresenceAbsence_Matrix)
 
-data(PresenceAbsence)
 
-cooccur.Survey <- cooccur(PresenceAbsence,
-                         type = "Plot",
+cooccur.Survey <- cooccur(PresenceAbsence_Matrix,
+                         type = "spp_site",
                           thresh = TRUE,
                              spp_name = TRUE)
 class(cooccur.Survey)
 
+data(PresenceAbsence_df)
+cooccur(mat, type = "Plot", thresh = TRUE, spp_names = FALSE,
+        true_rand_classifier = 0.1, prob = "hyper", 
+        site_mask = NULL, only_effects = FALSE,
+        eff_standard = TRUE, eff_matrix = FALSE)
 
+
+# with practice data
 
 data(finches)
 
@@ -100,7 +112,7 @@ cooccur.finches <- cooccur(finches,
 class(cooccur.finches)
 
 
-
+data("beetles")
 
 
 
