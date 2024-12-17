@@ -56,7 +56,9 @@ SurveyData_Combined <- SurveyData_united %>%
 
 # Next I need to add a column to give each plot a unique numerical ID
 
+str(SurveyData_Combined)
 
+SurveyData_Combined$Plot <- as.numeric(as.factor(SurveyData_Combined$Plot))
 
 # My data needs to change to presence/absence by plot. Plot needs to be the 
 # columns, and all species are rows with presence/absence denoted as a 0 or a 1
@@ -99,21 +101,14 @@ rownames(PresenceAbsence_df) <- NULL
 # install.packages("cooccur")
 library(cooccur)
 
-data(PresenceAbsence_df)
-
-
 cooccur.Survey <- cooccur(PresenceAbsence_df,
                          type = "spp_site",
                           thresh = TRUE,
                              spp_name = TRUE)
 class(cooccur.Survey)
 
-data(PresenceAbsence_df)
-cooccur(mat, type = "Plot", thresh = TRUE, spp_names = FALSE,
-        true_rand_classifier = 0.1, prob = "hyper", 
-        site_mask = NULL, only_effects = FALSE,
-        eff_standard = TRUE, eff_matrix = FALSE)
-
+summary(coocur.Survey)
+cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = TRUE, spp_names = TRUE)
 
 # with practice data
 
