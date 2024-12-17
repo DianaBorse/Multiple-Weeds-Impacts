@@ -54,11 +54,44 @@ library(tidyr)
 SurveyData_Combined <- SurveyData_united %>%
   unite(Plot, Plot, W_N, sep = " - ")
 
-# Next I need to add a column to give each plot a unique numerical ID
+# Next I need to give each plot a unique numerical ID becuase the co-occurrence 
+# matrix requires this
 
 str(SurveyData_Combined)
 
 SurveyData_Combined$Plot <- as.numeric(as.factor(SurveyData_Combined$Plot))
+
+# I need to subset to just the most common species because I have too many species
+# to run the co-occurrence for
+
+# This shows me what the most common species are but does not subset my data
+
+SurveyData_Combined_Subset <- SurveyData_Combined %>%
+  count(ScientificName) %>%
+  top_n(15) %>%
+  arrange(n, ScientificName) %>%
+  mutate(ScientificName = factor(ScientificName, levels = unique(ScientificName)))
+
+# That only yields a result with the top occurring species and their count
+
+
+
+#### Co-occurrence Matrix with top 15 most commonly occurring scientific name ####
+
+
+# This includes both weeds and native species in each plot
+
+#  I need to subset my whole data frame to only include the rows with the most 
+# commonly occurring scientific name
+
+
+# Identify the top 15 most common values in the categorical column 
+top_15_values <- names(sort(table(SurveyData_Combined$ScientificName), decreasing = TRUE))[1:15] 
+# Subset the data frame to include only rows with the top 15 most common values 
+subset_SurveyData_Combined <- SurveyData_Combined[SurveyData_Combined$ScientificName %in% top_15_values, ] 
+# View the subset data frame 
+print(subset_SurveyData_Combined)
+
 
 # My data needs to change to presence/absence by plot. Plot needs to be the 
 # columns, and all species are rows with presence/absence denoted as a 0 or a 1
@@ -78,37 +111,22 @@ SurveyData_Combined$Plot <- as.numeric(as.factor(SurveyData_Combined$Plot))
 library(tidyr)
 library(dplyr)
 
-PresenceAbsence <-SurveyData_Combined %>%
-  pivot_wider(id_cols = Plot, names_from=ScientificName, values_from=ScientificName,
+PresenceAbsence <-subset_SurveyData_Combined %>%
+  pivot_wider(id_cols = ScientificName, names_from=Plot, values_from=Plot,
               values_fn=function(x) any(unique(x) == x) * 1, values_fill = 0)
 
 # instead of being a tibble, I wanted to convert it back to a data frame
 PresenceAbsence_df = as.data.frame(PresenceAbsence)
 
-# I am trying to get rid of the rownames column, I think that this may be the 
-# reason that the probalistic code is not running because this appears to be the 
-# main difference between my presence/absence matrix and the sample data
 
-rownames(PresenceAbsence_df) <- NULL
-
-# The following line of code makes it into a matrix, but this leads to my 
-# species names becoming numbers and that does not seem like it's going to work
-# PresenceAbsence_Matrix <- data.matrix(PresenceAbsence_df)
+# Needs to remove the first column of numbers as row names and make the Scientific 
+# names of species into the row names
+row.names(PresenceAbsence_df) <- PresenceAbsence_df$ScientificName 
+# Remove the first column from the data frame 
+PresenceAbsence_df <- PresenceAbsence_df[, -1]
 
 
-#### Co-occur ####
-
-# install.packages("cooccur")
-library(cooccur)
-
-cooccur.Survey <- cooccur(PresenceAbsence_df,
-                         type = "spp_site",
-                          thresh = TRUE,
-                             spp_name = TRUE)
-class(cooccur.Survey)
-
-summary(coocur.Survey)
-cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = TRUE, spp_names = TRUE)
+## Co-occur
 
 # with practice data
 
@@ -122,6 +140,89 @@ class(cooccur.finches)
 
 
 data("beetles")
+
+
+# with my data
+
+# install.packages("cooccur")
+library(cooccur)
+
+cooccur.Survey <- cooccur(PresenceAbsence_df,
+                         type = "spp_site",
+                          thresh = TRUE,
+                             spp_name = TRUE)
+class(cooccur.Survey)
+
+summary(coocur.Survey)
+cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = TRUE, spp_names = TRUE)
+
+Prob_table <- prob.table(cooccur.Survey)
+
+plot(cooccur.Survey) # add "plotrand = TRUE" to include completely random specie
+
+pair(mod = cooccur.Survey, spp = "Solanum mauritianum")
+
+
+
+#### Co-occurrence matrix with top 10 most common weeds ####
+
+# Subset the data to only include species that are weeds using the Status column
+subset_SurveyData_Combined_weeds <- SurveyData_Combined[SurveyData_Combined$Status == 1, ]
+
+
+# Identify the top 10 most common values in the categorical column 
+top_10_values <- names(sort(table(subset_SurveyData_Combined_weeds$ScientificName), decreasing = TRUE))[1:10] 
+
+# Subset the data frame to include only rows with the top 10 most common values 
+subset_SurveyData_Combined_weeds10 <- SurveyData_Combined[SurveyData_Combined$ScientificName %in% top_10_values, ] 
+
+
+
+# My data needs to change to presence/absence by plot. Plot needs to be the 
+# columns, and all species are rows with presence/absence denoted as a 0 or a 1
+
+# This creates a new data frame that is presence/absence
+
+library(tidyr)
+library(dplyr)
+
+PresenceAbsence <-subset_SurveyData_Combined_weeds10 %>%
+  pivot_wider(id_cols = ScientificName, names_from=Plot, values_from=Plot,
+              values_fn=function(x) any(unique(x) == x) * 1, values_fill = 0)
+
+# instead of being a tibble, I wanted to convert it back to a data frame
+PresenceAbsence_df = as.data.frame(PresenceAbsence)
+
+# Needs to remove the first column of numbers as row names and make the Scientific 
+# names of species into the row names
+row.names(PresenceAbsence_df) <- PresenceAbsence_df$ScientificName
+
+# Remove the first column from the data frame 
+PresenceAbsence_df <- PresenceAbsence_df[, -1]
+
+
+## Co-occur 
+
+# install.packages("cooccur")
+library(cooccur)
+
+cooccur.Survey <- cooccur(PresenceAbsence_df,
+                          type = "spp_site",
+                          thresh = TRUE,
+                          spp_name = TRUE)
+class(cooccur.Survey)
+
+summary(coocur.Survey)
+cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = TRUE, spp_names = TRUE)
+
+Prob_table <- prob.table(cooccur.Survey)
+
+plot(cooccur.Survey) # add "plotrand = TRUE" to include completely random specie
+
+pair(mod = cooccur.Survey, spp = "Solanum mauritianum")
+
+
+
 
 
 
