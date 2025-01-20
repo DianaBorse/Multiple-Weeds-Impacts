@@ -54,10 +54,17 @@ library(tidyr)
 SurveyData_Combined <- SurveyData_united %>%
   unite(Plot, Plot, W_N, sep = " - ")
 
-# Next I need to give each plot a unique numerical ID becuase the co-occurrence 
-# matrix requires this
+# I need to make this data only include seedlings. Therefore, I need to remove
+# the rows that only include species > 51 cm.
 
-str(SurveyData_Combined)
+SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combined$Tier_3
+
+SurveyData_Combined <- subset(SurveyData_Combined, seedlings != 0)
+# Now the data.frame only includes the seedlings.
+
+
+# Next I need to give each plot a unique numerical ID because the co-occurrence 
+# matrix requires this
 
 SurveyData_Combined$Plot <- as.numeric(as.factor(SurveyData_Combined$Plot))
 
@@ -87,6 +94,12 @@ SurveyData_Combined_Subset <- SurveyData_Combined %>%
 
 # Identify the top 15 most common values in the categorical column 
 top_15_values <- names(sort(table(SurveyData_Combined$ScientificName), decreasing = TRUE))[1:15] 
+
+# find wattle position (it is 17th most common)
+top_20_values <- names(sort(table(SurveyData_Combined$ScientificName), decreasing = TRUE))[1:20] 
+
+print(top_20_values)
+ 
 # Subset the data frame to include only rows with the top 15 most common values 
 subset_SurveyData_Combined <- SurveyData_Combined[SurveyData_Combined$ScientificName %in% top_15_values, ] 
 # View the subset data frame 
@@ -130,16 +143,13 @@ PresenceAbsence_df <- PresenceAbsence_df[, -1]
 
 # with practice data
 
-data(finches)
+# data(finches)
 
-cooccur.finches <- cooccur(finches,
-          type = "spp_site",
-            thresh = TRUE,
-            spp_names = TRUE)
-class(cooccur.finches)
-
-
-data("beetles")
+# cooccur.finches <- cooccur(finches,
+#          type = "spp_site",
+#            thresh = TRUE,
+#            spp_names = TRUE)
+# class(cooccur.finches)
 
 
 # with my data
@@ -153,28 +163,29 @@ cooccur.Survey <- cooccur(PresenceAbsence_df,
                              spp_name = TRUE)
 class(cooccur.Survey)
 
-summary(coocur.Survey)
+summary(cooccur.Survey)
 cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = TRUE, spp_names = TRUE)
 
 Prob_table <- prob.table(cooccur.Survey)
 
-plot(cooccur.Survey) # add "plotrand = TRUE" to include completely random specie
+# plot the co-occurrence matrix, need to make the plot into an object so that the legend can be removed
 
-pair(mod = cooccur.Survey, spp = "Solanum mauritianum")
+plot <- plot(cooccur.Survey, legend = NULL) # add "plotrand = TRUE" to include completely random species
 
+# Remove legend 
+plot + theme(legend.position = "none")
 
-
-#### Co-occurrence matrix with top 10 most common weeds ####
+#### Co-occurrence matrix with top 15 most common weeds ####
 
 # Subset the data to only include species that are weeds using the Status column
 subset_SurveyData_Combined_weeds <- SurveyData_Combined[SurveyData_Combined$Status == 1, ]
 
 
 # Identify the top 10 most common values in the categorical column 
-top_10_values <- names(sort(table(subset_SurveyData_Combined_weeds$ScientificName), decreasing = TRUE))[1:10] 
+top_15_values <- names(sort(table(subset_SurveyData_Combined_weeds$ScientificName), decreasing = TRUE))[1:15] 
 
 # Subset the data frame to include only rows with the top 10 most common values 
-subset_SurveyData_Combined_weeds10 <- SurveyData_Combined[SurveyData_Combined$ScientificName %in% top_10_values, ] 
+subset_SurveyData_Combined_weeds10 <- SurveyData_Combined[SurveyData_Combined$ScientificName %in% top_15_values, ] 
 
 
 
@@ -212,12 +223,16 @@ cooccur.Survey <- cooccur(PresenceAbsence_df,
                           spp_name = TRUE)
 class(cooccur.Survey)
 
-summary(coocur.Survey)
+summary(cooccur.Survey)
 cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = TRUE, spp_names = TRUE)
 
 Prob_table <- prob.table(cooccur.Survey)
 
-plot(cooccur.Survey) # add "plotrand = TRUE" to include completely random specie
+plot <- plot(cooccur.Survey) # add "plotrand = TRUE" to include completely random specie
+
+# Remove legend 
+plot + theme(legend.position = "none") + ggtitle(NULL)
+
 
 pair(mod = cooccur.Survey, spp = "Solanum mauritianum")
 
