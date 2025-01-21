@@ -72,6 +72,18 @@ summ_Richness <- Richness %>%
             var_unique_values = var(unique_values),
             se_unique_values = sd(unique_values)/sqrt(177))
 
+# Check for normality
+ggplot(Richness) +
+  geom_histogram(aes(unique_values), binwidth = 1)
+
+ggplot(Richness) +
+  geom_boxplot(aes(x = "", y = unique_values))
+
+# ANOVA
+modelRichness <- lm(unique_values~CentralSpecies, data = Richness)
+
+anova(modelRichness)
+
 # make a boxplot
 
 library(ggplot2)
@@ -81,7 +93,7 @@ RichnessPlot <- ggplot(data = Richness,
   geom_boxplot(aes(x = factor(CentralSpecies, level=c('Native', 'Paraserianthes lophantha', 'Ligustrum lucidum', 'Solanum mauritianum'))), fill = "lightblue3", notch = TRUE, varwidth = TRUE) +
   geom_jitter(color="black", size=0.4, alpha=0.9) +
   ylab("Species Richness") + xlab("Central Species") +   ##Change axis titles
-  theme(axis.text.x=element_text(size=8, hjust = 1, color = 'black'), #Change axis text font size and angle and colour etc
+  theme(axis.text.x=element_text(face = "italic", size=10, color = 'black'), #Change axis text font size and angle and colour etc
         axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
         axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
         legend.title = element_blank(), #If you want to remove the legend
@@ -112,6 +124,18 @@ summ_RichnessNative <- RichnessNative %>%
             var_unique_values = var(unique_values),
             se_unique_values = sd(unique_values)/sqrt(158))
 
+# Check for normality
+ggplot(RichnessNative) +
+  geom_histogram(aes(unique_values), binwidth = 1)
+
+ggplot(RichnessNative) +
+  geom_boxplot(aes(x = "", y = unique_values))
+
+# ANOVA
+modelRichnessNative <- lm(unique_values~CentralSpecies, data = RichnessNative)
+
+anova(modelRichnessNative)
+
 
 # make a boxplot
 library(ggplot2)
@@ -121,7 +145,7 @@ RichnessPlotNative <- ggplot(data = RichnessNative,
   geom_boxplot(aes(x = factor(CentralSpecies, level=c('Native', 'Paraserianthes lophantha', 'Ligustrum lucidum', 'Solanum mauritianum'))), fill = "green4", notch = TRUE, varwidth = TRUE) +
   geom_jitter(color="black", size=0.4, alpha=0.9) +
   ylab("Species Richness") + xlab("Central Species") +   ##Change axis titles
-  theme(axis.text.x=element_text(size=8, hjust = 1, color = 'black'), #Change axis text font size and angle and colour etc
+  theme(axis.text.x=element_text(face = "italic", size=10, color = 'black'), #Change axis text font size and angle and colour etc
         axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
         axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
         legend.title = element_blank(), #If you want to remove the legend
@@ -150,7 +174,20 @@ summ_RichnessWeed <- RichnessWeed %>%
             IQR_unique_values = IQR(unique_values),
             sd_unique_values = sd(unique_values),
             var_unique_values = var(unique_values),
-            se_unique_values = sd(unique_values)/sqrt(177))
+            se_unique_values = sd(unique_values)/sqrt(164))
+
+
+# Check for normality
+ggplot(RichnessWeed) +
+  geom_histogram(aes(unique_values), binwidth = 1)
+
+ggplot(RichnessWeed) +
+  geom_boxplot(aes(x = "", y = unique_values))
+
+# ANOVA
+modelRichnessWeed <- lm(unique_values~CentralSpecies, data = RichnessWeed)
+
+anova(modelRichnessWeed)
 
 # make a boxplot for visualization
 library(ggplot2)
@@ -160,7 +197,7 @@ RichnessPlotWeed <- ggplot(data = RichnessWeed,
   geom_boxplot(aes(x = factor(CentralSpecies, level=c('Native', 'Paraserianthes lophantha', 'Ligustrum lucidum', 'Solanum mauritianum'))), fill = "red4", notch = TRUE, varwidth = TRUE) +
   geom_jitter(color="black", size=0.4, alpha=0.9) +
   ylab("Species Richness") + xlab("Central Species") +   ##Change axis titles
-  theme(axis.text.x=element_text(size=8, hjust = 1, color = 'black'), #Change axis text font size and angle and colour etc
+  theme(axis.text.x=element_text(face = "italic", size=10, color = 'black'), #Change axis text font size and angle and colour etc
         axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
         axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
         legend.title = element_blank(), #If you want to remove the legend
@@ -171,3 +208,4 @@ RichnessPlotWeed <- ggplot(data = RichnessWeed,
         axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
 RichnessPlotWeed
 
+?geom_boxplot

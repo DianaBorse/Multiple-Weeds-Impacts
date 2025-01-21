@@ -234,4 +234,9 @@ plot <- plot(cooccur.Survey) # add "plotrand = TRUE" to include completely rando
 plot + theme(legend.position = "none") + ggtitle(NULL)
 
 
-pair(mod = cooccur.Survey, spp = "Solanum mauritianum")
+Woolly_Cooccur <- pair(mod = cooccur.Survey, spp = "Solanum mauritianum")
+
+pair(mod = cooccur.Survey, spp = "Ligustrum lucidum")
+
+pair(mod = cooccur.Survey, spp = "Paraserianthes lophantha")
+
