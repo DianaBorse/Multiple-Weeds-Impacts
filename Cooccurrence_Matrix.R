@@ -73,11 +73,11 @@ SurveyData_Combined$Plot <- as.numeric(as.factor(SurveyData_Combined$Plot))
 
 # This shows me what the most common species are but does not subset my data
 
-SurveyData_Combined_Subset <- SurveyData_Combined %>%
-  count(ScientificName) %>%
-  top_n(15) %>%
-  arrange(n, ScientificName) %>%
-  mutate(ScientificName = factor(ScientificName, levels = unique(ScientificName)))
+# SurveyData_Combined_Subset <- SurveyData_Combined %>%
+#  count(ScientificName) %>%
+#  top_n(15) %>%
+#  arrange(n, ScientificName) %>%
+#  mutate(ScientificName = factor(ScientificName, levels = unique(ScientificName)))
 
 # That only yields a result with the top occurring species and their count
 
@@ -235,61 +235,3 @@ plot + theme(legend.position = "none") + ggtitle(NULL)
 
 
 pair(mod = cooccur.Survey, spp = "Solanum mauritianum")
-
-
-
-
-
-
-
-
-
-
-#### Calculating Summary Statistics ####
-
-summary(DataFileName)
-
-summ_VariableName <- DataFileName %>%
-  summarise(mean_VariableName = mean(VariableName),
-            median_VariableName = median(VariableName),
-            IQR_VariableName = IQR(VariableName),
-            sd_VariableName = sd(VariableName),
-            var_VariableName = var(VariableName),
-            se_VariableName = sd(VariableName)/sqrt(39))
-
-DataFileName %>%
-  descr()
-
-view(summ_VariableName)
-
-#### Visualizing the Data ####
-
-# Plot a histogram
-
-ggplot(lovett)+ geom_histogram(aes(SO4, binwidth = .5))
-
-# Make a boxplot
-
-ggplot(data = lovett_tidy)+
-  geom_boxplot(aes(x = type, y = measurement))+
-  stat_summary(aes(x = type, y = measurement), fun.y=mean, colour="darkred", geom="point", 
-               shape=18, size=3)
-
-#### Confidence Intervals ####
-
-# This is just a general outline for copy-pasting as needed.
-
-# Data needed:
-summarise(mean_variable = mean(variable),
-          median_variable = median(variable),
-          IQR_variable = IQR(variable),
-          sd_variable = sd(variable),
-          var_variable = var(variable),
-          n_variable = n())
-
-alpha <- 0.05
-mean <- summary$mean
-se <- summary$se
-df <- summary$n -1
-
-# mean + c(-1, 1)*qt(1-alpha, df)*se
