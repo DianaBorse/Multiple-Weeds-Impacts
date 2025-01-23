@@ -241,7 +241,7 @@ pair(mod = cooccur.Survey, spp = "Ligustrum lucidum")
 pair(mod = cooccur.Survey, spp = "Paraserianthes lophantha")
 
 
-#### Co-occurrence matrix with top 20 most common environmental weeds ####
+#### Co-occurrence matrix with top 15 most common environmental weeds ####
 
 # Subset the data to only include species that are weeds using the WeedList Column
 subset_SurveyData_Combined_weeds <- SurveyData_Combined[SurveyData_Combined$WeedList == 1, ]
@@ -307,3 +307,6 @@ pair(mod = cooccur.Survey, spp = "Ligustrum lucidum")
 
 pair(mod = cooccur.Survey, spp = "Paraserianthes lophantha")
 
+# Try subsetting to non-seedlings
+
+SurveyData_Combined <- subset(SurveyData_Combined, Tier_3 != 0)
