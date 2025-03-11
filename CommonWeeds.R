@@ -128,6 +128,9 @@ top_20_valuesN <- names(sort(table(NativeSpecies$CommonName), decreasing = TRUE)
 # Subset to top 20 species in native centred plots
 Native <- NativeSpecies[NativeSpecies$CommonName %in% top_20_valuesN, ] 
 
+# Only unique values
+Unique <- 
+
 count_status_1 <- sum(Native$Status == 1)
 
 print(count_status_1)
