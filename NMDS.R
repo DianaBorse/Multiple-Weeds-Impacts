@@ -21,16 +21,7 @@ library(dplyr)
 library(readr)
 SurveyData <- read_csv("SurveyData_Clean.csv")
 
-# Unite Site and Plot columns
-library(tidyr)
-SurveyData_Combined <- SurveyData %>%
-  unite(Plot, Site, Plot, sep = " - ")
 
-# Unite Plot and Weed vs Native columns so that now the plot id is all in one
-# column that includes the site, plot number, and whether it is weed or native
-library(tidyr)
-SurveyData_Combined <- SurveyData_Combined %>%
-  unite(Plot, Plot, W_N, sep = " - ")
 
 # The plot needs to be numeric, so I need to change the Plot names to unique
 # numeric variables, site needs to be given a number value as does W_N
@@ -47,13 +38,14 @@ SurveyData$W_N <- as.numeric(as.factor(SurveyData$W_N))
 # Now combine this into unique numerical plot names
 library(tidyr)
 SurveyData_Combined <- SurveyData %>%
-  unite(Plot, Site, Plot, sep = " - ")
+  unite(Plot, Site, Plot, sep = "-")
 
 # Unite Plot and Weed vs Native columns so that now the plot id is all in one
 # column that includes the site, plot number, and whether it is weed or native
 library(tidyr)
 SurveyData_Combined <- SurveyData_Combined %>%
-  unite(Plot, Plot, W_N, sep = " - ")
+  unite(Plot, Plot, W_N, sep = "-")
+
 
 #### Change the data to be a matrix (n sample units x p species) ####
 
@@ -70,9 +62,15 @@ Survey_wide <- SurveyData_Combined %>%
               id_cols = ScientificName) %>%
   mutate_all(~ replace(., is.na(.), 0))
 
-# Needs to be numeric
-# Check the data types of each column
-str(Survey_wide)
+# instead of being a tibble, I wanted to convert it back to a data frame
+Survey_wide = as.data.frame(Survey_wide)
+
+
+# Needs to remove the first column of numbers as row names and make the Scientific 
+# names of species into the row names
+row.names(Survey_wide) <- Survey_wide$ScientificName 
+# Remove the first column from the data frame 
+Survey_wide <- Survey_wide[, -1]
 
 # Need to change the Plots to numeric names
 
@@ -80,7 +78,6 @@ str(Survey_wide)
 # most common species or species that occur more than 5 times etc.
 
 #### NMDS ####
-
 
 library(vegan)
 
