@@ -107,11 +107,11 @@ grp
 rect.hclust(Survey_wide, k=4)
 
 
-#Coundct a PCA on continuous data, commonly used for envrionmental 
+#Conduct a PCA on continuous data, commonly used for environmental 
 #variable reduction. Say we want to combine variables that are similar in 
 #for SEM we may use PCA
 
-# linkage - once you have the two most smilar sites together, how do you think about the smiliaritiy to the other sistes. Best method is UPPGMA (an avergage weighed method)
+# linkage - once you have the two most similar sites together, how do you think about the similarity to the other sites. Best method is UPPGMA (an average weighed method)
 
 # Now doing a PCA on the data
 # Can do PCA on vegan or just the base programme of R, they just use different commands 
@@ -159,7 +159,49 @@ text(x=z$points[,1],y=z$points[,2],rownames(Survey_wide))
 
 plot(z[["points"]][,2]~z[["points"]][,1],main="Survey Data", xlab="NMDSaxis 1" , ylab= "NMDS axis 2", cex = 0.5 +as.numeric(Survey_wide$nit))
 
+# Looking at the stress/goodness of fit
+gof <- goodness(object = z)
 
+plot(z, display = "sites", type = "none")
+
+points(z, display = "sites", cex = 2*gof/mean(gof))
+
+# Sheppard Plot
+plot(z$diss, z$dist)
+
+stressplot(object = z,
+           p.col = "blue",
+           l.col = "red",
+           lwd = 3)
+
+z$points %>% head()
+z.points <- data.frame(z$points)
+
+# Using ggplot2
+p <- ggplot(data = z.points, aes(x = MDS1, y = MDS2)) +
+  theme_bw() +
+  theme(axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_blank())
+
+p + geom_point()
+p + treat
+
+?ggplot
+
+# Now I need to add group identity somehow
+treat=c(rep("Solanum mauritianum",5),rep("Paraserianthes lophantha",5),rep("Ligustrum lucidum",5),rep("Native",5))
+
+orditorp(z,display="sites",col=c(rep("green",5),rep("blue",5),rep("orange",5),rep("red",5)),
+         air=0.01,cex=1.25)
+# That technically worked, but does not look great.
+
+
+
+
+
+
+# Other Perry code that does not work so far
 doubs.species.fit<-envfit(z,env=doubs.dist)
 plot(z)
 plot(doubs.species.fit,p.max=0.01,col="red")
@@ -176,41 +218,6 @@ plot(doubs.pca.fit,p.max=0.01,col="blue")
 
 doubs.nit<-ordisurf(meta.nmds.doubs~nit,doubs.env,bubble=5) 
 
-#movinng onto ANOSIM - are there difference between someof the categories
-
-
-?anosim # Distnaces are convereted to rankks, any distance measure can be used
-#Complement NMDS in this sense (Which uses rank)
-
-
-alt.cut<-cut(doubs.env$alt,breaks=c(0,600,1000))
-nit.cut<-cut(doubs.env$nit,breaks=c(0,600,1000))
-
-
-ano.alt<-anosim(doubs.dis,alt.cut,permutations=999,distance="bray")
-plot(ano.alt)
-
-
-
-
-
-
-
-
-
-# other code...
-set.seed(42)
-
-z <- metaMDS(comm = Survey_wide,
-             autotransform = FALSE,
-             distance = "bray",
-             engine = "monoMDS",
-             k = 3,
-             weakties = TRUE,
-             model = "global",
-             maxit = 300,
-             try = 40,
-             trymax = 100)
 
 #### Subset to the top 50 species occuring across plots ####
 # Try again but subset the data
