@@ -21,7 +21,9 @@ library(dplyr)
 library(readr)
 SurveyData <- read_csv("SurveyData_Clean.csv")
 
-
+# The species that were entered as percent-cover need to be accounted for
+# Given that the number of plants will vary greatly, but cover plants were all
+# in Tier_1, for each percent cover plant I will give a value of 
 
 # The plot needs to be numeric, so I need to change the Plot names to unique
 # numeric variables, site needs to be given a number value as does W_N
@@ -57,6 +59,172 @@ SurveyData_Combined <- SurveyData_Combined %>%
 
 # This code gives 0 values when species are not present in a plot
 Survey_wide <- SurveyData_Combined %>%
+  pivot_wider(names_from = ScientificName, 
+              values_from = Tier_1, 
+              id_cols = Plot) %>%
+  mutate_all(~ replace(., is.na(.), 0))
+
+# instead of being a tibble, I wanted to convert it back to a data frame
+Survey_wide = as.data.frame(Survey_wide)
+
+
+# Needs to remove the first column of numbers as row names and make the Scientific 
+# names of species into the row names
+row.names(Survey_wide) <- Survey_wide$ScientificName 
+# Remove the first column from the data frame 
+Survey_wide <- Survey_wide[, -1]
+
+# Need to change the Plots to numeric names
+
+# Note is that this is not subset, may need to subset to only the 
+# most common species or species that occur more than 5 times etc.
+
+#### NMDS ####
+
+library(vegan)
+
+#Quick checks for empty rows or columns...
+rowSums(Survey_wide)
+colSums(Survey_wide)
+
+#Empty sites can cause problems so let's drop it
+Survey_wide<-Survey_wide[-46,] # this gets rid of the the row 8 where there is a zero
+Survey_wide<-Survey_wide[-49,] # this gets rid of the the row 8 where there is a zero
+
+doubs.dist<-vegdist(Survey_wide)
+doubs.dist
+
+# Check for Na, NaN,Inf values
+any(is.na(doubs.dist))
+any(is.infinite(doubs.dist))
+
+
+#Classification
+Survey_wide<-hclust(doubs.dist,method='average')
+plot(Survey_wide,hang=-1) #The hang=-1 tidies it up so all the end nodes finish at the same level (try dropping it to see what i mean)
+grp<-cutree(Survey_wide,k=4) #K=4 is saying to identify the dominant 4 groups.
+grp
+rect.hclust(Survey_wide, k=4)
+
+
+#Coundct a PCA on continuous data, commonly used for envrionmental 
+#variable reduction. Say we want to combine variables that are similar in 
+#for SEM we may use PCA
+
+# linkage - once you have the two most smilar sites together, how do you think about the smiliaritiy to the other sistes. Best method is UPPGMA (an avergage weighed method)
+
+# Now doing a PCA on the data
+# Can do PCA on vegan or just the base programme of R, they just use different commands 
+# (see powerpoint handout for more info)
+
+doubs.pca<-princomp(doubs.dist,cor=TRUE)
+summary(doubs.pca) 
+biplot(doubs.pca)
+
+#Moving on now to MDS
+#DO MDS with vegan package
+#may be worth turning the autotransformation off - dont understand why but look into this is ever doing this.
+doubs.dis<-vegdist(doubs.dist)
+doubs.dis
+meta.nmds.doubs<-metaMDS(doubs.dis)
+?mtaMDS
+
+# Try other nMDS code
+z <- metaMDS(comm = doubs.dist,
+             autotransform = FALSE,
+             distance = "bray",
+             engine = "monoMDS",
+             k = 10,
+             weakties = TRUE,
+             model = "global",
+             maxit = 300,
+             try = 40,
+             trymax = 100)
+
+z
+
+meta.nmds.doubs #.07 is fine for our stress, if higher would not be so good.
+stressplot(z) #each point is the relationship between a pair of sites. x axis = observed smilailrity, on the y axis = distance between the points on the ordinnation space. Can see that as difference between paiirs increases, they get furrther and further apart in the ordination space (this is good, this is what we want to see in the plot shown)
+
+
+#always report the stress for MDS, never report the Rsquared you get from that plot above
+
+
+plot(z)
+plot(meta.nmds.doubs,type='points') #set up axis
+
+
+text(x=z$points[,1],y=z$points[,2],rownames(Survey_wide))
+
+
+plot(z[["points"]][,2]~z[["points"]][,1],main="Survey Data", xlab="NMDSaxis 1" , ylab= "NMDS axis 2", cex = 0.5 +as.numeric(Survey_wide$nit))
+
+
+doubs.species.fit<-envfit(z,env=doubs.dist)
+plot(z)
+plot(doubs.species.fit,p.max=0.01,col="red")
+plot(doubs.species.fit,p.max=0.01,col="red",asp=1)
+#asp=1 is code for set aspect to yone
+
+
+#i cant geet this code to work
+doubs.pca.fit<-envfit(meta.nmds.doubs,env=pca.site.scores$sites)
+plot(meta.nmds.doubs)
+plot(doubs.pca.fit,p.max=0.01,col="blue")
+#icould not get above codde to worrk
+
+
+doubs.nit<-ordisurf(meta.nmds.doubs~nit,doubs.env,bubble=5) 
+
+#movinng onto ANOSIM - are there difference between someof the categories
+
+
+?anosim # Distnaces are convereted to rankks, any distance measure can be used
+#Complement NMDS in this sense (Which uses rank)
+
+
+alt.cut<-cut(doubs.env$alt,breaks=c(0,600,1000))
+nit.cut<-cut(doubs.env$nit,breaks=c(0,600,1000))
+
+
+ano.alt<-anosim(doubs.dis,alt.cut,permutations=999,distance="bray")
+plot(ano.alt)
+
+
+
+
+
+
+
+
+
+# other code...
+set.seed(42)
+
+z <- metaMDS(comm = Survey_wide,
+             autotransform = FALSE,
+             distance = "bray",
+             engine = "monoMDS",
+             k = 3,
+             weakties = TRUE,
+             model = "global",
+             maxit = 300,
+             try = 40,
+             trymax = 100)
+
+#### Subset to the top 50 species occuring across plots ####
+# Try again but subset the data
+top_50_values <- names(sort(table(SurveyData_Combined$ScientificName), decreasing = TRUE))[1:50] 
+
+print(top_50_values)
+
+# Subset the data frame to include only rows with the top 15 most common values 
+subset_SurveyData_Combined <- SurveyData_Combined[SurveyData_Combined$ScientificName %in% top_50_values, ] 
+# View the subset data frame 
+print(subset_SurveyData_Combined)
+
+# This code gives 0 values when species are not present in a plot
+Survey_wide <- subset_SurveyData_Combined %>%
   pivot_wider(names_from = Plot, 
               values_from = Tier_1, 
               id_cols = ScientificName) %>%
@@ -81,15 +249,41 @@ Survey_wide <- Survey_wide[, -1]
 
 library(vegan)
 
-set.seed(42)
+#Quick checks for empty rows or columns...
+rowSums(Survey_wide)
+colSums(Survey_wide)
 
-z <- metaMDS(comm = Survey_wide,
-             autotransform = FALSE,
-             distance = "bray",
-             engine = "monoMDS",
-             k = 3,
-             weakties = TRUE,
-             model = "global",
-             maxit = 300,
-             try = 40,
-             trymax = 100)
+
+doubs.dist<-vegdist(Survey_wide)
+doubs.dist
+
+# Check for Na, NaN,Inf values
+any(is.na(doubs.dist))
+any(is.infinite(doubs.dist))
+
+
+#Classification
+Survey_wide<-hclust(doubs.dist,method='average')
+plot(Survey_wide,hang=-1) #The hang=-1 tidies it up so all the end nodes finish at the same level (try dropping it to see what i mean)
+grp<-cutree(Survey_wide,k=4) #K=4 is saying to identify the dominant 4 groups.
+grp
+rect.hclust(Survey_wide, k=4)
+
+
+#Coundct a PCA on continuous data, commonly used for envrionmental 
+#variable reduction. Say we want to combine variables that are similar in 
+#for SEM we may use PCA
+
+# linkage - once you have the two most smilar sites together, how do you think about the smiliaritiy to the other sistes. Best method is UPPGMA (an avergage weighed method)
+
+# Now doing a PCA on the data
+# Can do PCA on vegan or just the base programme of R, they just use different commands 
+# (see powerpoint handout for more info)
+
+doubs.pca<-princomp(doubs.dist,cor=TRUE)
+summary(doubs.pca) 
+biplot(doubs.pca)
+
+
+doubs.pca2<-rda(doubs.dist,scale=TRUE) #Important to have the scale=TRUE to scale the data, otherwise you end up with perfect horseshooe type data. (try it without the scale to see what I mean)
+plot(doubs.pca2)
