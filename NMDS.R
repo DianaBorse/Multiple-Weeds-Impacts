@@ -57,10 +57,15 @@ SurveyData_Combined <- SurveyData_Combined %>%
 #              values_from = Tier_1, 
 #              id_cols = ScientificName)
 
+# autotransform is not doing anything, so I need to transform my data
+# square root was given as a good transformation, so I will do that
+
+SurveyData_Combined$Tier_1_sqrt <- sqrt(SurveyData_Combined$Tier_1)
+
 # This code gives 0 values when species are not present in a plot
 Survey_wide <- SurveyData_Combined %>%
   pivot_wider(names_from = ScientificName, 
-              values_from = Tier_1, 
+              values_from = Tier_1_sqrt, 
               id_cols = Plot) %>%
   mutate_all(~ replace(., is.na(.), 0))
 
@@ -70,7 +75,7 @@ Survey_wide = as.data.frame(Survey_wide)
 
 # Needs to remove the first column of numbers as row names and make the Scientific 
 # names of species into the row names
-row.names(Survey_wide) <- Survey_wide$ScientificName 
+row.names(Survey_wide) <- Survey_wide$Plot 
 # Remove the first column from the data frame 
 Survey_wide <- Survey_wide[, -1]
 
@@ -117,13 +122,13 @@ rect.hclust(Survey_wide, k=4)
 # Can do PCA on vegan or just the base programme of R, they just use different commands 
 # (see powerpoint handout for more info)
 
-doubs.pca<-princomp(doubs.dist,cor=TRUE)
+doubs.pca<-princomp(doubs.dist,cor=FALSE)
 summary(doubs.pca) 
 biplot(doubs.pca)
 
 #Moving on now to MDS
 #DO MDS with vegan package
-#may be worth turning the autotransformation off - dont understand why but look into this is ever doing this.
+#may be worth turning the autotransformation off
 doubs.dis<-vegdist(doubs.dist)
 doubs.dis
 meta.nmds.doubs<-metaMDS(doubs.dis)
@@ -134,25 +139,19 @@ z <- metaMDS(comm = doubs.dist,
              autotransform = FALSE,
              distance = "bray",
              engine = "monoMDS",
-             k = 10,
-             weakties = TRUE,
-             model = "global",
+             k = 5,
+             weakties = FALSE,
+             model = "local",
              maxit = 300,
              try = 40,
-             trymax = 100)
+             trymax = 20)
 
 z
 
-meta.nmds.doubs #.07 is fine for our stress, if higher would not be so good.
 stressplot(z) #each point is the relationship between a pair of sites. x axis = observed smilailrity, on the y axis = distance between the points on the ordinnation space. Can see that as difference between paiirs increases, they get furrther and further apart in the ordination space (this is good, this is what we want to see in the plot shown)
 
-
 #always report the stress for MDS, never report the Rsquared you get from that plot above
-
-
 plot(z)
-plot(meta.nmds.doubs,type='points') #set up axis
-
 
 text(x=z$points[,1],y=z$points[,2],rownames(Survey_wide))
 
@@ -170,14 +169,44 @@ points(z, display = "sites", cex = 2*gof/mean(gof))
 plot(z$diss, z$dist)
 
 stressplot(object = z,
-           p.col = "blue",
-           l.col = "red",
+           p.col = "blue4",
+           l.col = "maroon4",
            lwd = 3)
 
 z$points %>% head()
 z.points <- data.frame(z$points)
 
 # Using ggplot2
+plot(z, type = "t")
+
+# I need to make a new data frame that is just the plots and the Central species
+# for that plot
+# Load the dplyr package
+library(dplyr)
+
+# Create a new data frame with unique Plot values
+Plot_Species <- SurveyData_Combined %>% distinct(Plot, .keep_all = TRUE)
+Plot_Species<-Plot_Species[-46,] 
+Plot_Species<-Plot_Species[-49,] 
+
+grp <- Plot_Species$CentralSpecies
+
+data.scores <- as.data.frame(scores(z))  #Using the scores function from vegan to extract the site scores and convert to a data.frame
+data.scores$site <- rownames(z)  # create a column of site names, from the rownames of data.scores
+data.scores$grp <- grp  #  add the grp variable created earlier
+head(data.scores)  #look at the data
+
+ggplot() + 
+  geom_text(data=z.points,aes(x=NMDS1,y=NMDS2,label=species),alpha=0.5) +  # add the species labels
+  geom_point(data=z.points,aes(x=NMDS1,y=NMDS2,shape=grp,colour=grp),size=3) + # add the point markers
+  geom_text(data=z.points,aes(x=NMDS1,y=NMDS2,label=site),size=6,vjust=0) +  # add the site labels
+  scale_colour_manual(values=c("A" = "red", "B" = "blue")) +
+  coord_equal() +
+  theme_bw()
+
+
+
+
 p <- ggplot(data = z.points, aes(x = MDS1, y = MDS2)) +
   theme_bw() +
   theme(axis.title = element_blank(),
@@ -185,9 +214,6 @@ p <- ggplot(data = z.points, aes(x = MDS1, y = MDS2)) +
         axis.text = element_blank())
 
 p + geom_point()
-p + treat
-
-?ggplot
 
 # Now I need to add group identity somehow
 treat=c(rep("Solanum mauritianum",5),rep("Paraserianthes lophantha",5),rep("Ligustrum lucidum",5),rep("Native",5))
