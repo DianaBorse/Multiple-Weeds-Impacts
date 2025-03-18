@@ -125,6 +125,11 @@ rect.hclust(Survey_wide, k=4)
 doubs.pca<-princomp(doubs.dist,cor=FALSE)
 summary(doubs.pca) 
 biplot(doubs.pca)
+?biplot
+biplot(doubs.pca, y, var.axes = TRUE, col, cex = rep(par("cex"), 2),
+       xlabs = NULL, ylabs = NULL, expand = 1,
+       xlim  = NULL, ylim  = NULL, arrow.len = 0.1,
+       main = NULL, sub = NULL, xlab = NULL, ylab = NULL)
 
 #Moving on now to MDS
 #DO MDS with vegan package
@@ -140,11 +145,11 @@ z <- metaMDS(comm = doubs.dist,
              distance = "bray",
              engine = "monoMDS",
              k = 5,
-             weakties = FALSE,
+             weakties = TRUE,
              model = "local",
              maxit = 300,
              try = 40,
-             trymax = 20)
+             trymax = 50)
 
 z
 
@@ -171,12 +176,12 @@ plot(z$diss, z$dist)
 stressplot(object = z,
            p.col = "blue4",
            l.col = "maroon4",
-           lwd = 3)
+           lwd = 1)
 
 z$points %>% head()
 z.points <- data.frame(z$points)
 
-# Using ggplot2
+# Using ggplot2 to make a plot with site names
 plot(z, type = "t")
 
 # I need to make a new data frame that is just the plots and the Central species
@@ -196,6 +201,8 @@ data.scores$site <- rownames(z)  # create a column of site names, from the rowna
 data.scores$grp <- grp  #  add the grp variable created earlier
 head(data.scores)  #look at the data
 
+
+# This plot is not good
 ggplot() + 
   geom_text(data=z.points,aes(x=NMDS1,y=NMDS2,label=species),alpha=0.5) +  # add the species labels
   geom_point(data=z.points,aes(x=NMDS1,y=NMDS2,shape=grp,colour=grp),size=3) + # add the point markers
@@ -205,8 +212,51 @@ ggplot() +
   theme_bw()
 
 
+# Create a data frame of NMDS results with group information
+z.points$Group <- Plot_Species$CentralSpecies # Replace with your group column
+
+# Customize plot with ggplot2
+nmds_plot <- ggplot(data = z.points, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
+  geom_point(size = 2) + # Set point size
+  scale_shape_manual(values = c(16, 17, 18, 19)) + # Customize shapes
+  scale_color_manual(values = c("#EE6677", "#228833", "#AA3377", "#CCBB44")) + # Customize colors
+  theme_minimal() +
+  labs(x = "NMDS1", y = "NMDS2")
+
+# Print the plot
+print(nmds_plot)
+
+# This plot works!!!!!!!!
+
+# Customize plot with ggplot2 add polygons/ellipses
+nmds_plot <- ggplot(data = z.points, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
+  geom_point(size = 2) + # Set point size
+  scale_shape_manual(values = c(16, 17, 18, 19)) + # Customize shapes
+  scale_color_manual(values = c("#EE6677", "#228833", "#AA3377", "#CCBB44")) + # Customize colors
+  geom_polygon(data = z.points, aes(fill = Group, group = Group), alpha = 0.3) +
+  theme_minimal() +
+  labs(x = "NMDS1", y = "NMDS2")
+
+# Print the plot
+print(nmds_plot)
+
+# Customize plot with ggplot2 add ellipses
+nmds_plot <- ggplot(data = z.points, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
+  geom_point(size = 2) + # Set point size
+  scale_shape_manual(values = c(16, 17, 18, 19)) + # Customize shapes
+  scale_color_manual(values = c("#EE6677", "#228833", "#AA3377", "#CCBB44")) + # Customize colors
+  stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.3) +
+  theme_minimal() +
+  labs(x = "NMDS1", y = "NMDS2")
+
+# Print the plot
+print(nmds_plot)
 
 
+
+
+
+# This plot works, but it is just points.
 p <- ggplot(data = z.points, aes(x = MDS1, y = MDS2)) +
   theme_bw() +
   theme(axis.title = element_blank(),
@@ -215,37 +265,8 @@ p <- ggplot(data = z.points, aes(x = MDS1, y = MDS2)) +
 
 p + geom_point()
 
-# Now I need to add group identity somehow
-treat=c(rep("Solanum mauritianum",5),rep("Paraserianthes lophantha",5),rep("Ligustrum lucidum",5),rep("Native",5))
 
-orditorp(z,display="sites",col=c(rep("green",5),rep("blue",5),rep("orange",5),rep("red",5)),
-         air=0.01,cex=1.25)
-# That technically worked, but does not look great.
-
-
-
-
-
-
-# Other Perry code that does not work so far
-doubs.species.fit<-envfit(z,env=doubs.dist)
-plot(z)
-plot(doubs.species.fit,p.max=0.01,col="red")
-plot(doubs.species.fit,p.max=0.01,col="red",asp=1)
-#asp=1 is code for set aspect to yone
-
-
-#i cant geet this code to work
-doubs.pca.fit<-envfit(meta.nmds.doubs,env=pca.site.scores$sites)
-plot(meta.nmds.doubs)
-plot(doubs.pca.fit,p.max=0.01,col="blue")
-#icould not get above codde to worrk
-
-
-doubs.nit<-ordisurf(meta.nmds.doubs~nit,doubs.env,bubble=5) 
-
-
-#### Subset to the top 50 species occuring across plots ####
+#### Subset to the top 50 species occurring across plots ####
 # Try again but subset the data
 top_50_values <- names(sort(table(SurveyData_Combined$ScientificName), decreasing = TRUE))[1:50] 
 
