@@ -104,10 +104,10 @@ any(is.infinite(doubs.dist))
 
 #Classification
 Survey_wide<-hclust(doubs.dist,method='average')
-plot(Survey_wide,hang=-1) #The hang=-1 tidies it up so all the end nodes finish at the same level (try dropping it to see what i mean)
-grp<-cutree(Survey_wide,k=4) #K=4 is saying to identify the dominant 4 groups.
+plot(Survey_wide,hang=-1) #The hang=-1 tidies it up so all the end nodes finish at the same level
+grp<-cutree(Survey_wide,k=30) #K=4 is saying to identify the dominant 4 groups.
 grp
-rect.hclust(Survey_wide, k=4)
+rect.hclust(Survey_wide, k=30)
 
 
 #Conduct a PCA on continuous data, commonly used for environmental 
@@ -120,7 +120,7 @@ rect.hclust(Survey_wide, k=4)
 # Can do PCA on vegan or just the base programme of R, they just use different commands 
 # (see powerpoint handout for more info)
 
-doubs.pca<-princomp(doubs.dist,cor=FALSE)
+doubs.pca<-princomp(doubs.dist,cor=TRUE)
 summary(doubs.pca) 
 biplot(doubs.pca)
 
@@ -195,10 +195,12 @@ Plot_Species<-Plot_Species[-49,]
 
 grp <- Plot_Species$CentralSpecies
 
-data.scores <- as.data.frame(scores(z))  #Using the scores function from vegan to extract the site scores and convert to a data.frame
-data.scores$site <- rownames(z)  # create a column of site names, from the rownames of data.scores
-data.scores$grp <- grp  #  add the grp variable created earlier
-head(data.scores)  #look at the data
+# I don't think I need these
+
+# data.scores <- as.data.frame(scores(z))  #Using the scores function from vegan to extract the site scores and convert to a data.frame
+# data.scores$site <- rownames(z)  # create a column of site names, from the rownames of data.scores
+# data.scores$grp <- grp  #  add the grp variable created earlier
+# head(data.scores)  #look at the data
 
 
 # Create a data frame of NMDS results with group information
@@ -222,7 +224,7 @@ nmds_plot <- ggplot(data = z.points, aes(x = MDS1, y = MDS2, shape = Group, colo
   geom_point(size = 2) + # Set point size
   scale_shape_manual(values = c(16, 15, 18, 19)) + # Customize shapes
   scale_color_manual(values = c("#EE6677", "#228833", "#661100", "#44AA99")) + # Customize colors
-  geom_polygon(data = z.points, aes(fill = Group, group = Group), alpha = 0.3) +
+  geom_polygon(data = z.points, aes(fill = Group, group = Group), alpha = 0.1) +
   theme_minimal() +
   labs(x = "NMDS1", y = "NMDS2")
 
@@ -234,7 +236,7 @@ nmds_plot <- ggplot(data = z.points, aes(x = MDS1, y = MDS2, shape = Group, colo
   geom_point(size = 2) + # Set point size
   scale_shape_manual(values = c(16, 15, 18, 19)) + # Customize shapes
   scale_color_manual(values = c("#EE6677", "#228833", "#661100", "#44AA99")) + # Customize colors
-  stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.3) +
+  stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.1) +
   theme_minimal() +
   labs(x = "NMDS1", y = "NMDS2")
 
@@ -255,7 +257,7 @@ nmds_plot <- ggplot(data = z.points.weeds, aes(x = MDS1, y = MDS2, shape = Group
   geom_point(size = 2) + # Set point size
   scale_shape_manual(values = c(16, 15, 17)) + # Customize shapes
   scale_color_manual(values = c("#EE6677", "#661100", "#44AA99")) + # Customize colors
-  stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.3) +
+  stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.1) +
   theme_minimal() +
   labs(x = "NMDS1", y = "NMDS2")
 
