@@ -79,8 +79,6 @@ row.names(Survey_wide) <- Survey_wide$Plot
 # Remove the first column from the data frame 
 Survey_wide <- Survey_wide[, -1]
 
-# Need to change the Plots to numeric names
-
 # Note is that this is not subset, may need to subset to only the 
 # most common species or species that occur more than 5 times etc.
 
@@ -125,64 +123,65 @@ rect.hclust(Survey_wide, k=4)
 doubs.pca<-princomp(doubs.dist,cor=FALSE)
 summary(doubs.pca) 
 biplot(doubs.pca)
-?biplot
-biplot(doubs.pca, y, var.axes = TRUE, col, cex = rep(par("cex"), 2),
-       xlabs = NULL, ylabs = NULL, expand = 1,
-       xlim  = NULL, ylim  = NULL, arrow.len = 0.1,
-       main = NULL, sub = NULL, xlab = NULL, ylab = NULL)
+
+# Create PCA biplot with sites as points
+
+# Load necessary libraries
+library(ggplot2)
+library(ggfortify)
+
+autoplot(
+  doubs.pca,
+  data = doubs.dist,
+  loadings = TRUE,             # Display loadings vectors
+  loadings.label = TRUE,       # Display loadings labels
+  loadings.colour = '#AA4499',     # Loadings vector color
+  loadings.label.size = 3,     # Loadings label size
+  loadings.label.colour = "#AA4499", # Loadings label color
+  shape = 16) +                   # Use points for sites
+  theme_minimal()              # Apply a minimal theme
+
+
 
 #Moving on now to MDS
 #DO MDS with vegan package
-#may be worth turning the autotransformation off
-doubs.dis<-vegdist(doubs.dist)
-doubs.dis
-meta.nmds.doubs<-metaMDS(doubs.dis)
-?mtaMDS
-
-# Try other nMDS code
 z <- metaMDS(comm = doubs.dist,
              autotransform = FALSE,
              distance = "bray",
              engine = "monoMDS",
              k = 5,
              weakties = TRUE,
-             model = "local",
+             model = "global",
              maxit = 300,
              try = 40,
              trymax = 50)
 
 z
+# Stress Plot = Sheppard Plot
+plot(z$diss, z$dist)
 
-stressplot(z) #each point is the relationship between a pair of sites. x axis = observed smilailrity, on the y axis = distance between the points on the ordinnation space. Can see that as difference between paiirs increases, they get furrther and further apart in the ordination space (this is good, this is what we want to see in the plot shown)
+stressplot(object = z,
+           p.col = "#88CCEE",
+           l.col = "#882255",
+           lwd = 1)
 
 #always report the stress for MDS, never report the Rsquared you get from that plot above
 plot(z)
 
-text(x=z$points[,1],y=z$points[,2],rownames(Survey_wide))
-
-
 plot(z[["points"]][,2]~z[["points"]][,1],main="Survey Data", xlab="NMDSaxis 1" , ylab= "NMDS axis 2", cex = 0.5 +as.numeric(Survey_wide$nit))
-
-# Looking at the stress/goodness of fit
-gof <- goodness(object = z)
-
-plot(z, display = "sites", type = "none")
-
-points(z, display = "sites", cex = 2*gof/mean(gof))
-
-# Sheppard Plot
-plot(z$diss, z$dist)
-
-stressplot(object = z,
-           p.col = "blue4",
-           l.col = "maroon4",
-           lwd = 1)
-
-z$points %>% head()
-z.points <- data.frame(z$points)
 
 # Using ggplot2 to make a plot with site names
 plot(z, type = "t")
+
+# Looking at the stress/goodness of fit
+gof <- goodness(object = z)
+plot(z, display = "sites", type = "none")
+points(z, display = "sites", cex = 2*gof/mean(gof))
+
+
+# Make the points into a data frame for ggplot
+z$points %>% head()
+z.points <- data.frame(z$points)
 
 # I need to make a new data frame that is just the plots and the Central species
 # for that plot
@@ -202,24 +201,14 @@ data.scores$grp <- grp  #  add the grp variable created earlier
 head(data.scores)  #look at the data
 
 
-# This plot is not good
-ggplot() + 
-  geom_text(data=z.points,aes(x=NMDS1,y=NMDS2,label=species),alpha=0.5) +  # add the species labels
-  geom_point(data=z.points,aes(x=NMDS1,y=NMDS2,shape=grp,colour=grp),size=3) + # add the point markers
-  geom_text(data=z.points,aes(x=NMDS1,y=NMDS2,label=site),size=6,vjust=0) +  # add the site labels
-  scale_colour_manual(values=c("A" = "red", "B" = "blue")) +
-  coord_equal() +
-  theme_bw()
-
-
 # Create a data frame of NMDS results with group information
 z.points$Group <- Plot_Species$CentralSpecies # Replace with your group column
 
 # Customize plot with ggplot2
 nmds_plot <- ggplot(data = z.points, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
   geom_point(size = 2) + # Set point size
-  scale_shape_manual(values = c(16, 17, 18, 19)) + # Customize shapes
-  scale_color_manual(values = c("#EE6677", "#228833", "#AA3377", "#CCBB44")) + # Customize colors
+  scale_shape_manual(values = c(16, 15, 18, 19)) + # Customize shapes
+  scale_color_manual(values = c("#EE6677", "#228833", "#661100", "#44AA99")) + # Customize colors
   theme_minimal() +
   labs(x = "NMDS1", y = "NMDS2")
 
@@ -231,8 +220,8 @@ print(nmds_plot)
 # Customize plot with ggplot2 add polygons/ellipses
 nmds_plot <- ggplot(data = z.points, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
   geom_point(size = 2) + # Set point size
-  scale_shape_manual(values = c(16, 17, 18, 19)) + # Customize shapes
-  scale_color_manual(values = c("#EE6677", "#228833", "#AA3377", "#CCBB44")) + # Customize colors
+  scale_shape_manual(values = c(16, 15, 18, 19)) + # Customize shapes
+  scale_color_manual(values = c("#EE6677", "#228833", "#661100", "#44AA99")) + # Customize colors
   geom_polygon(data = z.points, aes(fill = Group, group = Group), alpha = 0.3) +
   theme_minimal() +
   labs(x = "NMDS1", y = "NMDS2")
@@ -243,8 +232,29 @@ print(nmds_plot)
 # Customize plot with ggplot2 add ellipses
 nmds_plot <- ggplot(data = z.points, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
   geom_point(size = 2) + # Set point size
-  scale_shape_manual(values = c(16, 17, 18, 19)) + # Customize shapes
-  scale_color_manual(values = c("#EE6677", "#228833", "#AA3377", "#CCBB44")) + # Customize colors
+  scale_shape_manual(values = c(16, 15, 18, 19)) + # Customize shapes
+  scale_color_manual(values = c("#EE6677", "#228833", "#661100", "#44AA99")) + # Customize colors
+  stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.3) +
+  theme_minimal() +
+  labs(x = "NMDS1", y = "NMDS2")
+
+# Print the plot
+print(nmds_plot)
+
+# Native species plots are kind of all over the place, let's look at it without 
+# Native plots
+
+# Remove native species plots
+# Remove rows where Group is "Native"
+z.points.weeds <- z.points %>% 
+  filter(Group != "Native")
+
+
+# Customize plot with ggplot2 add ellipses
+nmds_plot <- ggplot(data = z.points.weeds, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
+  geom_point(size = 2) + # Set point size
+  scale_shape_manual(values = c(16, 15, 17)) + # Customize shapes
+  scale_color_manual(values = c("#EE6677", "#661100", "#44AA99")) + # Customize colors
   stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.3) +
   theme_minimal() +
   labs(x = "NMDS1", y = "NMDS2")
