@@ -149,7 +149,7 @@ z <- metaMDS(comm = doubs.dist,
              autotransform = FALSE,
              distance = "bray",
              engine = "monoMDS",
-             k = 5,
+             k = 4,
              weakties = TRUE,
              model = "global",
              maxit = 300,
@@ -253,13 +253,13 @@ z.points.weeds <- z.points %>%
 
 
 # Customize plot with ggplot2 add ellipses
-nmds_plot <- ggplot(data = z.points.weeds, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
+nmds_plot <- ggplot(data = z.points.weeds, aes(x = MDS3, y = MDS4, shape = Group, color = Group)) +
   geom_point(size = 2) + # Set point size
   scale_shape_manual(values = c(16, 15, 17)) + # Customize shapes
   scale_color_manual(values = c("#EE6677", "#661100", "#44AA99")) + # Customize colors
   stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.1) +
   theme_minimal() +
-  labs(x = "NMDS1", y = "NMDS2")
+  labs(x = "NMDS3", y = "NMDS4")
 
 # Print the plot
 print(nmds_plot)
