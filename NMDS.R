@@ -149,7 +149,7 @@ z <- metaMDS(comm = doubs.dist,
              autotransform = FALSE,
              distance = "bray",
              engine = "monoMDS",
-             k = 4,
+             k = 5,
              weakties = TRUE,
              model = "global",
              maxit = 300,
@@ -253,16 +253,124 @@ z.points.weeds <- z.points %>%
 
 
 # Customize plot with ggplot2 add ellipses
-nmds_plot <- ggplot(data = z.points.weeds, aes(x = MDS3, y = MDS4, shape = Group, color = Group)) +
+nmds_plot <- ggplot(data = z.points.weeds, aes(x = MDS2, y = MDS5, shape = Group, color = Group)) +
   geom_point(size = 2) + # Set point size
   scale_shape_manual(values = c(16, 15, 17)) + # Customize shapes
   scale_color_manual(values = c("#EE6677", "#661100", "#44AA99")) + # Customize colors
   stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.1) +
   theme_minimal() +
-  labs(x = "NMDS3", y = "NMDS4")
+  labs(x = "NMDS2", y = "NMDS5")
 
 # Print the plot
 print(nmds_plot)
+
+# Look with centroids
+group_centroids <- data.frame(
+  Location = c("Solanum mauritianum", "Ligustrum lucidum", "Paraserianthes lophantha"),
+  Centroid_X = c(mean(z.points.weeds$MDS1[z.points.weeds$Group == "Solanum mauritianum"]),
+                 mean(z.points.weeds$MDS1[z.points.weeds$Group == "Ligustrum lucidum"]),
+                 mean(z.points.weeds$MDS1[z.points.weeds$Group == "Paraserianthes lophantha"])),
+  Centroid_Y = c(mean(z.points.weeds$MDS2[z.points.weeds$Group == "Solanum mauritianum"]),
+                 mean(z.points.weeds$MDS2[z.points.weeds$Group == "Ligustrum lucidum"]),
+                 mean(z.points.weeds$MDS2[z.points.weeds$Group == "Paraserianthes lophantha"])),
+  Centroid_Z = c(mean(z.points.weeds$MDS3[z.points.weeds$Group == "Solanum mauritianum"]),
+                 mean(z.points.weeds$MDS3[z.points.weeds$Group == "Ligustrum lucidum"]),
+                 mean(z.points.weeds$MDS3[z.points.weeds$Group == "Paraserianthes lophantha"])),
+  Centroid_A = c(mean(z.points.weeds$MDS4[z.points.weeds$Group == "Solanum mauritianum"]),
+                 mean(z.points.weeds$MDS4[z.points.weeds$Group == "Ligustrum lucidum"]),
+                 mean(z.points.weeds$MDS4[z.points.weeds$Group == "Paraserianthes lophantha"])),
+  Centroid_B = c(mean(z.points.weeds$MDS5[z.points.weeds$Group == "Solanum mauritianum"]),
+                 mean(z.points.weeds$MDS5[z.points.weeds$Group == "Ligustrum lucidum"]),
+                 mean(z.points.weeds$MDS5[z.points.weeds$Group == "Paraserianthes lophantha"]))
+)
+
+plot_data<-data.frame(
+  Location = z.points.weeds$Group,
+  MDS1=z.points.weeds$MDS1,
+  MDS2=z.points.weeds$MDS2,
+  MDS3=z.points.weeds$MDS3,
+  MDS4=z.points.weeds$MDS4,
+  MDS5=z.points.weeds$MDS5,
+  xend=c(rep( group_centroids[1,2],87),rep(group_centroids[2,2],87)),
+  yend=c(rep( group_centroids[1,3],87),rep(group_centroids[2,3],87)),
+  zend=c(rep( group_centroids[1,4],87),rep(group_centroids[2,4],87)),
+  Aend=c(rep( group_centroids[1,5],87),rep(group_centroids[2,5],87)),
+  Bend=c(rep(group_centroids[1,6],87),rep( group_centroids[2,6],87)))
+
+# ggplot with centroids
+ggplot(plot_data, aes(x = MDS2, y = MDS5, shape = Location, color = Location)) +
+  geom_point(size=2) +
+  scale_color_manual(values = c("#EE6677", "#661100", "#44AA99")) + 
+  scale_shape_manual(values = c(16, 15, 17)) + 
+  stat_ellipse(aes(group = Location, fill = Location), geom = "polygon", alpha = 0.1) +
+  geom_point(data = group_centroids, aes(x = Centroid_Y, y = Centroid_B, shape = Location, color = Location)) +
+  geom_segment(data = plot_data, aes(x = MDS2, y = MDS5, 
+  xend = yend, yend = Bend, color = Location), alpha = 0.5)+
+
+  theme_bw()
+
+#### PERMANOVA ####
+
+library(readxl)
+
+Survey_weeds <- SurveyData_Combined %>% 
+  filter(CentralSpecies != "Native")
+
+# This code gives 0 values when species are not present in a plot
+perm_data_trans <- Survey_weeds %>%
+  pivot_wider(names_from = ScientificName, 
+              values_from = Tier_1_sqrt, 
+              id_cols = Plot) %>%
+  mutate_all(~ replace(., is.na(.), 0))
+
+# instead of being a tibble, I wanted to convert it back to a data frame
+perm_data_trans = as.data.frame(perm_data_trans)
+
+
+# Needs to remove the first column of numbers as row names and make the Scientific 
+# names of species into the row names
+row.names(perm_data_trans) <- perm_data_trans$Plot 
+# Remove the first column from the data frame 
+perm_data_trans <- perm_data_trans[, -1]
+
+# Note is that this is not subset, may need to subset to only the 
+# most common species or species that occur more than 5 times etc.
+
+perm_data_trans<-perm_data_trans[-14,] # this gets rid of the the row 8 where there is a zero
+perm_data_trans<-perm_data_trans[-35,]
+perm_data_trans<-perm_data_trans[-39,]
+
+# Check for Na, NaN,Inf values
+any(is.na(perm_data_trans))
+
+#Quick checks for empty rows or columns...
+rowSums(perm_data_trans)
+colSums(perm_data_trans)
+
+
+# Make a distance matrix
+perm_dist<-vegdist(perm_data_trans, method='bray')
+
+
+#Assumptions
+
+dispersion<-betadisper(perm_dist, group=Survey_weeds$CentralSpecies,type = "centroid")
+
+plot(dispersion)
+
+anova(dispersion)
+
+
+#Test
+
+Perma_result<-adonis2( perm_dist~as.factor(plot_data$Location), data=perm_dist,
+                       permutations=9999)
+
+Perma_result
+
+
+
+
 
 
 
