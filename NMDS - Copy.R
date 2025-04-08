@@ -18,9 +18,11 @@ tidyverse_update()
 
 library(dplyr)
 
+# Read in the data with 6 extra woolly nightshades
 library(readr)
 SurveyData <- read_csv("SurveyData_Clean.csv")
 
+# Read in the data with extra woolly nightshades removed
 library(readr)
 SurveyData <- read_csv("SurveyData_Clean_WN_removed.csv")
 
@@ -193,7 +195,7 @@ z <- metaMDS(comm = doubs.dist,
              autotransform = FALSE,
              distance = "bray",
              engine = "monoMDS",
-             k = 4,
+             k = 5,
              weakties = TRUE,
              model = "global",
              maxit = 300,
@@ -285,26 +287,6 @@ nmds_plot <- ggplot(data = z.points, aes(x = MDS2, y = MDS4, shape = Group, colo
 # Print the plot
 print(nmds_plot)
 
-# Native species plots are kind of all over the place, let's look at it without 
-# Native plots
-
-# Remove native species plots
-# Remove rows where Group is "Native"
-# z.points.weeds <- z.points %>% 
-#  filter(Group != "Native")
-
-
-# Customize plot with ggplot2 add ellipses
-nmds_plot <- ggplot(data = z.points, aes(x = MDS2, y = MDS4, shape = Group, color = Group)) +
-  geom_point(size = 2) + # Set point size
-  scale_shape_manual(values = c(16, 15, 17)) + # Customize shapes
-  scale_color_manual(values = c("#EE6677", "#661100", "#44AA99")) + # Customize colors
-  stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.1) +
-  theme_minimal() +
-  labs(x = "NMDS2", y = "NMDS4")
-
-# Print the plot
-print(nmds_plot)
 
 # Look with centroids
 group_centroids <- data.frame(
@@ -340,22 +322,22 @@ plot_data<-data.frame(
   MDS2=z.points$MDS2,
   MDS3=z.points$MDS3,
   MDS4=z.points$MDS4,
-#  MDS5=z.points$MDS5,
+  MDS5=z.points$MDS5,
   xend=c(rep( group_centroids[1,2],27),rep(group_centroids[2,2],28), rep(group_centroids[3,2],27)),
   yend=c(rep( group_centroids[1,3],27),rep(group_centroids[2,3],28), rep(group_centroids[3,3],27)),
   zend=c(rep( group_centroids[1,4],27),rep(group_centroids[2,4],28), rep(group_centroids[3,4],27)),
-  Aend=c(rep( group_centroids[1,5],27),rep(group_centroids[2,5],28), rep(group_centroids[3,5],27)))
-#  Bend=c(rep(group_centroids[1,6],27),rep( group_centroids[2,6],28), rep(group_centroids[3,6],27)))
+  Aend=c(rep( group_centroids[1,5],27),rep(group_centroids[2,5],28), rep(group_centroids[3,5],27)),
+  Bend=c(rep(group_centroids[1,6],27),rep( group_centroids[2,6],28), rep(group_centroids[3,6],27)))
 
 # ggplot with centroids
-ggplot(plot_data, aes(x = MDS2, y = MDS4, shape = Location, color = Location)) +
+ggplot(plot_data, aes(x = MDS3, y = MDS4, shape = Location, color = Location)) +
   geom_point(size=2) +
   scale_color_manual(values = c("#EE6677", "#661100", "#44AA99")) + 
   scale_shape_manual(values = c(16, 15, 17)) + 
   stat_ellipse(aes(group = Location, fill = Location), geom = "polygon", alpha = 0.1) +
-  geom_point(data = group_centroids, aes(x = Centroid_Y, y = Centroid_B, shape = Location, color = Location)) +
-  geom_segment(data = plot_data, aes(x = MDS2, y = MDS4, 
-  xend = yend, yend = Aend, color = Location), alpha = 0.5)+
+  geom_point(data = group_centroids, aes(x = Centroid_Z, y = Centroid_A, shape = Location, color = Location)) +
+  geom_segment(data = plot_data, aes(x = MDS3, y = MDS4, 
+  xend = zend, yend = Aend, color = Location), alpha = 0.5)+
 
   theme_bw()
 
