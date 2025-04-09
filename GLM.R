@@ -1,4 +1,4 @@
-#### NMDS ####
+#### GLM ####
 
 # Before anything else, verify that your environment is totally clear.
 # This is important, because old objects can foul up the works
@@ -23,6 +23,12 @@ SurveyData <- read_csv("SurveyData_Clean.csv")
 
 library(readr)
 SurveyData <- read_csv("SurveyData_Clean_WN_removed.csv")
+
+library(readr)
+PlotData <- read_csv("PlotData_Clean.csv")
+
+library(readr)
+PlotData <- read_csv("PlotData_Clean_WN_removed.csv")
 
 # The species that were entered as percent-cover need to be accounted for
 # Given that the number of plants will vary greatly, but cover plants were all
@@ -52,23 +58,44 @@ SurveyData_Combined <- SurveyData_Combined %>%
   unite(Plot, Plot, W_N, sep = "-")
 
 
-#### Change the data to be a matrix (n sample units x p species) ####
 
-# This code gives NA values when species are not present in a plot
-#Survey_wideNA <- SurveyData_Combined %>%
-#  pivot_wider(names_from = Plot, 
-#              values_from = Tier_1, 
-#              id_cols = ScientificName)
+# Repeat for plot data
+# Assigning the Site a unique numeric value
+PlotData$Site <- as.numeric(as.factor(PlotData$Site))
+# Assigning W and N unique numeric values (weed is now 2, native is now 1)
+PlotData$W_N <- as.numeric(as.factor(PlotData$Weed_Native))
 
-# autotransform is not doing anything, so I need to transform my data
-# square root was given as a good transformation, so I will do that
+# Now combine this into unique numerical plot names
+library(tidyr)
+PlotData_Combined <- PlotData %>%
+  unite(Plot, Site, Plot, sep = "-")
 
-SurveyData_Combined$Tier_1_sqrt <- sqrt(SurveyData_Combined$Tier_1)
+# Unite Plot and Weed vs Native columns so that now the plot id is all in one
+# column that includes the site, plot number, and whether it is weed or native
+library(tidyr)
+PlotData_Combined <- PlotData_Combined %>%
+  unite(Location, Plot, Weed_Native, sep = "-")
 
 # Filter down to only native species
 # Remove native species plots
-# Remove rows where Group is "Native"
+# Remove rows where Group is not one of the three weeds
+PlotData_Weeds <- PlotData_Combined %>% 
+  filter(CentralSpecies %in% c("Solanum mauritianum", "Ligustrum lucidum", "Paraserianthes lophantha"))
 
+# Now I need to only include the environmental variables that I want to include
+# for the GLM
+
+PlotData_Weeds <- PlotData_Weeds %>%
+  select(-Date, -CanopyCover_App, -Waypoint, -East_Coordinates, -South_Coordinates, -CoverVascular,
+         -CoverNonVascular, -CoverLitter, -CoverBareSoil, -CoverDebris, -CoverGrass,
+         -Topography, -ParentMaterial, -Notes)
+
+# Back to the survey data setting up for nMDS
+
+# Need to transform the data square root was given as a good transformation, so I will do that
+SurveyData_Combined$Tier_1_sqrt <- sqrt(SurveyData_Combined$Tier_1)
+
+# Remove rows where Group is "Native"
 SurveyData_Combined_Weeds <- SurveyData_Combined %>% 
   filter(CentralSpecies != "Native")
 
@@ -89,6 +116,8 @@ row.names(Survey_wide) <- Survey_wide$Plot
 # Remove the first column from the data frame 
 Survey_wide <- Survey_wide[, -1]
 
+
+# Back to the Survey data
 #Quick checks for empty rows or columns...
 rowSums(Survey_wide)
 colSums(Survey_wide)
@@ -99,44 +128,9 @@ Survey_wide<-Survey_wide[,-115] # this gets rid of the the column where there is
 Survey_wide<-Survey_wide[,-40] # this gets rid of the the column where there is a zero
 Survey_wide<-Survey_wide[,-39] # this gets rid of the the column where there is a zero
 
-
-# These are the columns that need to be removed using the data without the extra woolly
-# nightshades removed
-Survey_wide<-Survey_wide[,-14] # this gets rid of the the column where there is a zero
-Survey_wide<-Survey_wide[,-34] # this gets rid of the the column where there is a zero
-Survey_wide<-Survey_wide[,-37] # this gets rid of the the column where there is a zero
-
-# This code gives 0 values when species are not present in a plot
-# Survey_wide <- SurveyData_Combined %>%
-#  pivot_wider(names_from = ScientificName, 
-#              values_from = Tier_1_sqrt, 
-#              id_cols = Plot) %>%
-#  mutate_all(~ replace(., is.na(.), 0))
-
-# instead of being a tibble, I wanted to convert it back to a data frame
-# Survey_wide = as.data.frame(Survey_wide)
-
-
-# Needs to remove the first column of numbers as row names and make the Scientific 
-# names of species into the row names
-# row.names(Survey_wide) <- Survey_wide$Plot 
-# Remove the first column from the data frame 
-# Survey_wide <- Survey_wide[, -1]
-
-# Note is that this is not subset, may need to subset to only the 
-# most common species or species that occur more than 5 times etc.
-
-#### NMDS ####
+### NMDS ####
 
 library(vegan)
-
-#Quick checks for empty rows or columns...
-# rowSums(Survey_wide)
-# colSums(Survey_wide)
-
-#Empty sites can cause problems so let's drop it
-# Survey_wide<-Survey_wide[,-46] # this gets rid of the the column where there is a zero
-# Survey_wide<-Survey_wide[,-49,] # this gets rid of the the column where there is a zero
 
 doubs.dist<-vegdist(Survey_wide)
 doubs.dist
@@ -193,7 +187,7 @@ z <- metaMDS(comm = doubs.dist,
              autotransform = FALSE,
              distance = "bray",
              engine = "monoMDS",
-             k = 4,
+             k = 5,
              weakties = TRUE,
              model = "global",
              maxit = 300,
@@ -201,6 +195,7 @@ z <- metaMDS(comm = doubs.dist,
              trymax = 50)
 
 z
+
 # Stress Plot = Sheppard Plot
 plot(z$diss, z$dist)
 
@@ -259,41 +254,6 @@ nmds_plot <- ggplot(data = z.points, aes(x = MDS1, y = MDS2, shape = Group, colo
 # Print the plot
 print(nmds_plot)
 
-# This plot works!!!!!!!!
-
-# Customize plot with ggplot2 add polygons/ellipses
-nmds_plot <- ggplot(data = z.points, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
-  geom_point(size = 2) + # Set point size
-  scale_shape_manual(values = c(16, 15, 18, 19)) + # Customize shapes
-  scale_color_manual(values = c("#EE6677", "#228833", "#661100", "#44AA99")) + # Customize colors
-  geom_polygon(data = z.points, aes(fill = Group, group = Group), alpha = 0.1) +
-  theme_minimal() +
-  labs(x = "NMDS1", y = "NMDS2")
-
-# Print the plot
-print(nmds_plot)
-
-# Customize plot with ggplot2 add ellipses
-nmds_plot <- ggplot(data = z.points, aes(x = MDS2, y = MDS4, shape = Group, color = Group)) +
-  geom_point(size = 2) + # Set point size
-  scale_shape_manual(values = c(16, 15, 18, 19)) + # Customize shapes
-  scale_color_manual(values = c("#EE6677", "#228833", "#661100", "#44AA99")) + # Customize colors
-  stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.1) +
-  theme_minimal() +
-  labs(x = "NMDS1", y = "NMDS2")
-
-# Print the plot
-print(nmds_plot)
-
-# Native species plots are kind of all over the place, let's look at it without 
-# Native plots
-
-# Remove native species plots
-# Remove rows where Group is "Native"
-# z.points.weeds <- z.points %>% 
-#  filter(Group != "Native")
-
-
 # Customize plot with ggplot2 add ellipses
 nmds_plot <- ggplot(data = z.points, aes(x = MDS2, y = MDS4, shape = Group, color = Group)) +
   geom_point(size = 2) + # Set point size
@@ -305,6 +265,7 @@ nmds_plot <- ggplot(data = z.points, aes(x = MDS2, y = MDS4, shape = Group, colo
 
 # Print the plot
 print(nmds_plot)
+
 
 # Look with centroids
 group_centroids <- data.frame(
@@ -340,12 +301,12 @@ plot_data<-data.frame(
   MDS2=z.points$MDS2,
   MDS3=z.points$MDS3,
   MDS4=z.points$MDS4,
-#  MDS5=z.points$MDS5,
+  MDS5=z.points$MDS5,
   xend=c(rep( group_centroids[1,2],27),rep(group_centroids[2,2],28), rep(group_centroids[3,2],27)),
   yend=c(rep( group_centroids[1,3],27),rep(group_centroids[2,3],28), rep(group_centroids[3,3],27)),
   zend=c(rep( group_centroids[1,4],27),rep(group_centroids[2,4],28), rep(group_centroids[3,4],27)),
-  Aend=c(rep( group_centroids[1,5],27),rep(group_centroids[2,5],28), rep(group_centroids[3,5],27)))
-#  Bend=c(rep(group_centroids[1,6],27),rep( group_centroids[2,6],28), rep(group_centroids[3,6],27)))
+  Aend=c(rep( group_centroids[1,5],27),rep(group_centroids[2,5],28), rep(group_centroids[3,5],27)),
+  Bend=c(rep(group_centroids[1,6],27),rep( group_centroids[2,6],28), rep(group_centroids[3,6],27)))
 
 # ggplot with centroids
 ggplot(plot_data, aes(x = MDS2, y = MDS4, shape = Location, color = Location)) +
@@ -355,68 +316,25 @@ ggplot(plot_data, aes(x = MDS2, y = MDS4, shape = Location, color = Location)) +
   stat_ellipse(aes(group = Location, fill = Location), geom = "polygon", alpha = 0.1) +
   geom_point(data = group_centroids, aes(x = Centroid_Y, y = Centroid_B, shape = Location, color = Location)) +
   geom_segment(data = plot_data, aes(x = MDS2, y = MDS4, 
-  xend = yend, yend = Aend, color = Location), alpha = 0.5)+
-
+                                     xend = yend, yend = Aend, color = Location), alpha = 0.5)+
+  
   theme_bw()
 
-#### PERMANOVA ####
 
-# Filter down to only native species
-# Remove native species plots
-# Remove rows where Group is "Native"
+en = envfit(z, PlotData_Weeds, permutations = 9999, na.rm = TRUE) ## This creates the arrows
+en_coord_cont = as.data.frame(scores(en, "vectors")) * ordiArrowMul(en) * 0.5 ##Adjust the last number to change the length of the arrows
+en_coord_cat = as.data.frame(scores(en, "factors")) * ordiArrowMul(en) * 0.5 ##Adjust the last number to change the length of the arrows
 
-SurveyData_Combined_Weeds <- SurveyData_Combined %>% 
-  filter(CentralSpecies != "Native")
-
-# This code gives 0 values when species are not present in a plot
-Survey_perm <- SurveyData_Combined_Weeds %>%
-  pivot_wider(names_from = ScientificName, 
-              values_from = Tier_1_sqrt, 
-              id_cols = Plot) %>%
-  mutate_all(~ replace(., is.na(.), 0))
-
-# instead of being a tibble, I wanted to convert it back to a data frame
-Survey_perm = as.data.frame(Survey_perm)
-
-
-# Needs to remove the first column of numbers as row names and make the Scientific 
-# names of species into the row names
-row.names(Survey_perm) <- Survey_perm$Plot 
-# Remove the first column from the data frame 
-Survey_perm <- Survey_perm[, -1]
-
-#Quick checks for empty rows or columns...
-rowSums(Survey_perm)
-colSums(Survey_perm)
-
-# These are the columns that need to be removed using the data with the extra 
-# woolly nightshades removed
-Survey_perm<-Survey_perm[,-115] # this gets rid of the the column where there is a zero
-Survey_perm<-Survey_perm[,-40] # this gets rid of the the column where there is a zero
-Survey_perm<-Survey_perm[,-39] # this gets rid of the the column where there is a zero
-
-#Empty sites can cause problems so let's drop it
-Survey_perm<-Survey_perm[,-14] # this gets rid of the the column where there is a zero
-Survey_perm<-Survey_perm[,-34] # this gets rid of the the column where there is a zero
-Survey_perm<-Survey_perm[,-37] # this gets rid of the the column where there is a zero
-
-
-# Make a distance matrix
-perm_dist<-vegdist(Survey_perm, method='bray')
-
-
-#Assumptions
-
-dispersion<-betadisper(perm_dist, group=plot_data$Location,type = "centroid")
-
-plot(dispersion)
-
-anova(dispersion)
-
-
-#Test
-
-Perma_result<-adonis2( perm_dist~as.factor(plot_data$Location), data=perm_dist,
-                       permutations=9999)
-
-Perma_result
+# ggplot with centroids
+ggplot(plot_data, aes(x = MDS2, y = MDS4, shape = Location, color = Location)) +
+  geom_point(size=2) +
+  scale_color_manual(values = c("#EE6677", "#661100", "#44AA99")) + 
+  scale_shape_manual(values = c(16, 15, 17)) + 
+  stat_ellipse(aes(group = Location, fill = Location), geom = "polygon", alpha = 0.1) +
+  geom_point(data = group_centroids, aes(x = Centroid_Y, y = Centroid_B, shape = Location, color = Location)) +
+  geom_segment(aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2), 
+               data = en_coord_cont, size = 1, alpha = 0.5, colour = "grey30") +
+  geom_text(data = en_coord_cont, aes(x = NMDS1, y = NMDS2), colour = "grey30", 
+            fontface = "bold", label = row.names(en_coord_cont)) +
+  
+  theme_bw()
