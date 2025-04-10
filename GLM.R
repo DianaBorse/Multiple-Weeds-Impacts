@@ -18,14 +18,14 @@ tidyverse_update()
 
 library(dplyr)
 
-library(readr)
-SurveyData <- read_csv("SurveyData_Clean.csv")
+#library(readr)
+#SurveyData <- read_csv("SurveyData_Clean.csv")
 
 library(readr)
 SurveyData <- read_csv("SurveyData_Clean_WN_removed.csv")
 
-library(readr)
-PlotData <- read_csv("PlotData_Clean.csv")
+#library(readr)
+#PlotData <- read_csv("PlotData_Clean.csv")
 
 library(readr)
 PlotData <- read_csv("PlotData_Clean_WN_removed.csv")
@@ -63,7 +63,7 @@ SurveyData_Combined <- SurveyData_Combined %>%
 # Assigning the Site a unique numeric value
 PlotData$Site <- as.numeric(as.factor(PlotData$Site))
 # Assigning W and N unique numeric values (weed is now 2, native is now 1)
-PlotData$W_N <- as.numeric(as.factor(PlotData$Weed_Native))
+PlotData$Weed_Native <- as.numeric(as.factor(PlotData$Weed_Native))
 
 # Now combine this into unique numerical plot names
 library(tidyr)
@@ -74,7 +74,7 @@ PlotData_Combined <- PlotData %>%
 # column that includes the site, plot number, and whether it is weed or native
 library(tidyr)
 PlotData_Combined <- PlotData_Combined %>%
-  unite(Location, Plot, Weed_Native, sep = "-")
+  unite(Plot, Plot, Weed_Native, sep = "-")
 
 # Filter down to only native species
 # Remove native species plots
@@ -89,6 +89,12 @@ PlotData_Weeds <- PlotData_Weeds %>%
   select(-Date, -CanopyCover_App, -Waypoint, -East_Coordinates, -South_Coordinates, -CoverVascular,
          -CoverNonVascular, -CoverLitter, -CoverBareSoil, -CoverDebris, -CoverGrass,
          -Topography, -ParentMaterial, -Notes)
+
+# Need to simplify the column names 
+colnames(PlotData_Weeds)[3:10] <- c("Height", "DBH",
+                                  "Slope", "Canopy",
+                                  "Erosion", "Disturbance",
+                                  "Pests", "Litter") ## Renaming the columns
 
 # Back to the survey data setting up for nMDS
 
@@ -108,6 +114,11 @@ Survey_wide <- SurveyData_Combined_Weeds %>%
 
 # instead of being a tibble, I wanted to convert it back to a data frame
 Survey_wide = as.data.frame(Survey_wide)
+
+library(dplyr)
+Env_Species <- left_join(Survey_wide, PlotData_Weeds, by = "Plot")  # Preserves all rows from df1
+
+
 
 
 # Needs to remove the first column of numbers as row names and make the Scientific 
@@ -232,14 +243,6 @@ Plot_Species <- SurveyData_Combined_Weeds %>% distinct(Plot, .keep_all = TRUE)
 
 grp <- Plot_Species$CentralSpecies
 
-# I don't think I need these
-
-# data.scores <- as.data.frame(scores(z))  #Using the scores function from vegan to extract the site scores and convert to a data.frame
-# data.scores$site <- rownames(z)  # create a column of site names, from the rownames of data.scores
-# data.scores$grp <- grp  #  add the grp variable created earlier
-# head(data.scores)  #look at the data
-
-
 # Create a data frame of NMDS results with group information
 z.points$Group <- Plot_Species$CentralSpecies # Replace with your group column
 
@@ -247,9 +250,10 @@ z.points$Group <- Plot_Species$CentralSpecies # Replace with your group column
 nmds_plot <- ggplot(data = z.points, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
   geom_point(size = 2) + # Set point size
   scale_shape_manual(values = c(16, 15, 18, 19)) + # Customize shapes
-  scale_color_manual(values = c("#EE6677", "#228833", "#661100", "#44AA99")) + # Customize colors
+  scale_color_manual(values = c("#EE6677", "#228833", "#44AA99")) + # Customize colors
   theme_minimal() +
-  labs(x = "NMDS1", y = "NMDS2")
+  labs(x = "NMDS1", y = "NMDS2") +
+  theme_classic()
 
 # Print the plot
 print(nmds_plot)
@@ -258,10 +262,12 @@ print(nmds_plot)
 nmds_plot <- ggplot(data = z.points, aes(x = MDS2, y = MDS4, shape = Group, color = Group)) +
   geom_point(size = 2) + # Set point size
   scale_shape_manual(values = c(16, 15, 17)) + # Customize shapes
-  scale_color_manual(values = c("#EE6677", "#661100", "#44AA99")) + # Customize colors
+  scale_color_manual(values = c("#EE6677", "#228833", "#44AA99")) + # Customize colors
   stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.1) +
+  scale_fill_manual(values = c("#EE6677",  "#228833", "#44AA99")) +
   theme_minimal() +
-  labs(x = "NMDS2", y = "NMDS4")
+  labs(x = "NMDS2", y = "NMDS4") +
+  theme_classic()
 
 # Print the plot
 print(nmds_plot)
@@ -311,30 +317,53 @@ plot_data<-data.frame(
 # ggplot with centroids
 ggplot(plot_data, aes(x = MDS2, y = MDS4, shape = Location, color = Location)) +
   geom_point(size=2) +
-  scale_color_manual(values = c("#EE6677", "#661100", "#44AA99")) + 
+  scale_color_manual(values = c("#EE6677", "#228833", "#44AA99")) + 
   scale_shape_manual(values = c(16, 15, 17)) + 
   stat_ellipse(aes(group = Location, fill = Location), geom = "polygon", alpha = 0.1) +
+  scale_fill_manual(values = c("#EE6677",  "#228833", "#44AA99")) +
   geom_point(data = group_centroids, aes(x = Centroid_Y, y = Centroid_B, shape = Location, color = Location)) +
   geom_segment(data = plot_data, aes(x = MDS2, y = MDS4, 
                                      xend = yend, yend = Aend, color = Location), alpha = 0.5)+
   
-  theme_bw()
+  theme_classic()
 
+# I need to make a data frame that contains the environmental factors with the survey data
+# That means I need Plot_species with PlotData_Weeds
 
+Survey_wscores <- cbind(z.points, Env_Species) ## This combines the dataset with the coordinates
 en = envfit(z, PlotData_Weeds, permutations = 9999, na.rm = TRUE) ## This creates the arrows
 en_coord_cont = as.data.frame(scores(en, "vectors")) * ordiArrowMul(en) * 0.5 ##Adjust the last number to change the length of the arrows
 en_coord_cat = as.data.frame(scores(en, "factors")) * ordiArrowMul(en) * 0.5 ##Adjust the last number to change the length of the arrows
 
-# ggplot with centroids
-ggplot(plot_data, aes(x = MDS2, y = MDS4, shape = Location, color = Location)) +
-  geom_point(size=2) +
-  scale_color_manual(values = c("#EE6677", "#661100", "#44AA99")) + 
+
+
+# ggplot with coordinates
+ggplot(Survey_wscores, aes(x = MDS1, y = MDS2)) +
+  geom_point(data = Survey_wscores, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
+#  geom_text(data = Survey_wscores, aes(x = NMDS1, y = NMDS2, label = Species), colour = "red")+
+  scale_color_manual(values = c("#EE6677", "#228833", "#44AA99")) + 
   scale_shape_manual(values = c(16, 15, 17)) + 
-  stat_ellipse(aes(group = Location, fill = Location), geom = "polygon", alpha = 0.1) +
-  geom_point(data = group_centroids, aes(x = Centroid_Y, y = Centroid_B, shape = Location, color = Location)) +
+  stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.25) +
+  scale_fill_manual(values = c("#EE6677",  "#228833", "#44AA99")) +
   geom_segment(aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2), 
-               data = en_coord_cont, size = 1, alpha = 0.5, colour = "grey30") +
-  geom_text(data = en_coord_cont, aes(x = NMDS1, y = NMDS2), colour = "grey30", 
-            fontface = "bold", label = row.names(en_coord_cont)) +
-  
-  theme_bw()
+               data = en_coord_cont, size = 1, alpha = 0.5, colour = "black") +
+  geom_text(data = en_coord_cont, aes(x = NMDS1, y = NMDS2), colour = "black", 
+            label = row.names(en_coord_cont)) +
+  theme_classic() +
+#  labs_pubr() +
+  labs(x = "MDS axis 1", y = "MDS axis 2")
+
+# Change the species names to remove the space
+
+library(dplyr)
+Env_Species <- Env_Species %>%
+  mutate(CentralSpecies = ifelse(CentralSpecies == "Solanum mauritianum", "Solanum_mauritianum", CentralSpecies))
+
+# GLM results time
+library(MASS) ## do to the GLM
+Solmau_GLM <- glm.nb(Solanum_mauritanum ~ Height + DBH +
+                     Slope + Canopy +
+                     Erosion + Disturbance +
+                     Pests + Litter,
+                     data = Env_Species) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
+summary(Solmau_GLM)
