@@ -493,15 +493,15 @@ ggplot(plot_data, aes(x = MDS2, y = MDS4, shape = Location, color = Location)) +
   theme_classic()
 
 # ggplot with centroids for subset data
-ggplot(plot_data_subset, aes(x = MDS1, y = MDS3, shape = Location, color = Location)) +
+ggplot(plot_data_subset, aes(x = MDS3, y = MDS2, shape = Location, color = Location)) +
   geom_point(size=2) +
   scale_color_manual(values = c("#EE6677", "#228833", "#44AA99")) + 
   scale_shape_manual(values = c(16, 15, 17)) + 
   stat_ellipse(aes(group = Location, fill = Location), geom = "polygon", alpha = 0.1) +
   scale_fill_manual(values = c("#EE6677",  "#228833", "#44AA99")) +
-  geom_point(data = group_centroids_subset, aes(x = Centroid_X, y = Centroid_Z, shape = Location, color = Location)) +
-  geom_segment(data = plot_data_subset, aes(x = MDS1, y = MDS3, 
-                                     xend = xend, yend = zend, color = Location), alpha = 0.5)+
+  geom_point(data = group_centroids_subset, aes(x = Centroid_Z, y = Centroid_Y, shape = Location, color = Location)) +
+  geom_segment(data = plot_data_subset, aes(x = MDS3, y = MDS2, 
+                                     xend = zend, yend = yend, color = Location), alpha = 0.5)+
   
   theme_classic()
 
@@ -528,8 +528,8 @@ PlotData_Weeds_subset<-PlotData_Weeds_subset[-80, ] # this gets rid of the the c
 
 Survey_subset_wscores <- cbind(z.subset.points, Env_Species_subset) ## This combines the dataset with the coordinates
 en.subset = envfit(z.subset, PlotData_Weeds_subset, permutations = 9999, na.rm = TRUE) ## This creates the arrows
-en_coord_cont.subset = as.data.frame(scores(en, "vectors")) * ordiArrowMul(en) * 0.5 ##Adjust the last number to change the length of the arrows
-en_coord_cat.subset = as.data.frame(scores(en, "factors")) * ordiArrowMul(en) * 0.5 ##Adjust the last number to change the length of the arrows
+en_coord_cont.subset = as.data.frame(scores(en.subset, "vectors")) * ordiArrowMul(en.subset) * 0.5 ##Adjust the last number to change the length of the arrows
+en_coord_cat.subset = as.data.frame(scores(en.subset, "factors")) * ordiArrowMul(en.subset) * 0.5 ##Adjust the last number to change the length of the arrows
 
 
 
