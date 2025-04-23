@@ -311,6 +311,9 @@ plot(z[["points"]][,2]~z[["points"]][,1],main="Survey Data", xlab="NMDSaxis 1" ,
 # Using ggplot2 to make a plot with site names
 plot(z, type = "t")
 
+# Using ggplot2 to make a plot with site names
+plot(z.subset, type = "t")
+
 # Looking at the stress/goodness of fit
 gof <- goodness(object = z)
 plot(z, display = "sites", type = "none")
