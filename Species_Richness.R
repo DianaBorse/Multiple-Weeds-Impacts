@@ -159,7 +159,7 @@ RichnessPlotNative
 #### Non-Native Species Richness by Central species ####
 
 # subset the data to only include the non-native species
-subset_SurveyData_Combined_Weed <- SurveyData_Combined[SurveyData_Combined$Status == 1, ]
+subset_SurveyData_Combined_Weed <- SurveyData_Combined[SurveyData_Combined$WeedList == 1, ]
 
 # calculate the species richness of the weeds
 library(dplyr)
@@ -174,7 +174,7 @@ summ_RichnessWeed <- RichnessWeed %>%
             IQR_unique_values = IQR(unique_values),
             sd_unique_values = sd(unique_values),
             var_unique_values = var(unique_values),
-            se_unique_values = sd(unique_values)/sqrt(164))
+            se_unique_values = sd(unique_values)/sqrt(27))
 
 
 # Check for normality
@@ -184,19 +184,100 @@ ggplot(RichnessWeed) +
 ggplot(RichnessWeed) +
   geom_boxplot(aes(x = "", y = unique_values))
 
+# Try a transformation
+RichnessWeed$unique_values_log <- log10(RichnessWeed$unique_values)
+
+# Check for normality
+ggplot(RichnessWeed) +
+  geom_histogram(aes(unique_values_log), binwidth = 0.1)
+
+ggplot(RichnessWeed) +
+  geom_boxplot(aes(x = "", y = unique_values_log))
+
 # ANOVA
-modelRichnessWeed <- lm(unique_values~CentralSpecies, data = RichnessWeed)
+modelRichnessWeed <- lm(unique_values_log~CentralSpecies, data = RichnessWeed)
 
 anova(modelRichnessWeed)
 
 # make a boxplot for visualization
 library(ggplot2)
 RichnessPlotWeed <- ggplot(data = RichnessWeed, 
-                             aes(y = unique_values, ##Change this to variable name
+                             aes(y = unique_values_log, ##Change this to variable name
                                  x = CentralSpecies)) + ##Change this to variable name
   geom_boxplot(aes(x = factor(CentralSpecies, level=c('Native', 'Paraserianthes lophantha', 'Ligustrum lucidum', 'Solanum mauritianum'))), fill = "red4", notch = TRUE, varwidth = TRUE) +
   geom_jitter(color="black", size=0.4, alpha=0.9) +
-  ylab("Species Richness") + xlab("Central Species") +   ##Change axis titles
+  ylab("Weed Species Richness") + xlab("Central Species") +   ##Change axis titles
+  theme(axis.text.x=element_text(face = "italic", size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+RichnessPlotWeed
+
+?geom_boxplot
+
+#### Look at just seedlings ####
+
+# I need to make this data only include seedlings. Therefore, I need to remove
+# the rows that only include species > 51 cm.
+
+SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combined$Tier_3
+
+Subset_SurveyData_Combined <- subset(SurveyData_Combined, seedlings != 0)
+
+# subset the data to only include the non-native species
+subset_SurveyData_Combined_Weed <- Subset_SurveyData_Combined[Subset_SurveyData_Combined$WeedList == 1, ]
+
+# calculate the species richness of the weeds
+library(dplyr)
+RichnessWeed <- subset_SurveyData_Combined_Weed %>% group_by(Plot, CentralSpecies) %>% summarize(unique_values = n_distinct(ScientificName))
+
+# Calculate Summarry Statistics
+library(dplyr)
+summ_RichnessWeed <- RichnessWeed %>%
+  group_by(CentralSpecies) %>%
+  summarise(mean_unique_values = mean(unique_values),
+            median_unique_values = median(unique_values),
+            IQR_unique_values = IQR(unique_values),
+            sd_unique_values = sd(unique_values),
+            var_unique_values = var(unique_values),
+            se_unique_values = sd(unique_values)/sqrt(27))
+
+
+# Check for normality
+ggplot(RichnessWeed) +
+  geom_histogram(aes(unique_values), binwidth = 1)
+
+ggplot(RichnessWeed) +
+  geom_boxplot(aes(x = "", y = unique_values))
+
+# Try a transformation
+RichnessWeed$unique_values_log <- log10(RichnessWeed$unique_values)
+
+# Check for normality
+ggplot(RichnessWeed) +
+  geom_histogram(aes(unique_values_log), binwidth = 0.1)
+
+ggplot(RichnessWeed) +
+  geom_boxplot(aes(x = "", y = unique_values_log))
+
+# ANOVA
+modelRichnessWeed <- lm(unique_values_log~CentralSpecies, data = RichnessWeed)
+
+anova(modelRichnessWeed)
+
+# make a boxplot for visualization
+library(ggplot2)
+RichnessPlotWeed <- ggplot(data = RichnessWeed, 
+                           aes(y = unique_values_log, ##Change this to variable name
+                               x = CentralSpecies)) + ##Change this to variable name
+  geom_boxplot(aes(x = factor(CentralSpecies, level=c('Native', 'Paraserianthes lophantha', 'Ligustrum lucidum', 'Solanum mauritianum'))), fill = "red4", notch = TRUE, varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Weed Species Richness") + xlab("Central Species") +   ##Change axis titles
   theme(axis.text.x=element_text(face = "italic", size=10, color = 'black'), #Change axis text font size and angle and colour etc
         axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
         axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
