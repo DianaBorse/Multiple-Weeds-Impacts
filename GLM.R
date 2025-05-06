@@ -87,16 +87,15 @@ PlotData_Weeds <- PlotData_Combined %>%
 # Now I need to only include the environmental variables that I want to include
 # for the GLM
 
-PlotData_Weeds <- PlotData_Weeds %>%
-  select(-Date, -CanopyCover_App, -Waypoint, -East_Coordinates, -South_Coordinates, -CoverVascular,
-         -CoverNonVascular, -CoverLitter, -CoverBareSoil, -CoverDebris, -CoverGrass,
-         -Topography, -ParentMaterial, -Notes)
+PlotData_Combined <- subset(PlotData_Combined, select = -c(Date, CanopyCover_App, Waypoint, East_Coordinates, South_Coordinates, CoverVascular,
+                                                           CoverNonVascular, CoverLitter, CoverBareSoil, CoverDebris, CoverGrass,
+                                                           Topography, ParentMaterial, Notes))
 
 # Need to simplify the column names 
-colnames(PlotData_Weeds)[3:10] <- c("Height", "DBH",
+colnames(PlotData_Combined)[3:11] <- c("Height", "DBH",
                                   "Slope", "Canopy",
                                   "Erosion", "Disturbance",
-                                  "Pests", "Litter") ## Renaming the columns
+                                  "Pests", "Litter", "Housing") ## Renaming the columns
 
 # Back to the survey data setting up for nMDS
 
@@ -115,15 +114,15 @@ SurveyData_Combined_subset_weeds <- SurveyData_Combined_subset %>%
  
 
 # This code gives 0 values when species are not present in a plot
-Survey_wide <- SurveyData_Combined_Weeds %>%
+Survey_wide <- SurveyData_Combined %>%
   pivot_wider(names_from = ScientificName, 
-              values_from = Tier_1_sqrt, 
+              values_from = Tier_1, 
               id_cols = Plot) %>%
   mutate_all(~ replace(., is.na(.), 0))
 # repeat for environmental weeds subset
-Survey_wide_subset <- SurveyData_Combined_subset_weeds %>%
+Survey_wide_subset <- SurveyData_Combined_subset %>%
   pivot_wider(names_from = ScientificName, 
-              values_from = Tier_1_sqrt, 
+              values_from = Tier_1, 
               id_cols = Plot) %>%
   mutate_all(~ replace(., is.na(.), 0))
 
@@ -135,10 +134,10 @@ Survey_wide = as.data.frame(Survey_wide)
 Survey_wide_subset = as.data.frame(Survey_wide_subset)
 
 library(dplyr)
-Env_Species <- left_join(Survey_wide, PlotData_Weeds, by = "Plot")  # Preserves all rows from df1
+Env_Species <- left_join(Survey_wide, PlotData_Combined, by = "Plot")  # Preserves all rows from df1
 
 # repeat for subset data
-Env_Species_subset <- left_join(Survey_wide_subset, PlotData_Weeds, by = "Plot")
+Env_Species_subset <- left_join(Survey_wide_subset, PlotData_Combined, by = "Plot")
 
 # Needs to remove the first column of numbers as row names and make the Scientific 
 # names of species into the row names

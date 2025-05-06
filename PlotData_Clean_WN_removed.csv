@@ -1,168 +1,180 @@
-﻿Date,Site,Plot,Weed_Native,CentralSpecies,Height_CentralSpecies,DBH_CentralSpecies,Slope,CanopyCover_Densiometer,CanopyCover_App,Waypoint,East_Coordinates,South_Coordinates,CoverVascular,CoverNonVascular,CoverLitter,CoverBareSoil,CoverDebris,Erosion,Disturbance,Pests,LitterDepth,CoverGrass,Topography,ParentMaterial,Notes
-6/01/2023,Reid,1,W,Solanum mauritianum,3.05,3.2,20,88.56,75.3333,54,17431.773,3644.773,28.75,3.25,33,11.25,21.125,0,0,0,2,5,Sloped Restoration Planting surrounded by pasture,,Looked like potentially one large woolly nightshade in the centre or potentially 2 woolly nightshades growing very close together.
-6/01/2023,Reid,1,N,Cordyline australis,3,5.3,3,65.68,57.66666,55,17431.775,3644.77,45,0.75,49,2.5,2.75,0,0,0,2.3333,50,Sloped Restoration Planting surrounded by pasture,,
-11/01/2023,Jensen,1,W,Solanum mauritianum,1.85,16.1,30,95.85,93.66,60,17450.581,3651.666,40,16.25,25,18.75,0,1,0,0,1.57,15,Highly sloped 30-40⸰ leading down to a creek at in a valley,,DBH: 2 branches
-11/01/2023,Jensen,1,N,Corynocarpus laevigatus,1.8,1.1,40,81.28,89,61,17450.581,3651.661,11,0,38.75,8,42.25,0,1,0,2.83,N/A,Highly sloped 30-40⸰ leading down to a creek at in a valley,,Looks like palm debris was dropped here
-11/01/2023,Jensen,2,N,Piper excelsum,1.97,5.8,35,84.4,80.3333,62,17450.574,3651.661,5.25,1.25,81,7,5.5,0,1,0,1,N/A,Highly sloped 30-40⸰ leading down to a creek at in a valley,,"DBH: 2 branches, Disturbance: in a clearing where trees were cut down"
-11/01/2023,Jensen,2,W,Paraserianthes lophantha,1.85,0.6,40,81.28,66.333333,63,17450.568,3651.664,33.75,1,44,16.25,5,0,1,0,2.65,N/A,Highly sloped 30-40⸰ leading down to a creek at in a valley,,Disturbance: in a clearing where trees were cut down (included in debris)
-26/01/2023,Felicity,1,W,Ligustrum lucidum,6.4,28,10,70.53333333,87,65,17441.442,3642.362,60,0,34.25,5.75,0,0,0,0,4.3333,35,Gently Sloping,,
-26/01/2023,Felicity,1,N,Myrsine australis,4.8,7.1,5,79.89,84,67,17441.44,3642.359,33.75,0.5,43.25,22.5,0,0,1,0,5.3333,25,Very Slight slope,,"Disturbance: Down limbs, some branches had fallen across the plot (included in debris)"
-7/02/2023,Bacon,1,W,Solanum mauritianum,2.2,1.7,2,90.99,89,68,17444.047,3647.296,31.25,0,48,20.75,0,0,0,0,2.5,15,,,
-7/02/2023,Bacon,1,N,Melicytus ramiflorus,5,61,2,70.88,89.6667,70,17444.041,3647.299,65,0,21.25,12.5,0,0,1,0,2.1666,10,,,
-7/02/2023,Bacon,2,W,Paraserianthes lophantha,7,5.8,10,79.2,83.67,73,17444.027,3647.29,77.5,0,18.75,3.75,0,0,0,0,2.6666,60,,,
-7/02/2023,Bacon,2,N,Pseudopanaz lessonii,5.5,7,10,74.35,87.33,74,17444.03,3647.288,65,0,2.25,0.25,32.5,0,1,0,1,N/A,Fence through half of the plot,,Disturbance: Half of the plot is a wood stack (included in debris)
-7/02/2023,Bacon,3,W,Paraserianthes lophantha,3.5,2.5,15,79.89,81,75,17444.028,3647.289,83.75,0,11.75,3.25,0,0,0,0,1.5,65,,,
-7/02/2023,Bacon,3,N,Cordyline australis,2,4.4,30,89.6,87.3,76,17444.024,3647.286,28.75,0.25,53.5,15,2.5,0,0,0,1,N/A,,,
-7/02/2023,Bacon,4,W,Paraserianthes lophantha,5,5,30,92.72,86,77,17444.026,3647.287,62.5,0,18.5,10.25,8.75,0,0,0,3.16,N/A,,,
-7/02/2023,Bacon,4,N,Myrsine australis,2.2,2.9,30,95.49,87,78,17444.025,3647.283,66.25,0.5,30.25,1.75,1.25,0,0,0,2,10,,,Disturbance: Litter/trash debris in plot (included in debris)
-8/02/2023,Yates,1,W,Ligustrum lucidum,5,9,30,84.05,92.3,82,17449.146,3652.19,24.5,0.5,58.5,9,7.5,0,1,0,2.66,N/A,Surrounded by trails,,Disturbance: Kayaks in some of the plot (included in debris)
-8/02/2023,Yates,1,N,Corynocarpus laevigatus,5,11,30,80.93,87,83,17449.146,3652.191,33.75,0,43.75,6.25,16.25,0,1,0,3.5,7,Surrounded by trails,,Disturbance: wood pile in plot
-8/02/2023,Yates,2,W,Paraserianthes lophantha,6,13.3,50,96.53,86.666,84,17449.155,3652.203,63.75,0.5,33.25,2.5,0,0,0,0,2,N/A,Very strongly sloped,,Stump in .25 of the plot w/vascular and non-vascular veg growing out of it
-8/02/2023,Yates,2,N,Vitex lucens,7,16,50,87.52,91,85,17449.155,3652.206,37.5,3,50,4.5,5,0,0,0,3.875,N/A,"Ella slipped heaps, was on a human constructed terrace",,
-8/02/2023,Yates,3,W,Ligustrum lucidum,4.8,11.9,60,93.76,92.66,86,17449.159,3652.193,20,0,71.5,7.25,1.25,0,1,0,6,N/A,,,Disturbance: Litter/trash (included in debris)
-8/02/2023,Yates,3,N,Melicytus ramiflorus,5,7.2,60,74.46,86.6666,87,17449.156,3652.203,12.5,2,68.75,16.75,0,1,0,0,3,N/A,,,
-10/02/2023,Todd,4,W,Solanum mauritianum,1.5,1.8,65,82.32,91.6,95,17445.697,3710.727,36.25,0,43.25,20.5,0,0,0,0,2.16,10,slight erosion,,
-10/02/2023,Todd,4,N,Macropiper excelsium,5,2.7,50,94.11,90.33,96,17445.699,3710.724,97.5,6.25,4.83,32.75,0,1,0,0,4.83,N/A,,,"Creek just below, Disturbance: fallen tree…"
-10/02/2023,Todd,5,W,Solanum mauritianum,3.1,2.7,10,78.85,87.666,97,17445.693,3710.741,28.75,0,41,30,0.25,0,1,0,4,10,,,DBH: around 5 main branches
-10/02/2023,Todd,5,N,Macropiper excelsium,2.25,44,10,77.81,79.6,99,17445.698,3710.737,27.5,0,18.75,42.5,11.25,0,1,0,3.6,20,,,
-23/02/2023,Ambury,1,W,Solanum mauritianum,2,2.5,0,45.737,80,103,17445.71,3656.912,48.75,0.75,21.25,24.25,0,0,1,0,1.667,8,,,
-23/02/2023,Ambury,1,N,Cordyline australis,3,8,0,60.826,53.6667,104,17445.713,3656.912,73,0.25,13.75,13,0,0,1,0,4.333,40,,,
-23/02/2023,Ambury,2,W,Solanum mauritianum,1.8,17.8,2,69.15,76.666,105,17445.796,3656.901,17.5,0,17,65,0.5,0,1,0,,8,,,
-3/03/2023,Mick,1,W,Solanum mauritianum,2,2,20,83.36,93.3,106,17457.891,3657.622,43.75,3.75,40,10,2.5,0,0,1,4,20,,,"Pests: traps, Edge of a remnant next to pasture land"
-3/03/2023,Mick,1,N,Myrsine australis,2.1,1.4,22,72.61333,82,107,17457.88,3657.622,20,0.25,17.25,62.5,0,0,0,1,2.3333,12,,,"Pests: traps, Edge of a remnant next to pasture land"
-13/03/2023,Spence,1,W,Ligustrum lucidum,1.13,0.01,2,60.48,84.6666,108,17447.324,3653.473,38.5,0,28.25,10.5,28.75,0,1,0,12,0,,,40 % of plot has limb cuttings deposited in it
-13/03/2023,Spence,1,N,Corynocarpus laevigatus,1.58,0.8,2,54.9333,82,109,17447.325,3653.472,46.25,0.25,39.5,6.5,7.5,0,1,0,2,0,,,"5 % of plot has limb cuttings deposited in it, not placed as far away as planned in methods, but plots do not overlap."
-15/03/2023,Eirian,1,N,Macropiper excelsium,3.3,37,15,83.36,89.3,110,17444.572,3642.12,60,4,13.75,23.5,0,0,0,0,2.1,5,Just up from a creek (floodplain),,
-15/03/2023,Eirian,2,N,Cyathea dealbata,2,22,40,77.46,84,113,17444.573,3642.12,27,2.5,30.5,37.5,2.5,0,0,0,0.3333,10,,,Path runs through about 20% of the plot
-15/03/2023,Eirian,1,W,Ligustrum lucidum,2,10.9,1,75.44,84,114,17444.594,3642.12,71.25,0,26.25,2.5,0,0,0,0,4,0,,,Plot goes right up to a fence
-15/03/2023,Eirian,2,W,Ligustrum lucidum,1.6,0.02,2,89.95,72,115,17444.591,3642.123,80,0.25,14.5,5.5,0,0,1,1,3,0,,,Disturbance: surrounded by a fence (plot cut-off by fence) Pest: Aphids
-17/03/2023,Ambury,2,N,Pittosporum crassifolium,3.5,9.7,2,81.28,82.3333,116,17445.797,3656.906,27.25,2.5,21.5,48.25,0.5,0,1,0,0.5,N/A,,,Branch fell in the plot
-17/03/2023,Ambury,3,W,Solanum mauritianum,1.25,1.3,2,59.09,66.67,117,17445.8,3656.91,58.25,0.5,12.5,28.5,0.25,0,1,0,1.67,35,,,tree fell covering 25% of the plot
-17/03/2023,Ambury,3,N,Coprosma robusta,3.62,45.9,1,71.23,77,118,17445.797,3656.91,14.25,0.75,25,57,3.25,0,1,0,0.5,10,,,Central species lost some branches
-17/03/2023,Ambury,4,W,Solanum mauritianum,1.4,1.6,1,78.506,64,119,17445.803,3656.914,56.25,0.5,17.25,25,1,0,1,0,1.5,30,,,fallen karo made a new gap in the canopy
-17/03/2023,Ambury,4,N,Pittosporum crassifolium,4,25.3,1,69.85,85.67,120,17445.806,3656.919,1.5,0,60,37.25,1.25,0,1,0,1.67,N/A,,,fallen branches in the plot
-17/03/2023,Ambury,5,W,Solanum mauritianum,1.28,53,2,35.52,30.3,121,17445.78,3656.943,84.75,0,15.25,0,0,0,0,0,1.666,35,,,in a recent restoration planting
-17/03/2023,Ambury,5,N,Pittosporum crassifolium,2.1,36.2,1,49.04,60,122,17445.777,3656.935,18.75,28.75,36.25,16.25,0,0,0,0,1.5,10,,,in a recent restoration planting
-17/03/2023,Ambury,6,W,Solanum mauritianum,1.3,1,0,84.053,78.6666,123,17445.818,3656.945,19,0,48.5,32.5,0,0,1,0,4.3333,N/A,,,bike path runs through 10% of the plot
-17/03/2023,Ambury,6,N,Coprosma repens,1.54,0.5,0,78.16,87.67,124,17445.818,3656.946,9,0,45.75,48,0.75,0,1,0,2.03,N/A,,,centre species was previously cut off and grew back
-17/03/2023,Ambury,7,W,Solanum mauritianum,1.48,1.5,1,89.6,88,125,17445.902,3656.932,4.25,18.75,34.5,42.5,0,0,1,1,2.6666,N/A,,,bike path next to the plot. Pest: rabbit hole/burrow
-17/03/2023,Ambury,7,N,Pittosporum crassifolium,3.4,19.6,0,79.55,84.67,126,17445.903,3656.933,4.25,4.5,67.5,75,6.25,0,1,0,22.33,N/A,,,Bike path
-20/03/2023,Winter,1,W,Syzgium smithii,5.5,12.4,5,90.29,82,129,17440.195,3656.999,51.25,0.25,28.5,22.5,0,0,0,0,2,30,,,
-20/03/2023,Winter,1,N,Cordyline australis,6,66,45,81.63,90.67,130,17440.188,3656.004,45,18.25,13.5,22.75,0.5,0,0,0,1.6,15,Near a creek,,
-20/03/2023,Winter,2,W,Solanum mauritianum,1.55,1.7,15,68.81,84,131,17440.199,3655.999,63,0.5,12.5,23.75,0.5,0,1,0,0.5,8,Near a creek,,Disturbance: central species has been cut and species around it have fallen as well
-20/03/2023,Winter,2,N,Coprosma robusta,2.3,13.3,5,80.93,86.33,132,17440.208,3656.002,22.5,0,31.25,15,31.25,0,1,0,1.38,N/A,Plot next to lawn,,Big pile of logs in the plot
-20/03/2023,Winter,3,W,Syzgium smithii,3.5,2.5,3,91.68,92.666,133,17440.195,3655.988,10,0,81.25,7.5,1.25,0,0,0,6.333,15,,,
-20/03/2023,Winter,3,N,Cordyline australis,5.5,39.1,2,72.27,77.33,134,17440.197,3655.993,58.75,0.5,37,3.75,0,0,0,0,5.5,N/A,,,
-20/03/2023,Winter,4,W,Solanum mauritianum,1.49,25,0,72.96,74.3333,135,17440.192,3656.01,75,0,65,8.75,0,0,0,0,3.666,N/A,near creek,,
-20/03/2023,Winter,4,N,Cordyline australis,3.12,6.6,2,68.11,61,136,17440.191,3656.009,79.5,0,8,7.5,5,0,0,0,1.67,N/A,,,Large stump in the middle of the plot (right next to central species)
-21/03/2023,Nataly,1,W,Solanum mauritianum,5.5,17.35,30,84.4,88.33,137,17438.079,3658.125,9.25,0.25,60,24.25,6.25,0,1,0,3,0.1,,,limbs fallen into plot
-21/03/2023,Nataly,1,N,Myrsine australis,5.5,17.3,30,83.36,85.666,138,17438.085,3658.117,32.5,2.5,46.25,12.5,3.75,0,0,0,2,1,,,
-21/03/2023,Nataly,2,N,Myrsine australis,2.9,1.8,60,85.44,87,139,17438.072,3658.115,21.25,6.5,49.5,22.5,0.25,0,0,0,8.77,N/A,,,
-21/03/2023,Nataly,2,W,Paraserianthes lophantha,3,2.7,50,86.82666,83.666,140,17438.071,3658.114,49.5,1.75,41.25,5,2.75,0,0,0,28,5,,,Dead pampas in the plot
-21/03/2023,Nataly,3,W,Paraserianthes lophantha,3.2,28.35,50,82.67,87.67,141,17438.061,3658.118,21.25,8.75,43.75,26.25,0,0,0,0,3.67,N/A,,,
-21/03/2023,Nataly,3,N,Myrsine australis,4.25,9.6,30,72.26,88.6666,142,17435.055,3658.117,40,0,28.75,31.25,0,0,0,0,0.8333,N/A,,,
-24/03/2023,Sancta,1,N,Leptospermum scoparium,2.5,16.5,2,73.653,71.333,143,17454.237,3657.662,83.25,0.5,12.5,3.75,0,0,0,0,1.5,40,,,
-24/03/2023,Sancta,1,W,Solanum mauritianum,3,8,5,75.73,85.67,145,17454.233,3657.662,70,0,27.5,2.5,0,0,0,0,6,N/A,,,
-24/03/2023,Sancta,2,W,Solanum mauritianum,2,34.4,10,58.05,74,146,17454.229,3657.662,66.25,0,33.75,0,0,0,0,0,8.5,N/A,,,
-24/03/2023,Sancta,2,N,Coprosma robusta,1.8,2,5,61.17,54,147,17454.231,3657.663,57.75,2.5,40,3.75,0,0,0,0,2.27,10,,,
-24/03/2023,Sancta,3,W,Solanum mauritianum,1.59,2,40,78.506,73,148,17454.227,3657.651,78.5,0,10,11.25,0,0,0,0,2.833,35,,,
-24/03/2023,Sancta,3,N,Coprosma robusta,2.5,29.2,3,85.093,87,149,17454.227,3657.65,66.25,0,22.5,11.25,0,0,0,1,5.5,55,,,Right next to the fence/lawn. Pest: trapping tunnel
-24/03/2023,Sancta,4,W,Solanum mauritianum,3.4,32.5,1,76.77,87.67,150,17454.215,3657.642,80,0,16.25,3.75,0,0,0,0,2.5,N/A,,,Much estimating due to blackberry-limited movement
-24/03/2023,Sancta,4,N,Myrsine australis,6,33.6,20,88.56,85.666,151,17454.21,3657.642,58.75,3.75,13.75,21.25,2.5,0,0,0,1.4,N/A,,,
-24/03/2023,Sancta,5,N,Melicytus ramiflorus,2.5,2.1,1,70.19,84.3,152,17454.195,3657.661,5.25,0,94.75,0,0,0,0,0,1.77,N/A,,,Weed reduction cloth laid down 
-24/03/2023,Sancta,5,W,Solanum mauritianum,2,30.4,1,78.853,82,153,17454.19,3657.661,4.25,0.75,95,0,0,0,1,0,30.333,N/A,,,Weed reduction cloth laid down . Manuka fallen over half of the plot
-29/03/2023,Sancta,6,W,Solanum mauritianum,1.58,1.05,2,76.77,78.33,154,17454.183,3657.67,6.25,2.5,87,1.25,0.5,0,0,0,7.1,N/A,,,Weed reduction cloth laid down 
-29/03/2023,Sancta,6,N,Melicytus ramiflorus,2,36.4,2,80.456,85,155,17454.178,3657.677,16.25,0,79.5,0,4.25,0,0,0,1.833,N/A,,,Weed reduction cloth laid down 
-29/03/2023,Sancta,7,W,Solanum mauritianum,1.88,1.5,4,82.67,80.33,156,17454.185,3657.667,2.25,2.25,94.25,1.25,0,0,0,0,3.27,N/A,,,Weed reduction cloth laid down 
-29/03/2023,Sancta,7,N,Melicytus ramiflorus,2.05,40.6,4,83.706,77,157,17454.189,3657.667,7.5,1.5,88.25,0,0.25,0,0,0,8.333,N/A,,,Weed reduction cloth laid down 
-29/03/2023,Sancta,8,W,Solanum mauritianum,2.13,1.8,3,93.07,85,158,17454.175,3657.687,27.5,0,69.25,1.25,2,0,0,0,12,20,,,Weed reduction cloth laid down 
-29/03/2023,Sancta,8,N,Pittosporum crassifolium,1.54,14.8,2,87.867,79.667,159,17454.174,3657.696,12.5,0.5,87,0,0,0,0,0,5.833,N/A,,,Weed reduction cloth laid down 
-29/03/2023,Sancta,9,W,Solanum mauritianum,2.7,20.5,5,90.99,87.3,160,17454.176,3657.71,26.25,0,70,0,3.75,0,1,1,32.67,N/A,Beside a creek (edge of plot within a meter of the creek),,Weed reduction cloth laid down. Disturbance: Manuka fell over covering .3 of the plot. Pest: trap within 5m of the plot.
-29/03/2023,Sancta,9,N,Melicytus ramiflorus,3,43.3,3,86.826,81.667,161,17454.176,3657.712,31.25,0,64.25,0,4.5,0,0,0,7.833,N/A,,,Weed reduction cloth laid down 
-29/03/2023,Sancta,10,W,Solanum mauritianum,2.7,2.2,5,85.79,91.67,162,17454.164,3657.731,41.25,2.5,54.75,0,1.5,0,0,0,6.33,5,,,Weed reduction cloth laid down 
-29/03/2023,Sancta,10,N,Cordyline australis,2.2,20.6,2,75.386,76.667,164,17454.162,3657.735,88.75,0,7.5,0,3.75,0,0,0,5.5,85,,,Weed reduction cloth laid down 
-29/03/2023,Sancta,11,W,Solanum mauritianum,2,2.15,2,90.29,88.33,165,17454.164,3657.74,4,2,91.5,0,2.5,0,1,0,15.67,N/A,,,Weed reduction cloth laid down. Tree fell over into .25 of the plot
-29/03/2023,Sancta,11,N,Sophora microphylla,1.76,0.6,1,79.547,78.333,166,17454.164,3657.741,7,1.25,90.5,0,1.25,0,0,0,7.667,N/A,,,Weed reduction cloth laid down 
-29/03/2023,Sancta,12,W,Solanum mauritianum,1.8,1.7,1,80.93,75.67,167,17454.156,3657.766,48.33,0,51.67,0,0,0,0,0,4.4,10,,,Weed reduction cloth laid down 
-29/03/2023,Sancta,12,N,Hedycarya arborea,3,32.8,1.5,81.473,71,168,17454.161,3657.77,76.25,0,23.75,0,0,0,0,0,2.333,N/A,,,Weed reduction cloth laid down 
-14/04/2023,Cain,1,W,Ligustrum lucidum,2.53,1.8,5,88.9,88.333,169,17438.768,3654.824,23,2.25,51.5,5,5,0,1,1,3.5,7,,,Pest: Trap Disturbance: Track running through the plot
-14/04/2023,Cain,1,N,Myrsine australis,2.39,12,1,87.17,86.33,170,17438.765,3654.823,45,0,55,0,0,0,0,0,8,5,,,
-14/04/2023,Cain,2,W,Ligustrum lucidum,2.2,4.3,1,94.45,91.33,171,17438.771,3654.823,6.25,0,91.25,1.25,1.25,0,1,0,10,0,,,Disturbance: Lots of litter deposited in half of the plot
-14/04/2023,Cain,2,N,Myrsine australis,5.5,20,20,89.25,86.333,172,17438.772,3654.822,31,1.25,34,25.5,8.25,0,1,0,4.333,0,,,Distubance: Fence running through the middle of the plot
-19/04/2023,Burns,1,W,Ligustrum lucidum,1.87,13.2,40,86.48,86.67,173,17443.07,3636.765,32.5,0,30,32.5,5,1,0,0,2.67,0,,,
-19/04/2023,Burns,1,N,Myrsine australis,1.9,1,40,84.75,85,174,17443.07,3636.761,45,0,36.25,17.5,1.25,1,0,0,5.33,5,,,
-19/04/2023,Burns,2,W,Ligustrum lucidum,3,19.8,30,93.06,91.333,175,17443.066,3636.765,31.25,1.5,43.5,18.75,5,1,1,0,7.666,0,,,
-19/04/2023,Burns,2,N,Myrsine australis,3.2,1.5,25,90.99,88.67,176,17443.065,3636.764,18.75,0.75,47.25,19.5,13.75,1,0,0,5,N/A,,,
-28/04/2023,Salford,1,W,Ligustrum lucidum,2.5,2.3,8,80.587,78,181,17455.498,3657.936,32.5,4.75,41.25,21.5,0,0,0,0,1.333,10,,,
-28/04/2023,Salford,1,N,Kunzea ericoides,3.5,6.4,5,85.44,78.33,182,17455.494,3657.938,18.25,2.75,67,7.5,4.5,0,0,0,1.3,N/A,,,Mown path adjacent to the plot
-28/04/2023,Salford,2,W,Ligustrum lucidum,4.5,19.7,5,94.106,87.666,183,17455.473,3657.915,55,0,41.2,5,0,0,0,0,3.166,5,,,
-28/04/2023,Salford,2,N,Melicytus ramiflorus,4.5,7.9,5,90.29,81,184,17455.474,3657.919,37.5,0,59,3.5,0,0,0,0,4.3,N/A,,,
-28/04/2023,Salford,3,W,Ligustrum lucidum,2,15,7,92.72,86.3,185,17455.469,3657.915,30,0,68.25,1.75,0,0,0,0,3.67,N/A,,,
-28/04/2023,Salford,3,N,Cordyline australis,2,4.5,2,95.84,88.67,186,17455.468,3657.917,20,0,56.25,23,0.75,0,1,0,1.3,16,,,
-28/04/2023,Salford,4,W,Ligustrum lucidum,2.5,18.5,3,90.64,80.33,187,17455.467,3657.915,23.75,0,7.75,4.5,0,0,0,0,4.5,5,,,
-28/04/2023,Salford,4,N,Melicytus ramiflorus,3.5,2,3,89.946,79.666,188,17455.464,3657.913,48.75,2,35,13.75,0.5,0,0,0,2.166,10,,,
-2/05/2023,Salford,5,W,Ligustrum lucidum,2.09,1.1,3,86.83,86.67,189,17455.449,3657.907,11.25,0.5,85.75,2.5,0,0,0,0,1.83,5,,,
-2/05/2023,Salford,5,N,Melicytus ramiflorus,2.75,3.2,2,78.16,87,190,17455.455,3657.908,25.75,0,64.5,9.75,0,0,0,0,3,20,,,
-2/05/2023,Salford,6,W,Ligustrum lucidum,4.5,4,25,88.82,87.33,191,17455.45,3657.911,11.28,4.25,69.5,8.75,3.25,0,0,0,1.67,3,,,
-2/05/2023,Salford,6,N,Leptospermum scoparium,6.6,27.5,25,86.83,85.67,192,17455.445,3657.911,3.2,2.25,80.75,13.75,0,0,0,0,5.6,N/A,,,
-2/05/2023,Salford,7,W,Ligustrum lucidum,1.73,1.9,15,90.29,80.67,193,17455.439,3657.903,65,0,34.5,0.5,0,0,0,0,1.17,55,,,
-2/05/2023,Salford,7,N,Melicytus ramiflorus,1.29,0.3,2,79.2,72.333,194,17455.44,3657.906,75,0,20,5,0,0,1,0,2.5,N/A,,,Central species has been cut and grew back
-2/05/2023,Salford,8,W,Ligustrum lucidum,2.56,2.3,5,90.29,83.67,195,17455.429,3657.904,37.5,0.25,62.25,0,0,0,0,0,10.2,10,,,
-2/05/2023,Salford,8,N,Cordyline australis,2.5,8.5,6,88.56,77.33,196,17455.427,3657.902,62.5,0,37.5,0,0,0,0,0,4,N/A,,,
-4/05/2023,Salford,9,W,Ligustrum lucidum,3.04,22,7,80.93,86.33,197,17455.294,3657.008,23.75,0,75,1.25,0,0,1,0,11.4,16,,,Big log in the plot
-4/05/2023,Salford,9,N,Melicytus ramiflorus,2.83,28.1,1,66.373,76.666,198,17455.312,3657.019,40,0,48.75,11.25,0,0,1,0,4,10,,,Big log in the plot
-4/05/2023,Salford,10,W,Ligustrum lucidum,2.3,17,4,79.83,87.67,199,17455.307,3657.951,15,1,59,25,0,0,1,0,2.73,N/A,Just above the creek/ floodplain,,Fallen tree in the plot
-4/05/2023,Salford,10,N,Kunzea ericoides,3,1.8,10,68.8,84.333,200,17455.308,3657.955,5.25,3.25,84.5,7,0,0,0,0,3.5,N/A,Just above the creek/ floodplain,,
-4/05/2023,Salford,11,W,Ligustrum lucidum,4.5,6.55,3,67.98,89.33,201,17455.449,3657.893,2.75,1,67,23.75,5.5,0,1,0,2.07,N/A,Just above the creek/ floodplain,,Half of the plot has weed prevention mat
-4/05/2023,Salford,11,N,Cordyline australis,4.5,11.4,5,85.44,79,202,17455.442,3657.892,20,7.75,65.25,1.25,5.75,0,1,0,3.666,N/A,Just above the creek/ floodplain,,Full plot has weed prevention mat
-12/05/2023,Silvana,1,W,Paraserianthes lophantha,4,6.6,8.7,88.906,87.333,203,17455.669,3657.941,8.75,0,91.25,0,0,0,0,1,5.167,N/A,,,
-12/05/2023,Silvana,1,N,Leptospermum scoparium,5.25,48.8,13,77.67,88.56,204,17455.666,3657.94,25,0,72.5,1.25,1.25,0,0,1,4.33,20,,,
-12/05/2023,Silvana,2,W,Paraserianthes lophantha,6,10.5,5,88.22,75,205,17455.67,3657.941,3.5,0,96.5,0,0,0,0,0,3.67,N/A,,,
-12/05/2023,Silvana,2,N,Leptospermum scoparium,5.25,6.1,5,75.733,78.333,206,17455.674,3657.943,65,0,29.75,0,5.25,0,0,0,2.833,0.5,,,
-12/05/2023,Silvana,3,W,Ligustrum lucidum,3,6,1,85.78,88.333,207,17455.732,3657.958,61.25,0,25,13.75,0,0,0,0,0.67,50,,,
-12/05/2023,Silvana,3,N,Pittosporum crassifolium,3,2,2,91.68,87,208,17455.735,3657.958,35,0,63.75,0,1.25,0,0,0,2.666666667,2.5,,,
-1/02/2024,England,1,W,Paraserianthes lophantha,3.2,2.8,65,68.453,69.667,209,17452.48,3652.886,67.5,0,18.75,13.75,0,0,0,0,5.5,40,,,
-1/02/2024,England,1,N,Pittosporum crassifolium,3,2,60,86.133,74.333,210,17452.478,3652.889,42.5,0,10,47.5,0,1,0,1,2.333,N/A,,,
-1/02/2024,England,2,W,Paraserianthes lophantha,3.1,2.2,15,79.827,75.333,211,17452.493,3652.895,60,0,30,7.5,2.5,0,0,0,4,30,,,
-1/02/2024,England,2,N,Leptospermum scoparium,2.5,5.5,15,78.507,89.667,212,17452.497,3652.897,40,0,48.75,8.75,0,0,0,0,5.833,30,,,
-1/02/2024,England,3,W,Paraserianthes lophantha,3.5,2.8,35,90.987,86,213,17452.486,3652.895,78.75,0,12.5,8.75,0,0,0,0,7.667,65,,,
-1/02/2024,England,3,N,Pittosporum crassifolium,3.8,27.1,25,86.827,86,214,17452.485,3652.897,58.75,0,30,11.25,0,0,0,0,3.5,N/A,,,
-1/02/2024,England,4,W,Paraserianthes lophantha,6,6.5,25,93.067,85.333,215,17452.483,3652.891,66.25,0,12.5,21.25,0,0,0,0,4,55,,,
-1/02/2024,England,4,N,Kunzea ericoides,4.2,8.9,15,82.32,88,216,17452.484,3652.892,6.75,0,32.5,60.75,0,0,0,0,1.833,N/A,,,
-2/12/2024,Netball,1,W,Paraserianthes lophantha,3.1,3.6,5,75.723,83.667,217,17450.685,3653.142,28.75,0,67.5,3.75,0,0,0,0,3.333,5,,,
-2/12/2024,Netball,1,N,Coprosma robusta,2.2,3.5,5,85.26,87.667,219,17450.681,3653.14,2.75,0,92.25,5,0,0,0,0,5.167,N/A,,,
-2/12/2024,Netball,2,W,Paraserianthes lophantha,4,10.4,5,76.773,79.667,220,17450.667,3653.137,2.5,0,95,0,2.5,0,0,0,1.5,N/A,,,Soil is very hard
-2/12/2024,Netball,2,N,Coprosma robusta,3,15,10,89.073,88.667,221,17450.673,3652.137,5.75,1.25,86.75,6.25,0,0,0,0,11.333,N/A,,,Soil is very hard
-2/12/2024,Netball,3,W,Paraserianthes lophantha,3.5,4.2,5,80.24,87.667,222,17450.679,3653.143,12.5,0,76.5,10,1.25,0,0,0,2.5,N/A,,,
-2/12/2024,Netball,3,N,Coprosma robusta,2.5,14.7,10,82.667,84.667,223,17450.678,3653.143,11.75,0,71.75,13.75,2.75,0,0,0,2.167,N/A,,,
-2/12/2024,Netball,4,W,Ligustrum lucidum,3.1,18,5,91.64,88.667,224,17450.669,3653.136,21.25,3.75,67,3.75,4.25,0,0,0,4.5,N/A,,,loads of karamu seedlings and also a knife in the plot
-2/12/2024,Netball,4,N,Coprosma repens 'Middlemore',2.2,80,10,73.653,85.667,225,17450.669,3653.137,9,0,48.75,42.25,0,0,0,0,1.83,N/A,,,
-2/12/2024,Netball,5,W,Ligustrum lucidum,5,49,15,81.626,87.333,226,17450.639,3653.12,3.75,0,95,0,1.25,0,0,0,7.167,N/A,,,
-2/12/2024,Netball,5,N,Pittosporum crassifolium,2.8,90,15,92.37,87.667,227,17450.624,3653.12,18.75,0,53.75,26.25,1.25,0,0,0,0.667,N/A,,,
-14/02/2024,Netball,6,W,Paraserianthes lophantha,6.5,46.4,5,43.533,70,228,17450.629,3653.108,43.75,2,46.75,7.5,0,0,0,0,2.167,N/A,,,
-14/02/2024,Netball,6,N,Metrosideros excelsa,4.2,161.1,5,80.587,83.667,229,17450.62,3653.099,21.25,0,74,2.5,2.25,0,0,0,2.833,2,,,
-14/02/2024,Netball,7,W,Paraserianthes lophantha,8.6,44,10,78.16,82,230,47150.584,3653.073,15,0,72.5,5,7.5,0,1,0,7.333,N/A,,,Disturbance = fence
-14/02/2024,Netball,7,N,Pittosporum crassifolium,5.8,150,12,83.36,88,231,17450.585,3653.075,18.75,0,59.5,16.25,5.5,0,0,0,3.333,N/A,,,
-3/01/2024,Netball,8,W,Paraserianthes lophantha,1.95,23.5,10,84.3667,87.667,232,17450.732,3652.97,18.75,0,63.75,17.5,0,0,1,0,3.1667,10,,,Trash thrown here
-3/01/2024,Netball,8,N,Pittosporum crassifolium,2.25,55,8,83.18,85,233,17450.733,3652.969,23.75,0,70,5,1.25,0,1,0,3.833,17,,,
-3/01/2024,Netball,9,W,Paraserianthes lophantha,7,10,0,81.28,85.667,234,17450.695,3652.917,43,0,43.5,3.75,9.75,0,1,0,3.333,40,,,
-3/01/2024,Netball,9,N,Coprosma robusta,5.75,6.4,10,88.56,88,235,17450.7,3652.913,28.5,0,64.25,6.75,0.5,0,1,0,3.5,12,,,
-3/01/2024,Netball,10,W,Paraserianthes lophantha,8.25,16.6,5,84.05,86.333,236,17450.71,3652.894,47.5,0,44,6,2.5,0,0,0,3.833,N/A,,,
-3/01/2024,Netball,10,N,Coprosma robusta,6,11.5,5,85.093,86,237,17450.713,3652.892,6.75,0,58,5.75,29.5,0,1,0,5.667,3,,,"Rocks/hard clay dropped here, 2 logs in plot"
-16/07/2024,Netball,11,W,Paraserianthes lophantha,8.25,24.2,15,75.73,65.33,238,17450.575,3653.061,77.5,0,20,0,2.5,0,1,0,3.5,65,,,"fence runs through., lots of birds, central species flowering"
-16/07/2024,Netball,11,N,Pittosporum crassifolium,8,75,10,89.253,87.67,239,17450.572,3653.063,58.75,0.5,32,5,3.75,0,1,0,3.67,N/A,,,lots of wattle seedlings very close to the edge of the plot
-16/07/2024,Netball,12,W,Paraserianthes lophantha,9,7.7,5,86.4,73.67,240,17450.568,3653.061,47.5,3.75,27.5,6.25,15,0,1,0,6.33,30,,,
-22/08/2024,Seddon,1,W,Paraserianthes lophantha,9.5,16.3,2,85.09,87.33,241,17443.151,3651.663,16.25,0,68.75,15,0,1,1,0,4.167,N/A,,,"near sewage runoff, lots of trash"
-22/08/2024,Seddon,1,N,Leptospermum scoparium,8.2,94.9,5,85.72,84,242,17443.154,3651.659,16.25,1.25,31.25,23.75,22.5,1,1,0,4.5,N/A,,,
-22/08/2024,Seddon,2,W,Paraserianthes lophantha,8,13.7,2,89.25,87.33,243,17443.176,3651.537,7.5,0,67.5,21.25,3.75,0,1,0,2.167,N/A,,,"next to a trail, privet canopy"
-22/08/2024,Seddon,2,N,Coprosma robusta,6.5,19,0,87.52,90.67,244,17443.175,3651.533,15,0,72.5,7.5,5,0,1,0,2.33,N/A,,,"next to a trail, privet canopy"
-3/09/2024,Seddon,3,W,Paraserianthes lophantha,9.9,25.5,15,85.786,86,245,17443.195,3651.541,6.25,1.25,47.5,38.75,6.25,1,1,0,1.66,N/A,,,"next to a trail, lots of broken glass and ceramic, privet canopy"
-4/09/2024,Seddon,3,N,Coprosma robusta,7.4,35.5,10,88.9,88.67,246,17443.191,3651.545,11.25,0,61.25,12.5,15,0,1,0,1.67,N/A,,,"next to a trail, lots of broken glass and ceramic, privet canopy"
-4/09/2024,Seddon,4,W,Paraserianthes lophantha,7.2,24.5,7,87.17,90.33,247,17443.201,3651.538,6.5,0,43.5,42.5,7.5,0,1,0,2.167,N/A,,,"Broken glass in plot, privet canopy"
-4/09/2024,Seddon,4,N,Vitex lucens,6,22.1,5,89.6,90,248,17443.205,3651.546,3.75,0,41.25,43.75,11.25,0,1,0,1.25,N/A,,,"Broken glass in plot, privet canopy"
-26/09/2024,Seddon,5,N,Pittosporum crassifolium,3.2,34.1,15,80.933,87,249,17443.114,3651.69,35,0,35,16.25,8.75,1,1,0,1.833,N/A,,,"Debris is garbage and rocks, privet canopy"
-26/09/2024,Seddon,5,W,Ligustrum lucidum,1.7,17.7,5,85.44,88,250,17443.114,3651.689,8.75,5,30,37.5,18.75,1,1,0,1.833,N/A,,,"Debris is garbage, asphalt, and rocks, privet canopy"
-26/09/2024,Seddon,6,W,Ligustrum lucidum,2.2,2.35,5,80.913,89.3,251,17443.118,3651.693,20,0,36.25,35,8.75,1,1,0,2.166,N/A,,,"Broken beer bottle and a huge rock, privet canopy"
-5/11/2024,Seddon,6,N,Macropiper excelsium,1.65,24.7,10,87.666,89.333,252,17443.12,3651.69,1.5,0,52.5,31,15,1,1,0,4.5,N/A,,,"Eroded slope, barbed wire fence through the middle, debris = broken bottles and boulders, privet canopy"
-5/11/2024,Seddon,7,N,Melicytus ramiflorus,5.74,81,2,90.64,89.333,253,17443.185,3651.623,5.25,0,74.25,20,0.5,0,0,0,2.166,N/A,,,
-5/11/2024,Seddon,7,W,Ligustrum lucidum,7.38,75,2,89.253,88.666,254,17443.187,3651.625,21.25,0,35.75,42.25,0.75,0,0,0,1.25,N/A,,,Debris = neck of bottle and a rock
+﻿Date,Site,Plot,Weed_Native,CentralSpecies,Height_CentralSpecies,DBH_CentralSpecies,Slope,CanopyCover_Densiometer,CanopyCover_App,Waypoint,East_Coordinates,South_Coordinates,CoverVascular,CoverNonVascular,CoverLitter,CoverBareSoil,CoverDebris,Erosion,Disturbance,Pests,LitterDepth,CoverGrass,HousingDensity,Topography,ParentMaterial,Notes
+6/01/2023,Reid,1,W,Solanum mauritianum,3.05,3.2,20,88.56,75.3333,54,17431.773,3644.773,28.75,3.25,33,11.25,21.125,0,0,0,2,5,11,Sloped Restoration Planting surrounded by pasture,,Looked like potentially one large woolly nightshade in the centre or potentially 2 woolly nightshades growing very close together.
+6/01/2023,Reid,1,N,Cordyline australis,3,5.3,3,65.68,57.66666,55,17431.775,3644.77,45,0.75,49,2.5,2.75,0,0,0,2.3333,50,11,Sloped Restoration Planting surrounded by pasture,,
+11/01/2023,Jensen,1,W,Solanum mauritianum,1.85,16.1,30,95.85,93.66,60,17450.581,3651.666,40,16.25,25,18.75,0,1,0,0,1.57,15,11,Highly sloped 30-40⸰ leading down to a creek at in a valley,,DBH: 2 branches
+11/01/2023,Jensen,1,N,Corynocarpus laevigatus,1.8,1.1,40,81.28,89,61,17450.581,3651.661,11,0,38.75,8,42.25,0,1,0,2.83,N/A,11,Highly sloped 30-40⸰ leading down to a creek at in a valley,,Looks like palm debris was dropped here
+11/01/2023,Jensen,2,N,Piper excelsum,1.97,5.8,35,84.4,80.3333,62,17450.574,3651.661,5.25,1.25,81,7,5.5,0,1,0,1,N/A,258,Highly sloped 30-40⸰ leading down to a creek at in a valley,,"DBH: 2 branches, Disturbance: in a clearing where trees were cut down"
+11/01/2023,Jensen,2,W,Paraserianthes lophantha,1.85,0.6,40,81.28,66.333333,63,17450.568,3651.664,33.75,1,44,16.25,5,0,1,0,2.65,N/A,258,Highly sloped 30-40⸰ leading down to a creek at in a valley,,Disturbance: in a clearing where trees were cut down (included in debris)
+26/01/2023,Felicity,1,W,Ligustrum lucidum,6.4,28,10,70.53333333,87,65,17441.442,3642.362,60,0,34.25,5.75,0,0,0,0,4.3333,35,258,Gently Sloping,,
+26/01/2023,Felicity,1,N,Myrsine australis,4.8,7.1,5,79.89,84,67,17441.44,3642.359,33.75,0.5,43.25,22.5,0,0,1,0,5.3333,25,258,Very Slight slope,,"Disturbance: Down limbs, some branches had fallen across the plot (included in debris)"
+7/02/2023,Bacon,1,W,Solanum mauritianum,2.2,1.7,2,90.99,89,68,17444.047,3647.296,31.25,0,48,20.75,0,0,0,0,2.5,15,12,,,
+7/02/2023,Bacon,1,N,Melicytus ramiflorus,5,61,2,70.88,89.6667,70,17444.041,3647.299,65,0,21.25,12.5,0,0,1,0,2.1666,10,12,,,
+7/02/2023,Bacon,2,W,Paraserianthes lophantha,7,5.8,10,79.2,83.67,73,17444.027,3647.29,77.5,0,18.75,3.75,0,0,0,0,2.6666,60,221,,,
+7/02/2023,Bacon,2,N,Pseudopanaz lessonii,5.5,7,10,74.35,87.33,74,17444.03,3647.288,65,0,2.25,0.25,32.5,0,1,0,1,N/A,221,Fence through half of the plot,,Disturbance: Half of the plot is a wood stack (included in debris)
+7/02/2023,Bacon,3,W,Paraserianthes lophantha,3.5,2.5,15,79.89,81,75,17444.028,3647.289,83.75,0,11.75,3.25,0,0,0,0,1.5,65,221,,,
+7/02/2023,Bacon,3,N,Cordyline australis,2,4.4,30,89.6,87.3,76,17444.024,3647.286,28.75,0.25,53.5,15,2.5,0,0,0,1,N/A,221,,,
+7/02/2023,Bacon,4,W,Paraserianthes lophantha,5,5,30,92.72,86,77,17444.026,3647.287,62.5,0,18.5,10.25,8.75,0,0,0,3.16,N/A,221,,,
+7/02/2023,Bacon,4,N,Myrsine australis,2.2,2.9,30,95.49,87,78,17444.025,3647.283,66.25,0.5,30.25,1.75,1.25,0,0,0,2,10,221,,,Disturbance: Litter/trash debris in plot (included in debris)
+8/02/2023,Yates,1,W,Ligustrum lucidum,5,9,30,84.05,92.3,82,17449.146,3652.19,24.5,0.5,58.5,9,7.5,0,1,0,2.66,N/A,160,Surrounded by trails,,Disturbance: Kayaks in some of the plot (included in debris)
+8/02/2023,Yates,1,N,Corynocarpus laevigatus,5,11,30,80.93,87,83,17449.146,3652.191,33.75,0,43.75,6.25,16.25,0,1,0,3.5,7,160,Surrounded by trails,,Disturbance: wood pile in plot
+8/02/2023,Yates,2,W,Paraserianthes lophantha,6,13.3,50,96.53,86.666,84,17449.155,3652.203,63.75,0.5,33.25,2.5,0,0,0,0,2,N/A,160,Very strongly sloped,,Stump in .25 of the plot w/vascular and non-vascular veg growing out of it
+8/02/2023,Yates,2,N,Vitex lucens,7,16,50,87.52,91,85,17449.155,3652.206,37.5,3,50,4.5,5,0,0,0,3.875,N/A,160,"Ella slipped heaps, was on a human constructed terrace",,
+8/02/2023,Yates,3,W,Ligustrum lucidum,4.8,11.9,60,93.76,92.66,86,17449.159,3652.193,20,0,71.5,7.25,1.25,0,1,0,6,N/A,160,,,Disturbance: Litter/trash (included in debris)
+8/02/2023,Yates,3,N,Melicytus ramiflorus,5,7.2,60,74.46,86.6666,87,17449.156,3652.203,12.5,2,68.75,16.75,0,1,0,0,3,N/A,160,,,
+10/02/2023,Todd,4,W,Solanum mauritianum,1.5,1.8,65,82.32,91.6,95,17445.697,3710.727,36.25,0,43.25,20.5,0,0,0,0,2.16,10,17,slight erosion,,
+10/02/2023,Todd,4,N,Macropiper excelsium,5,2.7,50,94.11,90.33,96,17445.699,3710.724,97.5,6.25,4.83,32.75,0,1,0,0,4.83,N/A,17,,,"Creek just below, Disturbance: fallen tree…"
+10/02/2023,Todd,5,W,Solanum mauritianum,3.1,2.7,10,78.85,87.666,97,17445.693,3710.741,28.75,0,41,30,0.25,0,1,0,4,10,17,,,DBH: around 5 main branches
+10/02/2023,Todd,5,N,Macropiper excelsium,2.25,44,10,77.81,79.6,99,17445.698,3710.737,27.5,0,18.75,42.5,11.25,0,1,0,3.6,20,17,,,
+23/02/2023,Ambury,1,W,Solanum mauritianum,2,2.5,0,45.737,80,103,17445.71,3656.912,48.75,0.75,21.25,24.25,0,0,1,0,1.667,8,0,,,
+23/02/2023,Ambury,1,N,Cordyline australis,3,8,0,60.826,53.6667,104,17445.713,3656.912,73,0.25,13.75,13,0,0,1,0,4.333,40,0,,,
+23/02/2023,Ambury,2,W,Solanum mauritianum,1.8,17.8,2,69.15,76.666,105,17445.796,3656.901,17.5,0,17,65,0.5,0,1,0,,8,0,,,
+3/03/2023,Mick,1,W,Solanum mauritianum,2,2,20,83.36,93.3,106,17457.891,3657.622,43.75,3.75,40,10,2.5,0,0,1,4,20,7,,,"Pests: traps, Edge of a remnant next to pasture land"
+3/03/2023,Mick,1,N,Myrsine australis,2.1,1.4,22,72.61333,82,107,17457.88,3657.622,20,0.25,17.25,62.5,0,0,0,1,2.3333,12,7,,,"Pests: traps, Edge of a remnant next to pasture land"
+13/03/2023,Spence,1,W,Ligustrum lucidum,1.13,0.01,2,60.48,84.6666,108,17447.324,3653.473,38.5,0,28.25,10.5,28.75,0,1,0,12,0,178,,,40 % of plot has limb cuttings deposited in it
+13/03/2023,Spence,1,N,Corynocarpus laevigatus,1.58,0.8,2,54.9333,82,109,17447.325,3653.472,46.25,0.25,39.5,6.5,7.5,0,1,0,2,0,178,,,"5 % of plot has limb cuttings deposited in it, not placed as far away as planned in methods, but plots do not overlap."
+15/03/2023,Eirian,1,N,Macropiper excelsium,3.3,37,15,83.36,89.3,110,17444.572,3642.12,60,4,13.75,23.5,0,0,0,0,2.1,5,251,Just up from a creek (floodplain),,
+15/03/2023,Eirian,2,N,Cyathea dealbata,2,22,40,77.46,84,113,17444.573,3642.12,27,2.5,30.5,37.5,2.5,0,0,0,0.3333,10,251,,,Path runs through about 20% of the plot
+15/03/2023,Eirian,1,W,Ligustrum lucidum,2,10.9,1,75.44,84,114,17444.594,3642.12,71.25,0,26.25,2.5,0,0,0,0,4,0,251,,,Plot goes right up to a fence
+15/03/2023,Eirian,2,W,Ligustrum lucidum,1.6,0.02,2,89.95,72,115,17444.591,3642.123,80,0.25,14.5,5.5,0,0,1,1,3,0,251,,,Disturbance: surrounded by a fence (plot cut-off by fence) Pest: Aphids
+17/03/2023,Ambury,2,N,Pittosporum crassifolium,3.5,9.7,2,81.28,82.3333,116,17445.797,3656.906,27.25,2.5,21.5,48.25,0.5,0,1,0,0.5,N/A,0,,,Branch fell in the plot
+17/03/2023,Ambury,3,W,Solanum mauritianum,1.25,1.3,2,59.09,66.67,117,17445.8,3656.91,58.25,0.5,12.5,28.5,0.25,0,1,0,1.67,35,0,,,tree fell covering 25% of the plot
+17/03/2023,Ambury,3,N,Coprosma robusta,3.62,45.9,1,71.23,77,118,17445.797,3656.91,14.25,0.75,25,57,3.25,0,1,0,0.5,10,0,,,Central species lost some branches
+17/03/2023,Ambury,4,W,Solanum mauritianum,1.4,1.6,1,78.506,64,119,17445.803,3656.914,56.25,0.5,17.25,25,1,0,1,0,1.5,30,0,,,fallen karo made a new gap in the canopy
+17/03/2023,Ambury,4,N,Pittosporum crassifolium,4,25.3,1,69.85,85.67,120,17445.806,3656.919,1.5,0,60,37.25,1.25,0,1,0,1.67,N/A,0,,,fallen branches in the plot
+17/03/2023,Ambury,5,W,Solanum mauritianum,1.28,53,2,35.52,30.3,121,17445.78,3656.943,84.75,0,15.25,0,0,0,0,0,1.666,35,0,,,in a recent restoration planting
+17/03/2023,Ambury,5,N,Pittosporum crassifolium,2.1,36.2,1,49.04,60,122,17445.777,3656.935,18.75,28.75,36.25,16.25,0,0,0,0,1.5,10,0,,,in a recent restoration planting
+17/03/2023,Ambury,6,W,Solanum mauritianum,1.3,1,0,84.053,78.6666,123,17445.818,3656.945,19,0,48.5,32.5,0,0,1,0,4.3333,N/A,0,,,bike path runs through 10% of the plot
+17/03/2023,Ambury,6,N,Coprosma repens,1.54,0.5,0,78.16,87.67,124,17445.818,3656.946,9,0,45.75,48,0.75,0,1,0,2.03,N/A,0,,,centre species was previously cut off and grew back
+17/03/2023,Ambury,7,W,Solanum mauritianum,1.48,1.5,1,89.6,88,125,17445.902,3656.932,4.25,18.75,34.5,42.5,0,0,1,1,2.6666,N/A,0,,,bike path next to the plot. Pest: rabbit hole/burrow
+17/03/2023,Ambury,7,N,Pittosporum crassifolium,3.4,19.6,0,79.55,84.67,126,17445.903,3656.933,4.25,4.5,67.5,75,6.25,0,1,0,22.33,N/A,0,,,Bike path
+20/03/2023,Winter,1,W,Syzgium smithii,5.5,12.4,5,90.29,82,129,17440.195,3656.999,51.25,0.25,28.5,22.5,0,0,0,0,2,30,168,,,
+20/03/2023,Winter,1,N,Cordyline australis,6,66,45,81.63,90.67,130,17440.188,3656.004,45,18.25,13.5,22.75,0.5,0,0,0,1.6,15,168,Near a creek,,
+20/03/2023,Winter,2,W,Solanum mauritianum,1.55,1.7,15,68.81,84,131,17440.199,3655.999,63,0.5,12.5,23.75,0.5,0,1,0,0.5,8,168,Near a creek,,Disturbance: central species has been cut and species around it have fallen as well
+20/03/2023,Winter,2,N,Coprosma robusta,2.3,13.3,5,80.93,86.33,132,17440.208,3656.002,22.5,0,31.25,15,31.25,0,1,0,1.38,N/A,168,Plot next to lawn,,Big pile of logs in the plot
+20/03/2023,Winter,3,W,Syzgium smithii,3.5,2.5,3,91.68,92.666,133,17440.195,3655.988,10,0,81.25,7.5,1.25,0,0,0,6.333,15,168,,,
+20/03/2023,Winter,3,N,Cordyline australis,5.5,39.1,2,72.27,77.33,134,17440.197,3655.993,58.75,0.5,37,3.75,0,0,0,0,5.5,N/A,168,,,
+20/03/2023,Winter,4,W,Solanum mauritianum,1.49,25,0,72.96,74.3333,135,17440.192,3656.01,75,0,65,8.75,0,0,0,0,3.666,N/A,168,near creek,,
+20/03/2023,Winter,4,N,Cordyline australis,3.12,6.6,2,68.11,61,136,17440.191,3656.009,79.5,0,8,7.5,5,0,0,0,1.67,N/A,168,,,Large stump in the middle of the plot (right next to central species)
+21/03/2023,Nataly,1,W,Solanum mauritianum,5.5,17.35,30,84.4,88.33,137,17438.079,3658.125,9.25,0.25,60,24.25,6.25,0,1,0,3,0.1,88,,,limbs fallen into plot
+21/03/2023,Nataly,1,N,Myrsine australis,5.5,17.3,30,83.36,85.666,138,17438.085,3658.117,32.5,2.5,46.25,12.5,3.75,0,0,0,2,1,88,,,
+21/03/2023,Nataly,2,N,Myrsine australis,2.9,1.8,60,85.44,87,139,17438.072,3658.115,21.25,6.5,49.5,22.5,0.25,0,0,0,8.77,N/A,88,,,
+21/03/2023,Nataly,2,W,Paraserianthes lophantha,3,2.7,50,86.82666,83.666,140,17438.071,3658.114,49.5,1.75,41.25,5,2.75,0,0,0,28,5,88,,,Dead pampas in the plot
+21/03/2023,Nataly,3,W,Paraserianthes lophantha,3.2,28.35,50,82.67,87.67,141,17438.061,3658.118,21.25,8.75,43.75,26.25,0,0,0,0,3.67,N/A,88,,,
+21/03/2023,Nataly,3,N,Myrsine australis,4.25,9.6,30,72.26,88.6666,142,17435.055,3658.117,40,0,28.75,31.25,0,0,0,0,0.8333,N/A,88,,,
+24/03/2023,Sancta,1,N,Leptospermum scoparium,2.5,16.5,2,73.653,71.333,143,17454.237,3657.662,83.25,0.5,12.5,3.75,0,0,0,0,1.5,40,3,,,
+24/03/2023,Sancta,1,W,Solanum mauritianum,3,8,5,75.73,85.67,145,17454.233,3657.662,70,0,27.5,2.5,0,0,0,0,6,N/A,3,,,
+24/03/2023,Sancta,2,W,Solanum mauritianum,2,34.4,10,58.05,74,146,17454.229,3657.662,66.25,0,33.75,0,0,0,0,0,8.5,N/A,3,,,
+24/03/2023,Sancta,2,N,Coprosma robusta,1.8,2,5,61.17,54,147,17454.231,3657.663,57.75,2.5,40,3.75,0,0,0,0,2.27,10,3,,,
+24/03/2023,Sancta,3,W,Solanum mauritianum,1.59,2,40,78.506,73,148,17454.227,3657.651,78.5,0,10,11.25,0,0,0,0,2.833,35,3,,,
+24/03/2023,Sancta,3,N,Coprosma robusta,2.5,29.2,3,85.093,87,149,17454.227,3657.65,66.25,0,22.5,11.25,0,0,0,1,5.5,55,3,,,Right next to the fence/lawn. Pest: trapping tunnel
+24/03/2023,Sancta,4,W,Solanum mauritianum,3.4,32.5,1,76.77,87.67,150,17454.215,3657.642,80,0,16.25,3.75,0,0,0,0,2.5,N/A,3,,,Much estimating due to blackberry-limited movement
+24/03/2023,Sancta,4,N,Myrsine australis,6,33.6,20,88.56,85.666,151,17454.21,3657.642,58.75,3.75,13.75,21.25,2.5,0,0,0,1.4,N/A,3,,,
+24/03/2023,Sancta,5,N,Melicytus ramiflorus,2.5,2.1,1,70.19,84.3,152,17454.195,3657.661,5.25,0,94.75,0,0,0,0,0,1.77,N/A,3,,,Weed reduction cloth laid down 
+24/03/2023,Sancta,5,W,Solanum mauritianum,2,30.4,1,78.853,82,153,17454.19,3657.661,4.25,0.75,95,0,0,0,1,0,30.333,N/A,3,,,Weed reduction cloth laid down . Manuka fallen over half of the plot
+29/03/2023,Sancta,6,W,Solanum mauritianum,1.58,1.05,2,76.77,78.33,154,17454.183,3657.67,6.25,2.5,87,1.25,0.5,0,0,0,7.1,N/A,3,,,Weed reduction cloth laid down 
+29/03/2023,Sancta,6,N,Melicytus ramiflorus,2,36.4,2,80.456,85,155,17454.178,3657.677,16.25,0,79.5,0,4.25,0,0,0,1.833,N/A,3,,,Weed reduction cloth laid down 
+29/03/2023,Sancta,7,W,Solanum mauritianum,1.88,1.5,4,82.67,80.33,156,17454.185,3657.667,2.25,2.25,94.25,1.25,0,0,0,0,3.27,N/A,3,,,Weed reduction cloth laid down 
+29/03/2023,Sancta,7,N,Melicytus ramiflorus,2.05,40.6,4,83.706,77,157,17454.189,3657.667,7.5,1.5,88.25,0,0.25,0,0,0,8.333,N/A,3,,,Weed reduction cloth laid down 
+29/03/2023,Sancta,8,W,Solanum mauritianum,2.13,1.8,3,93.07,85,158,17454.175,3657.687,27.5,0,69.25,1.25,2,0,0,0,12,20,3,,,Weed reduction cloth laid down 
+29/03/2023,Sancta,8,N,Pittosporum crassifolium,1.54,14.8,2,87.867,79.667,159,17454.174,3657.696,12.5,0.5,87,0,0,0,0,0,5.833,N/A,3,,,Weed reduction cloth laid down 
+29/03/2023,Sancta,9,W,Solanum mauritianum,2.7,20.5,5,90.99,87.3,160,17454.176,3657.71,26.25,0,70,0,3.75,0,1,1,32.67,N/A,3,Beside a creek (edge of plot within a meter of the creek),,Weed reduction cloth laid down. Disturbance: Manuka fell over covering .3 of the plot. Pest: trap within 5m of the plot.
+29/03/2023,Sancta,9,N,Melicytus ramiflorus,3,43.3,3,86.826,81.667,161,17454.176,3657.712,31.25,0,64.25,0,4.5,0,0,0,7.833,N/A,3,,,Weed reduction cloth laid down 
+29/03/2023,Sancta,10,W,Solanum mauritianum,2.7,2.2,5,85.79,91.67,162,17454.164,3657.731,41.25,2.5,54.75,0,1.5,0,0,0,6.33,5,3,,,Weed reduction cloth laid down 
+29/03/2023,Sancta,10,N,Cordyline australis,2.2,20.6,2,75.386,76.667,164,17454.162,3657.735,88.75,0,7.5,0,3.75,0,0,0,5.5,85,3,,,Weed reduction cloth laid down 
+29/03/2023,Sancta,11,W,Solanum mauritianum,2,2.15,2,90.29,88.33,165,17454.164,3657.74,4,2,91.5,0,2.5,0,1,0,15.67,N/A,3,,,Weed reduction cloth laid down. Tree fell over into .25 of the plot
+29/03/2023,Sancta,11,N,Sophora microphylla,1.76,0.6,1,79.547,78.333,166,17454.164,3657.741,7,1.25,90.5,0,1.25,0,0,0,7.667,N/A,3,,,Weed reduction cloth laid down 
+29/03/2023,Sancta,12,W,Solanum mauritianum,1.8,1.7,1,80.93,75.67,167,17454.156,3657.766,48.33,0,51.67,0,0,0,0,0,4.4,10,3,,,Weed reduction cloth laid down 
+29/03/2023,Sancta,12,N,Hedycarya arborea,3,32.8,1.5,81.473,71,168,17454.161,3657.77,76.25,0,23.75,0,0,0,0,0,2.333,N/A,3,,,Weed reduction cloth laid down 
+14/04/2023,Cain,1,W,Ligustrum lucidum,2.53,1.8,5,88.9,88.333,169,17438.768,3654.824,23,2.25,51.5,5,5,0,1,1,3.5,7,210,,,Pest: Trap Disturbance: Track running through the plot
+14/04/2023,Cain,1,N,Myrsine australis,2.39,12,1,87.17,86.33,170,17438.765,3654.823,45,0,55,0,0,0,0,0,8,5,210,,,
+14/04/2023,Cain,2,W,Ligustrum lucidum,2.2,4.3,1,94.45,91.33,171,17438.771,3654.823,6.25,0,91.25,1.25,1.25,0,1,0,10,0,210,,,Disturbance: Lots of litter deposited in half of the plot
+14/04/2023,Cain,2,N,Myrsine australis,5.5,20,20,89.25,86.333,172,17438.772,3654.822,31,1.25,34,25.5,8.25,0,1,0,4.333,0,210,,,Distubance: Fence running through the middle of the plot
+19/04/2023,Burns,1,W,Ligustrum lucidum,1.87,13.2,40,86.48,86.67,173,17443.07,3636.765,32.5,0,30,32.5,5,1,0,0,2.67,0,150,,,
+19/04/2023,Burns,1,N,Myrsine australis,1.9,1,40,84.75,85,174,17443.07,3636.761,45,0,36.25,17.5,1.25,1,0,0,5.33,5,150,,,
+19/04/2023,Burns,2,W,Ligustrum lucidum,3,19.8,30,93.06,91.333,175,17443.066,3636.765,31.25,1.5,43.5,18.75,5,1,1,0,7.666,0,150,,,
+19/04/2023,Burns,2,N,Myrsine australis,3.2,1.5,25,90.99,88.67,176,17443.065,3636.764,18.75,0.75,47.25,19.5,13.75,1,0,0,5,N/A,150,,,
+28/04/2023,Salford,1,W,Ligustrum lucidum,2.5,2.3,8,80.587,78,181,17455.498,3657.936,32.5,4.75,41.25,21.5,0,0,0,0,1.333,10,132,,,
+28/04/2023,Salford,1,N,Kunzea ericoides,3.5,6.4,5,85.44,78.33,182,17455.494,3657.938,18.25,2.75,67,7.5,4.5,0,0,0,1.3,N/A,132,,,Mown path adjacent to the plot
+28/04/2023,Salford,2,W,Ligustrum lucidum,4.5,19.7,5,94.106,87.666,183,17455.473,3657.915,55,0,41.2,5,0,0,0,0,3.166,5,132,,,
+28/04/2023,Salford,2,N,Melicytus ramiflorus,4.5,7.9,5,90.29,81,184,17455.474,3657.919,37.5,0,59,3.5,0,0,0,0,4.3,N/A,132,,,
+28/04/2023,Salford,3,W,Ligustrum lucidum,2,15,7,92.72,86.3,185,17455.469,3657.915,30,0,68.25,1.75,0,0,0,0,3.67,N/A,132,,,
+28/04/2023,Salford,3,N,Cordyline australis,2,4.5,2,95.84,88.67,186,17455.468,3657.917,20,0,56.25,23,0.75,0,1,0,1.3,16,132,,,
+28/04/2023,Salford,4,W,Ligustrum lucidum,2.5,18.5,3,90.64,80.33,187,17455.467,3657.915,23.75,0,7.75,4.5,0,0,0,0,4.5,5,132,,,
+28/04/2023,Salford,4,N,Melicytus ramiflorus,3.5,2,3,89.946,79.666,188,17455.464,3657.913,48.75,2,35,13.75,0.5,0,0,0,2.166,10,132,,,
+2/05/2023,Salford,5,W,Ligustrum lucidum,2.09,1.1,3,86.83,86.67,189,17455.449,3657.907,11.25,0.5,85.75,2.5,0,0,0,0,1.83,5,132,,,
+2/05/2023,Salford,5,N,Melicytus ramiflorus,2.75,3.2,2,78.16,87,190,17455.455,3657.908,25.75,0,64.5,9.75,0,0,0,0,3,20,132,,,
+2/05/2023,Salford,6,W,Ligustrum lucidum,4.5,4,25,88.82,87.33,191,17455.45,3657.911,11.28,4.25,69.5,8.75,3.25,0,0,0,1.67,3,132,,,
+2/05/2023,Salford,6,N,Leptospermum scoparium,6.6,27.5,25,86.83,85.67,192,17455.445,3657.911,3.2,2.25,80.75,13.75,0,0,0,0,5.6,N/A,132,,,
+2/05/2023,Salford,7,W,Ligustrum lucidum,1.73,1.9,15,90.29,80.67,193,17455.439,3657.903,65,0,34.5,0.5,0,0,0,0,1.17,55,132,,,
+2/05/2023,Salford,7,N,Melicytus ramiflorus,1.29,0.3,2,79.2,72.333,194,17455.44,3657.906,75,0,20,5,0,0,1,0,2.5,N/A,132,,,Central species has been cut and grew back
+2/05/2023,Salford,8,W,Ligustrum lucidum,2.56,2.3,5,90.29,83.67,195,17455.429,3657.904,37.5,0.25,62.25,0,0,0,0,0,10.2,10,132,,,
+2/05/2023,Salford,8,N,Cordyline australis,2.5,8.5,6,88.56,77.33,196,17455.427,3657.902,62.5,0,37.5,0,0,0,0,0,4,N/A,132,,,
+4/05/2023,Salford,9,W,Ligustrum lucidum,3.04,22,7,80.93,86.33,197,17455.294,3657.008,23.75,0,75,1.25,0,0,1,0,11.4,16,132,,,Big log in the plot
+4/05/2023,Salford,9,N,Melicytus ramiflorus,2.83,28.1,1,66.373,76.666,198,17455.312,3657.019,40,0,48.75,11.25,0,0,1,0,4,10,132,,,Big log in the plot
+4/05/2023,Salford,10,W,Ligustrum lucidum,2.3,17,4,79.83,87.67,199,17455.307,3657.951,15,1,59,25,0,0,1,0,2.73,N/A,132,Just above the creek/ floodplain,,Fallen tree in the plot
+4/05/2023,Salford,10,N,Kunzea ericoides,3,1.8,10,68.8,84.333,200,17455.308,3657.955,5.25,3.25,84.5,7,0,0,0,0,3.5,N/A,132,Just above the creek/ floodplain,,
+4/05/2023,Salford,11,W,Ligustrum lucidum,4.5,6.55,3,67.98,89.33,201,17455.449,3657.893,2.75,1,67,23.75,5.5,0,1,0,2.07,N/A,132,Just above the creek/ floodplain,,Half of the plot has weed prevention mat
+4/05/2023,Salford,11,N,Cordyline australis,4.5,11.4,5,85.44,79,202,17455.442,3657.892,20,7.75,65.25,1.25,5.75,0,1,0,3.666,N/A,132,Just above the creek/ floodplain,,Full plot has weed prevention mat
+12/05/2023,Silvana,1,W,Paraserianthes lophantha,4,6.6,8.7,88.906,87.333,203,17455.669,3657.941,8.75,0,91.25,0,0,0,0,1,5.167,N/A,179,,,
+12/05/2023,Silvana,1,N,Leptospermum scoparium,5.25,48.8,13,77.67,88.56,204,17455.666,3657.94,25,0,72.5,1.25,1.25,0,0,1,4.33,20,179,,,
+12/05/2023,Silvana,2,W,Paraserianthes lophantha,6,10.5,5,88.22,75,205,17455.67,3657.941,3.5,0,96.5,0,0,0,0,0,3.67,N/A,179,,,
+12/05/2023,Silvana,2,N,Leptospermum scoparium,5.25,6.1,5,75.733,78.333,206,17455.674,3657.943,65,0,29.75,0,5.25,0,0,0,2.833,0.5,179,,,
+12/05/2023,Silvana,3,W,Ligustrum lucidum,3,6,1,85.78,88.333,207,17455.732,3657.958,61.25,0,25,13.75,0,0,0,0,0.67,50,179,,,
+12/05/2023,Silvana,3,N,Pittosporum crassifolium,3,2,2,91.68,87,208,17455.735,3657.958,35,0,63.75,0,1.25,0,0,0,2.666666667,2.5,179,,,
+1/02/2024,England,1,W,Paraserianthes lophantha,3.2,2.8,65,68.453,69.667,209,17452.48,3652.886,67.5,0,18.75,13.75,0,0,0,0,5.5,40,0,,,
+1/02/2024,England,1,N,Pittosporum crassifolium,3,2,60,86.133,74.333,210,17452.478,3652.889,42.5,0,10,47.5,0,1,0,1,2.333,N/A,0,,,
+1/02/2024,England,2,W,Paraserianthes lophantha,3.1,2.2,15,79.827,75.333,211,17452.493,3652.895,60,0,30,7.5,2.5,0,0,0,4,30,0,,,
+1/02/2024,England,2,N,Leptospermum scoparium,2.5,5.5,15,78.507,89.667,212,17452.497,3652.897,40,0,48.75,8.75,0,0,0,0,5.833,30,0,,,
+1/02/2024,England,3,W,Paraserianthes lophantha,3.5,2.8,35,90.987,86,213,17452.486,3652.895,78.75,0,12.5,8.75,0,0,0,0,7.667,65,0,,,
+1/02/2024,England,3,N,Pittosporum crassifolium,3.8,27.1,25,86.827,86,214,17452.485,3652.897,58.75,0,30,11.25,0,0,0,0,3.5,N/A,0,,,
+1/02/2024,England,4,W,Paraserianthes lophantha,6,6.5,25,93.067,85.333,215,17452.483,3652.891,66.25,0,12.5,21.25,0,0,0,0,4,55,0,,,
+1/02/2024,England,4,N,Kunzea ericoides,4.2,8.9,15,82.32,88,216,17452.484,3652.892,6.75,0,32.5,60.75,0,0,0,0,1.833,N/A,0,,,
+2/12/2024,Netball,1,W,Paraserianthes lophantha,3.1,3.6,5,75.723,83.667,217,17450.685,3653.142,28.75,0,67.5,3.75,0,0,0,0,3.333,5,65,,,
+2/12/2024,Netball,1,N,Coprosma robusta,2.2,3.5,5,85.26,87.667,219,17450.681,3653.14,2.75,0,92.25,5,0,0,0,0,5.167,N/A,65,,,
+2/12/2024,Netball,2,W,Paraserianthes lophantha,4,10.4,5,76.773,79.667,220,17450.667,3653.137,2.5,0,95,0,2.5,0,0,0,1.5,N/A,65,,,Soil is very hard
+2/12/2024,Netball,2,N,Coprosma robusta,3,15,10,89.073,88.667,221,17450.673,3652.137,5.75,1.25,86.75,6.25,0,0,0,0,11.333,N/A,65,,,Soil is very hard
+2/12/2024,Netball,3,W,Paraserianthes lophantha,3.5,4.2,5,80.24,87.667,222,17450.679,3653.143,12.5,0,76.5,10,1.25,0,0,0,2.5,N/A,65,,,
+2/12/2024,Netball,3,N,Coprosma robusta,2.5,14.7,10,82.667,84.667,223,17450.678,3653.143,11.75,0,71.75,13.75,2.75,0,0,0,2.167,N/A,65,,,
+2/12/2024,Netball,4,W,Ligustrum lucidum,3.1,18,5,91.64,88.667,224,17450.669,3653.136,21.25,3.75,67,3.75,4.25,0,0,0,4.5,N/A,65,,,loads of karamu seedlings and also a knife in the plot
+2/12/2024,Netball,4,N,Coprosma repens 'Middlemore',2.2,80,10,73.653,85.667,225,17450.669,3653.137,9,0,48.75,42.25,0,0,0,0,1.83,N/A,65,,,
+2/12/2024,Netball,5,W,Ligustrum lucidum,5,49,15,81.626,87.333,226,17450.639,3653.12,3.75,0,95,0,1.25,0,0,0,7.167,N/A,65,,,
+2/12/2024,Netball,5,N,Pittosporum crassifolium,2.8,90,15,92.37,87.667,227,17450.624,3653.12,18.75,0,53.75,26.25,1.25,0,0,0,0.667,N/A,65,,,
+14/02/2024,Netball,6,W,Paraserianthes lophantha,6.5,46.4,5,43.533,70,228,17450.629,3653.108,43.75,2,46.75,7.5,0,0,0,0,2.167,N/A,65,,,
+14/02/2024,Netball,6,N,Metrosideros excelsa,4.2,161.1,5,80.587,83.667,229,17450.62,3653.099,21.25,0,74,2.5,2.25,0,0,0,2.833,2,65,,,
+14/02/2024,Netball,7,W,Paraserianthes lophantha,8.6,44,10,78.16,82,230,47150.584,3653.073,15,0,72.5,5,7.5,0,1,0,7.333,N/A,65,,,Disturbance = fence
+14/02/2024,Netball,7,N,Pittosporum crassifolium,5.8,150,12,83.36,88,231,17450.585,3653.075,18.75,0,59.5,16.25,5.5,0,0,0,3.333,N/A,65,,,
+3/01/2024,Netball,8,W,Paraserianthes lophantha,1.95,23.5,10,84.3667,87.667,232,17450.732,3652.97,18.75,0,63.75,17.5,0,0,1,0,3.1667,10,65,,,Trash thrown here
+3/01/2024,Netball,8,N,Pittosporum crassifolium,2.25,55,8,83.18,85,233,17450.733,3652.969,23.75,0,70,5,1.25,0,1,0,3.833,17,65,,,
+3/01/2024,Netball,9,W,Paraserianthes lophantha,7,10,0,81.28,85.667,234,17450.695,3652.917,43,0,43.5,3.75,9.75,0,1,0,3.333,40,65,,,
+3/01/2024,Netball,9,N,Coprosma robusta,5.75,6.4,10,88.56,88,235,17450.7,3652.913,28.5,0,64.25,6.75,0.5,0,1,0,3.5,12,65,,,
+3/01/2024,Netball,10,W,Paraserianthes lophantha,8.25,16.6,5,84.05,86.333,236,17450.71,3652.894,47.5,0,44,6,2.5,0,0,0,3.833,N/A,65,,,
+3/01/2024,Netball,10,N,Coprosma robusta,6,11.5,5,85.093,86,237,17450.713,3652.892,6.75,0,58,5.75,29.5,0,1,0,5.667,3,65,,,"Rocks/hard clay dropped here, 2 logs in plot"
+16/07/2024,Netball,11,W,Paraserianthes lophantha,8.25,24.2,15,75.73,65.33,238,17450.575,3653.061,77.5,0,20,0,2.5,0,1,0,3.5,65,65,,,"fence runs through., lots of birds, central species flowering"
+16/07/2024,Netball,11,N,Pittosporum crassifolium,8,75,10,89.253,87.67,239,17450.572,3653.063,58.75,0.5,32,5,3.75,0,1,0,3.67,N/A,65,,,lots of wattle seedlings very close to the edge of the plot
+16/07/2024,Netball,12,W,Paraserianthes lophantha,9,7.7,5,86.4,73.67,240,17450.568,3653.061,47.5,3.75,27.5,6.25,15,0,1,0,6.33,30,65,,,
+22/08/2024,Seddon,1,W,Paraserianthes lophantha,9.5,16.3,2,85.09,87.33,241,17443.151,3651.663,16.25,0,68.75,15,0,1,1,0,4.167,N/A,82,,,"near sewage runoff, lots of trash"
+22/08/2024,Seddon,1,N,Leptospermum scoparium,8.2,94.9,5,85.72,84,242,17443.154,3651.659,16.25,1.25,31.25,23.75,22.5,1,1,0,4.5,N/A,82,,,
+22/08/2024,Seddon,2,W,Paraserianthes lophantha,8,13.7,2,89.25,87.33,243,17443.176,3651.537,7.5,0,67.5,21.25,3.75,0,1,0,2.167,N/A,82,,,"next to a trail, privet canopy"
+22/08/2024,Seddon,2,N,Coprosma robusta,6.5,19,0,87.52,90.67,244,17443.175,3651.533,15,0,72.5,7.5,5,0,1,0,2.33,N/A,82,,,"next to a trail, privet canopy"
+3/09/2024,Seddon,3,W,Paraserianthes lophantha,9.9,25.5,15,85.786,86,245,17443.195,3651.541,6.25,1.25,47.5,38.75,6.25,1,1,0,1.66,N/A,82,,,"next to a trail, lots of broken glass and ceramic, privet canopy"
+4/09/2024,Seddon,3,N,Coprosma robusta,7.4,35.5,10,88.9,88.67,246,17443.191,3651.545,11.25,0,61.25,12.5,15,0,1,0,1.67,N/A,82,,,"next to a trail, lots of broken glass and ceramic, privet canopy"
+4/09/2024,Seddon,4,W,Paraserianthes lophantha,7.2,24.5,7,87.17,90.33,247,17443.201,3651.538,6.5,0,43.5,42.5,7.5,0,1,0,2.167,N/A,82,,,"Broken glass in plot, privet canopy"
+4/09/2024,Seddon,4,N,Vitex lucens,6,22.1,5,89.6,90,248,17443.205,3651.546,3.75,0,41.25,43.75,11.25,0,1,0,1.25,N/A,82,,,"Broken glass in plot, privet canopy"
+26/09/2024,Seddon,5,N,Pittosporum crassifolium,3.2,34.1,15,80.933,87,249,17443.114,3651.69,35,0,35,16.25,8.75,1,1,0,1.833,N/A,82,,,"Debris is garbage and rocks, privet canopy"
+26/09/2024,Seddon,5,W,Ligustrum lucidum,1.7,17.7,5,85.44,88,250,17443.114,3651.689,8.75,5,30,37.5,18.75,1,1,0,1.833,N/A,82,,,"Debris is garbage, asphalt, and rocks, privet canopy"
+26/09/2024,Seddon,6,W,Ligustrum lucidum,2.2,2.35,5,80.913,89.3,251,17443.118,3651.693,20,0,36.25,35,8.75,1,1,0,2.166,N/A,82,,,"Broken beer bottle and a huge rock, privet canopy"
+5/11/2024,Seddon,6,N,Macropiper excelsium,1.65,24.7,10,87.666,89.333,252,17443.12,3651.69,1.5,0,52.5,31,15,1,1,0,4.5,N/A,82,,,"Eroded slope, barbed wire fence through the middle, debris = broken bottles and boulders, privet canopy"
+5/11/2024,Seddon,7,N,Melicytus ramiflorus,5.74,81,2,90.64,89.333,253,17443.185,3651.623,5.25,0,74.25,20,0.5,0,0,0,2.166,N/A,82,,,
+5/11/2024,Seddon,7,W,Ligustrum lucidum,7.38,75,2,89.253,88.666,254,17443.187,3651.625,21.25,0,35.75,42.25,0.75,0,0,0,1.25,N/A,82,,,Debris = neck of bottle and a rock
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
