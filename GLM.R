@@ -68,8 +68,6 @@ RichnessWeed <- SurveyData_Combined_subset %>% group_by(Plot) %>% summarize(uniq
 # rename the column
 colnames(RichnessWeed)[2] <- c("Richness") ## Renaming the columns# rename the column
 
-colnames(PlotData_Combined)[2] <- c("CentralSpecies") ## Renaming the columns
-
 # Repeat for plot data
 # Assigning the Site a unique numeric value
 PlotData$Site <- as.numeric(as.factor(PlotData$Site))
@@ -173,9 +171,17 @@ pca.var$cos2
 
 
 # % contribution of the variables 
-fviz_pca_var(Env_Species.pca, col.var = "contrib",
+fviz_pca_var(Env_Species.pca, axes = c(1, 3), col.var = "contrib",
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE)
+
+
+library(MASS) ## do to the GLM
+RichnessGLM <- glm.nb(Richness ~ PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + 
+                        PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + 
+                        PC13 + PC14 + PC15 + PC16 + PC17,
+                      data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
+summary(RichnessGLM)
 
 #### PCA Fewer Factors ####
 
@@ -224,7 +230,7 @@ library(MASS) ## do to the GLM
 RichnessGLM <- glm.nb(Richness ~ PC1 + PC2 +
                        PC3 + PC4 +
                        PC5 + PC6 +
-                       PC7 + PC8 + PC9,
+                       PC7 + PC8 + PC9 + PC10,
                      data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
 summary(RichnessGLM)
 
@@ -247,7 +253,7 @@ RichnessGLM <- glm.nb(Richness ~ Housing + Canopy +
 summary(RichnessGLM)
 
 # Narrow to only the values over 0.5 on the PCA
-RichnessGLM <- glm.nb(Richness ~ Housing + Vascular + WN +
+RichnessGLM <- glm.nb(Richness ~ Housing + Vascular +
                         LitterCover,
                       data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
 summary(RichnessGLM)
