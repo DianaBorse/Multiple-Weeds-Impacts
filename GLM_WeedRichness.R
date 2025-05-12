@@ -162,14 +162,40 @@ WeedRichnessHousing <- ggplot(data = Env_Species, mapping = aes(x = unique_value
 
 print(WeedRichnessHousing)
 
+# GGPLOT for Central Species
+WeedRichnessCentralSpecies <- ggplot(data = Env_Species, mapping = aes(x = unique_values, y = CentralSpecies)) +
+  geom_point(size = 2) + # Set point size
+  theme_minimal() +
+  labs(x = "Weed Species Richness", y = "Central Species") +
+  theme_classic()
+
+print(WeedRichnessCentralSpecies)
+
 # Load the required packages
 library(lattice)
 library(R2jags)
-Mydotplot <- function(DataSelected)
+
+
+# Cannot have any categorical variables for this function so will remove those
+Env_Species <- subset(Env_Species, select = -c(CentralSpecies, Erosion, Disturbance, Pests))
 
 MyVar <- c("Height", "DBH", "Slope", "Litter", "Housing")
 Mydotplot(Env_Species[, MyVar])
 
+Mydotplot <- function(Env_Species){
+  
+  P <- dotplot(as.matrix(as.matrix(Env_Species)),
+               groups=FALSE,
+               strip = strip.custom(bg = 'white',
+                                    par.strip.text = list(cex = 1.2)),
+               scales = list(x = list(relation = "free", draw = TRUE),
+                             y = list(relation = "free", draw = FALSE)),
+               col=1, cex  = 0.5, pch = 16,
+               xlab = list(label = "Value of the variable", cex = 1.5),
+               ylab = list(label = "Order of the data from text file", cex = 1.5))
+  
+  print(P)  
+}
 
 # Extract data
 WeedRichnessPlotData <- ggplot_build(WeedRichnessPlot)$data[[1]]

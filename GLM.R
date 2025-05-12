@@ -61,11 +61,23 @@ SurveyData_Combined <- SurveyData_Combined %>%
 # Subset the data to only include species that are weeds using the Status column
 SurveyData_Combined_subset <- SurveyData_Combined[SurveyData_Combined$Status == 1, ]
 
+# Calculate richness value
+library(dplyr)
+RichnessWeed <- SurveyData_Combined_subset %>% group_by(Plot) %>% summarize(unique_values = n_distinct(ScientificName))
+
+# rename the column
+colnames(RichnessWeed)[2] <- c("Richness") ## Renaming the columns# rename the column
+
+colnames(PlotData_Combined)[2] <- c("CentralSpecies") ## Renaming the columns
+
 # Repeat for plot data
 # Assigning the Site a unique numeric value
 PlotData$Site <- as.numeric(as.factor(PlotData$Site))
 # Assigning W and N unique numeric values (weed is now 2, native is now 1)
 PlotData$Weed_Native <- as.numeric(as.factor(PlotData$Weed_Native))
+
+# Create another Column for WeedvsNative central species
+PlotData$WN <- PlotData$Weed_Native
 
 # Now combine this into unique numerical plot names
 library(tidyr)
@@ -78,570 +90,175 @@ library(tidyr)
 PlotData_Combined <- PlotData_Combined %>%
   unite(Plot, Plot, Weed_Native, sep = "-")
 
-# Filter down to only native species
-# Remove native species plots
-# Remove rows where Group is not one of the three weeds
-PlotData_Weeds <- PlotData_Combined %>% 
-  filter(CentralSpecies %in% c("Solanum mauritianum", "Ligustrum lucidum", "Paraserianthes lophantha"))
-
 # Now I need to only include the environmental variables that I want to include
 # for the GLM
 
-PlotData_Combined <- subset(PlotData_Combined, select = -c(Date, CanopyCover_App, Waypoint, East_Coordinates, South_Coordinates, CoverVascular,
-                                                           CoverNonVascular, CoverLitter, CoverBareSoil, CoverDebris, CoverGrass,
+PlotData_Combined <- subset(PlotData_Combined, select = -c(Date, CanopyCover_App, Waypoint, CoverGrass,
                                                            Topography, ParentMaterial, Notes))
 
 # Need to simplify the column names 
-colnames(PlotData_Combined)[3:11] <- c("Height", "DBH",
-                                  "Slope", "Canopy",
-                                  "Erosion", "Disturbance",
-                                  "Pests", "Litter", "Housing") ## Renaming the columns
-
-# Back to the survey data setting up for nMDS
-
-# Need to transform the data square root was given as a good transformation, so I will do that
-SurveyData_Combined$Tier_1_sqrt <- sqrt(SurveyData_Combined$Tier_1)
-# repeat for weeds only data
-SurveyData_Combined_subset$Tier_1_sqrt <- sqrt(SurveyData_Combined_subset$Tier_1)
-
-# Remove rows where Group is "Native"
-SurveyData_Combined_Weeds <- SurveyData_Combined %>% 
- filter(CentralSpecies != "Native")
-
-# Repeat for subset data
-SurveyData_Combined_subset_weeds <- SurveyData_Combined_subset %>% 
-  filter(CentralSpecies != "Native")
- 
-
-# This code gives 0 values when species are not present in a plot
-Survey_wide <- SurveyData_Combined %>%
-  pivot_wider(names_from = ScientificName, 
-              values_from = Tier_1, 
-              id_cols = Plot) %>%
-  mutate_all(~ replace(., is.na(.), 0))
-# repeat for environmental weeds subset
-Survey_wide_subset <- SurveyData_Combined_subset %>%
-  pivot_wider(names_from = ScientificName, 
-              values_from = Tier_1, 
-              id_cols = Plot) %>%
-  mutate_all(~ replace(., is.na(.), 0))
+colnames(PlotData_Combined)[3:18] <- c("Housing", "Canopy", "Height", "DBH",
+                                       "Slope", "Erosion", "Disturbance",
+                                       "Pests", "Litter", "East", "South", "Vascular", "NonVascular", "LitterCover",
+                                       "Bare", "Debris") ## Renaming the columns
 
 
+# I want to look at species richness rather than composition, so that means that
+# I need to make it presence/absence
+PresenceAbsence <-SurveyData_Combined_subset %>%
+  pivot_wider(id_cols = Plot, names_from=ScientificName, values_from=ScientificName,
+              values_fn=function(x) any(unique(x) == x) * 1, values_fill = 0)
 
 # instead of being a tibble, I wanted to convert it back to a data frame
-Survey_wide = as.data.frame(Survey_wide)
-#repeat for environmental weeds subset
-Survey_wide_subset = as.data.frame(Survey_wide_subset)
+PresenceAbsence_df = as.data.frame(PresenceAbsence)
 
 library(dplyr)
-Env_Species <- left_join(Survey_wide, PlotData_Combined, by = "Plot")  # Preserves all rows from df1
+Env_Species <- left_join(PresenceAbsence, PlotData_Combined, by = "Plot")  # Preserves all rows from df1
 
-# repeat for subset data
-Env_Species_subset <- left_join(Survey_wide_subset, PlotData_Combined, by = "Plot")
+# Include Richness
+Env_Species <- left_join(RichnessWeed, PlotData_Combined, by = "Plot")  # Preserves all rows from df1
+
+# instead of being a tibble, I wanted to convert it back to a data frame
+Env_Species = as.data.frame(Env_Species)
+
 
 # Needs to remove the first column of numbers as row names and make the Scientific 
 # names of species into the row names
-row.names(Survey_wide) <- Survey_wide$Plot 
+row.names(Env_Species) <- Env_Species$Plot 
 # Remove the first column from the data frame 
-Survey_wide <- Survey_wide[, -1]
+Env_Species <- Env_Species[, -1]
 
-# repeat for subset data
-row.names(Survey_wide_subset) <- Survey_wide_subset$Plot 
+# Needs to remove the first column of numbers as row names and make the Scientific 
+# names of species into the row names
+row.names(PresenceAbsence_df) <- PresenceAbsence_df$Plot 
 # Remove the first column from the data frame 
-Survey_wide_subset <- Survey_wide_subset[, -1]
+PresenceAbsence_df <- PresenceAbsence_df[, -1]
 
 
 # Back to the Survey data
 #Quick checks for empty rows or columns...
-rowSums(Survey_wide)
-colSums(Survey_wide)
+rowSums(PresenceAbsence_df)
+colSums(PresenceAbsence_df)
 
-# These are the columns that need to be removed using the data with the extra 
-# woolly nightshades removed
-Survey_wide<-Survey_wide[,-115] # this gets rid of the the column where there is a zero
-Survey_wide<-Survey_wide[,-40] # this gets rid of the the column where there is a zero
-Survey_wide<-Survey_wide[,-39] # this gets rid of the the column where there is a zero
 
-# Repeat for subset data
-#Quick checks for empty rows or columns...
-rowSums(Survey_wide_subset)
-colSums(Survey_wide_subset)
-
-Survey_wide_subset<-Survey_wide_subset[,-66] # this gets rid of the the column where there is a zero
-Survey_wide_subset<-Survey_wide_subset[,-65] # this gets rid of the the column where there is a zero
-
-
-
-### NMDS ####
-
-library(vegan)
-
-doubs.dist<-vegdist(Survey_wide)
-doubs.dist
-
-# Repeat for subset data
-doubs.dist.subset<-vegdist(Survey_wide_subset)
-doubs.dist.subset
-
-# Check for Na, NaN,Inf values
-any(is.na(doubs.dist))
-any(is.infinite(doubs.dist))
-
-# Check for Na, NaN,Inf values in subset data
-any(is.na(doubs.dist.subset))
-any(is.infinite(doubs.dist.subset))
-
-
-#Classification
-Survey_wide<-hclust(doubs.dist,method='average')
-plot(Survey_wide,hang=-1) #The hang=-1 tidies it up so all the end nodes finish at the same level
-grp<-cutree(Survey_wide,k=30) #K=4 is saying to identify the dominant 4 groups.
-grp
-rect.hclust(Survey_wide, k=30)
-
-#Classification for subset data
-Survey_wide_subset<-hclust(doubs.dist.subset,method='average')
-plot(Survey_wide_subset,hang=-1) #The hang=-1 tidies it up so all the end nodes finish at the same level
-grp<-cutree(Survey_wide_subset,k=30) #K=4 is saying to identify the dominant 4 groups.
-grp
-rect.hclust(Survey_wide_subset, k=30)
-
-
-#Conduct a PCA on continuous data, commonly used for environmental 
-#variable reduction. Say we want to combine variables that are similar in 
-#for SEM we may use PCA
-
-# linkage - once you have the two most similar sites together, how do you think about the similarity to the other sites. Best method is UPPGMA (an average weighed method)
-
-# Now doing a PCA on the data
-# Can do PCA on vegan or just the base programme of R, they just use different commands 
-# (see powerpoint handout for more info)
-
-doubs.pca<-princomp(doubs.dist,cor=TRUE)
-summary(doubs.pca) 
-biplot(doubs.pca)
-
-# repeat for subset data
-doubs.pca.subset<-princomp(doubs.dist.subset,cor=TRUE)
-summary(doubs.pca.subset) 
-biplot(doubs.pca.subset)
+#### PCA ####
+library(factoextra)
 
-# Create PCA biplot with sites as points
-
-# Load necessary libraries
-library(ggplot2)
-library(ggfortify)
+Env_Species.pca <- prcomp(Env_Species[,c("Height", "DBH",
+                       "Slope", "Canopy", "East", "South", "Vascular", "NonVascular", "LitterCover",
+                       "Bare", "Debris", "Erosion", "Disturbance",
+                       "Pests", "Litter", "Housing", "WN")], center = TRUE,scale. = TRUE,tol = 0.1)
 
-autoplot(
-  doubs.pca,
-  data = doubs.dist,
-  loadings = TRUE,             # Display loadings vectors
-  loadings.label = TRUE,       # Display loadings labels
-  loadings.colour = '#AA4499',     # Loadings vector color
-  loadings.label.size = 3,     # Loadings label size
-  loadings.label.colour = "#AA4499", # Loadings label color
-  shape = 16) +                   # Use points for sites
-  theme_minimal()              # Apply a minimal theme
+summary(Env_Species.pca)
+Env_Species.pca
 
 
-autoplot(
-  doubs.pca.subset,
-  data = doubs.dist.subset,
-  loadings = TRUE,             # Display loadings vectors
-  loadings.label = TRUE,       # Display loadings labels
-  loadings.colour = '#AA4499',     # Loadings vector color
-  loadings.label.size = 3,     # Loadings label size
-  loadings.label.colour = "#AA4499", # Loadings label color
-  shape = 16) +                   # Use points for sites
-  theme_minimal()              # Apply a minimal theme
+#this generates the PC scores for each plot
+axes_Env_Species.pca <- predict(Env_Species.pca, newdata = Env_Species)
+#making sure it worked
+head(axes_Env_Species.pca, 4)
 
+#creating a new dataframe that adds the the PC scores to the end
+df_Env_Species.pca <- cbind(Env_Species, axes_Env_Species.pca)
 
+fviz_eig(Env_Species.pca,addlabels = TRUE) #scree plot
 
-#Moving on now to MDS
-#DO MDS with vegan package
-z <- metaMDS(comm = doubs.dist,
-             autotransform = FALSE,
-             distance = "bray",
-             engine = "monoMDS",
-             k = 5,
-             weakties = TRUE,
-             model = "global",
-             maxit = 300,
-             try = 40,
-             trymax = 50)
+eig.val <- get_eigenvalue(Env_Species.pca) #getting eighvalue from each pca
+eig.val
 
-z
-#Moving on now to MDS for subset data
-#DO MDS with vegan package
-z.subset <- metaMDS(comm = doubs.dist.subset,
-             autotransform = FALSE,
-             distance = "bray",
-             engine = "monoMDS",
-             k = 3,
-             weakties = TRUE,
-             model = "global",
-             maxit = 300,
-             try = 40,
-             trymax = 50)
+pca.var<- get_pca_var(Env_Species.pca)
+pca.var$contrib
+pca.var$coord
+pca.var$cos2
 
-z.subset
 
-# Stress Plot = Sheppard Plot
-plot(z$diss, z$dist)
+# % contribution of the variables 
+fviz_pca_var(Env_Species.pca, col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
 
-stressplot(object = z,
-           p.col = "#88CCEE",
-           l.col = "#882255",
-           lwd = 1)
+#### PCA Fewer Factors ####
 
-# repeat for subset data
-plot(z.subset$diss, z.subset$dist)
+Env_Species <- subset(Env_Species, select = -c(East, South, NonVascular, DBH,
+                                                           Pests, Slope, Height))
 
-stressplot(object = z.subset,
-           p.col = "#88CCEE",
-           l.col = "#882255",
-           lwd = 1)
-
-#always report the stress for MDS, never report the Rsquared you get from that plot above
-plot(z)
-
-plot(z[["points"]][,2]~z[["points"]][,1],main="Survey Data", xlab="NMDSaxis 1" , ylab= "NMDS axis 2", cex = 0.5 +as.numeric(Survey_wide$nit))
-
-# Using ggplot2 to make a plot with site names
-plot(z, type = "t")
-
-# Using ggplot2 to make a plot with site names
-plot(z.subset, type = "t")
-
-# Looking at the stress/goodness of fit
-gof <- goodness(object = z)
-plot(z, display = "sites", type = "none")
-points(z, display = "sites", cex = 2*gof/mean(gof))
-
-
-# Looking at the stress/goodness of fit for subset data
-gof <- goodness(object = z.subset)
-plot(z.subset, display = "sites", type = "none")
-points(z.subset, display = "sites", cex = 2*gof/mean(gof))
-
-
-# Make the points into a data frame for ggplot
-z$points %>% head()
-z.points <- data.frame(z$points)
-
-
-# Make the points into a data frame for ggplot
-z.subset$points %>% head()
-z.subset.points <- data.frame(z.subset$points)
-
-# I need to make a new data frame that is just the plots and the Central species
-# for that plot
-# Load the dplyr package
-library(dplyr)
-
-# Create a new data frame with unique Plot values
-Plot_Species <- SurveyData_Combined_Weeds %>% distinct(Plot, .keep_all = TRUE)
-
-grp <- Plot_Species$CentralSpecies
-
-# Create a new data frame with unique Plot values
-Plot_Species_subset <- SurveyData_Combined_subset_weeds %>% distinct(Plot, .keep_all = TRUE)
-
-grp.subset <- Plot_Species_subset$CentralSpecies
-
-# Create a data frame of NMDS results with group information
-z.points$Group <- Plot_Species$CentralSpecies # Replace with your group column
-
-# repeat for subset data
-z.subset.points$Group <- Plot_Species_subset$CentralSpecies # Replace with your group column
-
-
-
-# Customize plot with ggplot2
-nmds_plot <- ggplot(data = z.points, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
-  geom_point(size = 2) + # Set point size
-  scale_shape_manual(values = c(16, 15, 18, 19)) + # Customize shapes
-  scale_color_manual(values = c("#EE6677", "#228833", "#44AA99")) + # Customize colors
-  theme_minimal() +
-  labs(x = "NMDS1", y = "NMDS2") +
-  theme_classic()
-
-# Print the plot
-print(nmds_plot)
-
-# Customize plot with ggplot2
-nmds_plot <- ggplot(data = z.subset.points, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
-  geom_point(size = 2) + # Set point size
-  scale_shape_manual(values = c(16, 15, 18, 19)) + # Customize shapes
-  scale_color_manual(values = c("#EE6677", "#228833", "#44AA99")) + # Customize colors
-  theme_minimal() +
-  labs(x = "NMDS1", y = "NMDS2") +
-  theme_classic()
-
-# Print the plot
-print(nmds_plot)
-
-# Customize plot with ggplot2 add ellipses
-nmds_plot <- ggplot(data = z.points, aes(x = MDS2, y = MDS4, shape = Group, color = Group)) +
-  geom_point(size = 2) + # Set point size
-  scale_shape_manual(values = c(16, 15, 17)) + # Customize shapes
-  scale_color_manual(values = c("#EE6677", "#228833", "#44AA99")) + # Customize colors
-  stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.1) +
-  scale_fill_manual(values = c("#EE6677",  "#228833", "#44AA99")) +
-  theme_minimal() +
-  labs(x = "NMDS2", y = "NMDS4") +
-  theme_classic()
-
-# Print the plot
-print(nmds_plot)
-
-# Customize plot with ggplot2 add ellipses for subset data
-nmds_plot <- ggplot(data = z.subset.points, aes(x = MDS1, y = MDS3, shape = Group, color = Group)) +
-  geom_point(size = 2) + # Set point size
-  scale_shape_manual(values = c(16, 15, 17)) + # Customize shapes
-  scale_color_manual(values = c("#EE6677", "#228833", "#44AA99")) + # Customize colors
-  stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.1) +
-  scale_fill_manual(values = c("#EE6677",  "#228833", "#44AA99")) +
-  theme_minimal() +
-  labs(x = "NMDS1", y = "NMDS3") +
-  theme_classic()
-
-# Print the plot
-print(nmds_plot)
-
-
-# Look with centroids
-group_centroids <- data.frame(
-  Location = c("Solanum mauritianum", "Ligustrum lucidum", "Paraserianthes lophantha"),
-  Centroid_X = c(mean(z.points$MDS1[z.points$Group == "Solanum mauritianum"]),
-                 mean(z.points$MDS1[z.points$Group == "Ligustrum lucidum"]),
-                 mean(z.points$MDS1[z.points$Group == "Paraserianthes lophantha"])),
-  Centroid_Y = c(mean(z.points$MDS2[z.points$Group == "Solanum mauritianum"]),
-                 mean(z.points$MDS2[z.points$Group == "Ligustrum lucidum"]),
-                 mean(z.points$MDS2[z.points$Group == "Paraserianthes lophantha"])),
-  Centroid_Z = c(mean(z.points$MDS3[z.points$Group == "Solanum mauritianum"]),
-                 mean(z.points$MDS3[z.points$Group == "Ligustrum lucidum"]),
-                 mean(z.points$MDS3[z.points$Group == "Paraserianthes lophantha"])),
-  Centroid_A = c(mean(z.points$MDS4[z.points$Group == "Solanum mauritianum"]),
-                 mean(z.points$MDS4[z.points$Group == "Ligustrum lucidum"]),
-                 mean(z.points$MDS4[z.points$Group == "Paraserianthes lophantha"])),
-  Centroid_B = c(mean(z.points$MDS5[z.points$Group == "Solanum mauritianum"]),
-                 mean(z.points$MDS5[z.points$Group == "Ligustrum lucidum"]),
-                 mean(z.points$MDS5[z.points$Group == "Paraserianthes lophantha"]))
-)
-
-# Look with centroids for the subset data
-group_centroids_subset <- data.frame(
-  Location = c("Solanum mauritianum", "Ligustrum lucidum", "Paraserianthes lophantha"),
-  Centroid_X = c(mean(z.subset.points$MDS1[z.subset.points$Group == "Solanum mauritianum"]),
-                 mean(z.subset.points$MDS1[z.subset.points$Group == "Ligustrum lucidum"]),
-                 mean(z.subset.points$MDS1[z.subset.points$Group == "Paraserianthes lophantha"])),
-  Centroid_Y = c(mean(z.subset.points$MDS2[z.subset.points$Group == "Solanum mauritianum"]),
-                 mean(z.subset.points$MDS2[z.subset.points$Group == "Ligustrum lucidum"]),
-                 mean(z.subset.points$MDS2[z.subset.points$Group == "Paraserianthes lophantha"])),
-  Centroid_Z = c(mean(z.subset.points$MDS3[z.subset.points$Group == "Solanum mauritianum"]),
-                 mean(z.subset.points$MDS3[z.subset.points$Group == "Ligustrum lucidum"]),
-                 mean(z.subset.points$MDS3[z.subset.points$Group == "Paraserianthes lophantha"]))
-)
-
-# Sort z.points.weeds to match group-centroids order
-# Define the custom order for the 'group' column
-z.points$Group <- factor(z.points$Group, levels = c('Solanum mauritianum', 'Ligustrum lucidum', 'Paraserianthes lophantha'))
-
-# Sort the data frame based on the custom order
-z.points <- z.points[order(z.points$Group), ]
-
-# Repeat for subset data
-z.subset.points$Group <- factor(z.subset.points$Group, levels = c('Solanum mauritianum', 'Ligustrum lucidum', 'Paraserianthes lophantha'))
-
-# Sort the data frame based on the custom order
-z.subset.points <- z.subset.points[order(z.subset.points$Group), ]
-
-
-plot_data<-data.frame(
-  Location = z.points$Group,
-  MDS1=z.points$MDS1,
-  MDS2=z.points$MDS2,
-  MDS3=z.points$MDS3,
-  MDS4=z.points$MDS4,
-  MDS5=z.points$MDS5,
-  xend=c(rep( group_centroids[1,2],27),rep(group_centroids[2,2],28), rep(group_centroids[3,2],27)),
-  yend=c(rep( group_centroids[1,3],27),rep(group_centroids[2,3],28), rep(group_centroids[3,3],27)),
-  zend=c(rep( group_centroids[1,4],27),rep(group_centroids[2,4],28), rep(group_centroids[3,4],27)),
-  Aend=c(rep( group_centroids[1,5],27),rep(group_centroids[2,5],28), rep(group_centroids[3,5],27)),
-  Bend=c(rep(group_centroids[1,6],27),rep( group_centroids[2,6],28), rep(group_centroids[3,6],27)))
-
-
-plot_data_subset<-data.frame(
-  Location = z.subset.points$Group,
-  MDS1=z.subset.points$MDS1,
-  MDS2=z.subset.points$MDS2,
-  MDS3=z.subset.points$MDS3,
-  xend=c(rep( group_centroids_subset[1,2],28),rep(group_centroids_subset[2,2],26), rep(group_centroids_subset[3,2],26)),
-  yend=c(rep( group_centroids_subset[1,3],28),rep(group_centroids_subset[2,3],26), rep(group_centroids_subset[3,3],26)),
-  zend=c(rep( group_centroids_subset[1,4],28),rep(group_centroids_subset[2,4],26), rep(group_centroids_subset[3,4],26)))
-
-# ggplot with centroids
-ggplot(plot_data, aes(x = MDS2, y = MDS4, shape = Location, color = Location)) +
-  geom_point(size=2) +
-  scale_color_manual(values = c("#EE6677", "#228833", "#44AA99")) + 
-  scale_shape_manual(values = c(16, 15, 17)) + 
-  stat_ellipse(aes(group = Location, fill = Location), geom = "polygon", alpha = 0.1) +
-  scale_fill_manual(values = c("#EE6677",  "#228833", "#44AA99")) +
-  geom_point(data = group_centroids, aes(x = Centroid_Y, y = Centroid_B, shape = Location, color = Location)) +
-  geom_segment(data = plot_data, aes(x = MDS2, y = MDS4, 
-                                     xend = yend, yend = Aend, color = Location), alpha = 0.5)+
-  
-  theme_classic()
-
-# ggplot with centroids for subset data
-ggplot(plot_data_subset, aes(x = MDS3, y = MDS2, shape = Location, color = Location)) +
-  geom_point(size=2) +
-  scale_color_manual(values = c("#EE6677", "#228833", "#44AA99")) + 
-  scale_shape_manual(values = c(16, 15, 17)) + 
-  stat_ellipse(aes(group = Location, fill = Location), geom = "polygon", alpha = 0.1) +
-  scale_fill_manual(values = c("#EE6677",  "#228833", "#44AA99")) +
-  geom_point(data = group_centroids_subset, aes(x = Centroid_Z, y = Centroid_Y, shape = Location, color = Location)) +
-  geom_segment(data = plot_data_subset, aes(x = MDS3, y = MDS2, 
-                                     xend = zend, yend = yend, color = Location), alpha = 0.5)+
-  
-  theme_classic()
-
-# I need to make a data frame that contains the environmental factors with the survey data
-# That means I need Plot_species with PlotData_Weeds
-
-Survey_wscores <- cbind(z.points, Env_Species) ## This combines the dataset with the coordinates
-en = envfit(z, PlotData_Weeds, permutations = 9999, na.rm = TRUE) ## This creates the arrows
-en_coord_cont = as.data.frame(scores(en, "vectors")) * ordiArrowMul(en) * 0.5 ##Adjust the last number to change the length of the arrows
-en_coord_cat = as.data.frame(scores(en, "factors")) * ordiArrowMul(en) * 0.5 ##Adjust the last number to change the length of the arrows
-
-
-# Create a custom order for Plot data to get it in the same order as the subset data
-PlotData_Weeds$CentralSpecies <- factor(PlotData_Weeds$CentralSpecies, levels = c('Solanum mauritianum', 'Ligustrum lucidum', 'Paraserianthes lophantha'))
-# Sort the data frame based on the custom order
-PlotData_Weeds <- PlotData_Weeds[order(PlotData_Weeds$CentralSpecies), ]
-
-# Remove the plots that only had native species
-PlotData_Weeds_subset<-PlotData_Weeds[-82, ] # this gets rid of the the column where there is a zero
-PlotData_Weeds_subset<-PlotData_Weeds_subset[-80, ] # this gets rid of the the column where there is a zero
-
-# I need to make a data frame that contains the environmental factors with the survey data
-# That means I need Plot_species with PlotData_Weeds subset
-
-Survey_subset_wscores <- cbind(z.subset.points, Env_Species_subset) ## This combines the dataset with the coordinates
-en.subset = envfit(z.subset, PlotData_Weeds_subset, permutations = 9999, na.rm = TRUE) ## This creates the arrows
-en_coord_cont.subset = as.data.frame(scores(en.subset, "vectors")) * ordiArrowMul(en.subset) * 0.5 ##Adjust the last number to change the length of the arrows
-en_coord_cat.subset = as.data.frame(scores(en.subset, "factors")) * ordiArrowMul(en.subset) * 0.5 ##Adjust the last number to change the length of the arrows
-
-
-
-# ggplot with coordinates
-ggplot(Survey_wscores, aes(x = MDS1, y = MDS2)) +
-  geom_point(data = Survey_wscores, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
-#  geom_text(data = Survey_wscores, aes(x = NMDS1, y = NMDS2, label = Species), colour = "red")+
-  scale_color_manual(values = c("#EE6677", "#228833", "#44AA99")) + 
-  scale_shape_manual(values = c(16, 15, 17)) + 
-  stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.25) +
-  scale_fill_manual(values = c("#EE6677",  "#228833", "#44AA99")) +
-  geom_segment(aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2), 
-               data = en_coord_cont, size = 1, alpha = 0.5, colour = "black") +
-  geom_text(data = en_coord_cont, aes(x = NMDS1, y = NMDS2), colour = "black", 
-            label = row.names(en_coord_cont)) +
-  theme_classic() +
-#  labs_pubr() +
-  labs(x = "MDS axis 1", y = "MDS axis 2")
-
-# ggplot with coordinates for subset data
-ggplot(Survey_subset_wscores, aes(x = MDS1, y = MDS2)) +
-  geom_point(data = Survey_subset_wscores, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
-#  geom_text(data = Survey_wscores, aes(x = NMDS1, y = NMDS2, label = Species), colour = "red")+
-  scale_color_manual(values = c("#EE6677", "#228833", "#44AA99")) + 
-  scale_shape_manual(values = c(16, 15, 17)) + 
-  stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.25) +
-  scale_fill_manual(values = c("#EE6677",  "#228833", "#44AA99")) +
-  geom_segment(aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2), 
-               data = en_coord_cont.subset, size = 1, alpha = 0.5, colour = "black") +
-  geom_text(data = en_coord_cont.subset, aes(x = NMDS1, y = NMDS2), colour = "black", 
-            label = row.names(en_coord_cont.subset)) +
-  theme_classic() +
-#  labs_pubr() +
-  labs(x = "MDS axis 1", y = "MDS axis 2")
-
-
-#### PERMANOVA ####
-
-# Filter down to only native species
-# Remove native species plots
-# Remove rows where Group is "Native"
-
-SurveyData_Combined_subset_weeds <- SurveyData_Combined_subset_weeds %>% 
-  filter(CentralSpecies != "Native")
-
-# This code gives 0 values when species are not present in a plot
-Survey_perm <- SurveyData_Combined_subset_weeds %>%
-  pivot_wider(names_from = ScientificName, 
-              values_from = Tier_1_sqrt, 
-              id_cols = Plot) %>%
-  mutate_all(~ replace(., is.na(.), 0))
-
-# instead of being a tibble, I wanted to convert it back to a data frame
-Survey_perm = as.data.frame(Survey_perm)
-
-
-# Needs to remove the first column of numbers as row names and make the Scientific 
-# names of species into the row names
-row.names(Survey_perm) <- Survey_perm$Plot 
-# Remove the first column from the data frame 
-Survey_perm <- Survey_perm[, -1]
-
-#Quick checks for empty rows or columns...
-rowSums(Survey_perm)
-colSums(Survey_perm)
-
-
-Survey_perm<-Survey_perm[,-66] # this gets rid of the the column where there is a zero
-Survey_perm<-Survey_perm[,-65] # this gets rid of the the column where there is a zero
-
-
-# Make a distance matrix
-perm_dist<-vegdist(Survey_perm, method='bray')
-
-# Make a distance matrix
-perm_dist<-vegdist(Survey_perm, method='bray')
-
-
-#Assumptions
-
-dispersion<-betadisper(perm_dist, group=plot_data_subset$Location,type = "centroid")
-
-plot(dispersion)
-
-anova(dispersion)
-
-
-#Test
-
-Perma_result<-adonis2( perm_dist~as.factor(plot_data_subset$Location), data=perm_dist,
-                       permutations=9999)
-
-Perma_result
-
-
-
-
-
-
-# Change the species names to remove the space
-
-library(dplyr)
-Env_Species <- Env_Species %>%
-  mutate(CentralSpecies = ifelse(CentralSpecies == "Solanum mauritianum", "Solanum_mauritianum", CentralSpecies))
-
-# GLM results time
+
+library(factoextra)
+
+Env_Species.pca <- prcomp(Env_Species[,c("Housing", "LitterCover",
+                       "Litter", "Canopy", "Disturbance", "Bare", "Vascular", "Erosion",
+                      "Debris", "WN")], center = TRUE,scale. = TRUE,tol = 0.1)
+
+summary(Env_Species.pca)
+Env_Species.pca
+
+
+#this generates the PC scores for each plot
+axes_Env_Species.pca <- predict(Env_Species.pca, newdata = Env_Species)
+#making sure it worked
+head(axes_Env_Species.pca, 4)
+
+#creating a new dataframe that adds the the PC scores to the end
+df_Env_Species.pca <- cbind(Env_Species, axes_Env_Species.pca)
+
+fviz_eig(Env_Species.pca,addlabels = TRUE) #scree plot
+
+eig.val <- get_eigenvalue(Env_Species.pca) #getting eighvalue from each pca
+eig.val
+
+pca.var<- get_pca_var(Env_Species.pca)
+pca.var$contrib
+pca.var$coord
+pca.var$cos2
+
+
+# % contribution of the variables 
+fviz_pca_var(Env_Species.pca,  axes = c(1, 3), col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE,
+             title = " ")
+
+??fviz_pca_var
+# Need to compare the dimensions to how they relate to richness
 library(MASS) ## do to the GLM
-Solmau_GLM <- glm.nb(Solanum_mauritanum ~ Height + DBH +
-                     Slope + Canopy +
-                     Erosion + Disturbance +
-                     Pests + Litter,
-                     data = Env_Species) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
-summary(Solmau_GLM)
+RichnessGLM <- glm.nb(Richness ~ PC1 + PC2 +
+                       PC3 + PC4 +
+                       PC5 + PC6 +
+                       PC7 + PC8 + PC9,
+                     data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
+summary(RichnessGLM)
+
+# Can see that PC1 and PC3 are the ones that relate significantly to weed species richness
+# Both are negatively associated with weed species richness, so anything negatively
+# associated with either PC1 or PC3 is positively associated with weed species richness
+# and vice-versa
+
+# Let's have a look at those values again with this in mind
+summary(Env_Species.pca)
+Env_Species.pca
+
+# Compare factors to how they relate to richness
+library(MASS) ## do to the GLM
+RichnessGLM <- glm.nb(Richness ~ Housing + Canopy +
+                        Erosion + Disturbance +
+                        Litter + LitterCover +
+                        Bare + Debris + Vascular + WN,
+                      data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
+summary(RichnessGLM)
+
+# Narrow to only the values over 0.5 on the PCA
+RichnessGLM <- glm.nb(Richness ~ Housing + Vascular + WN +
+                        LitterCover,
+                      data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
+summary(RichnessGLM)
+
+# Housing density and litter cover are the only significant factors influencing 
+# weed species richness
+
+# Three dimensional plot
+library(plotly)
+??plot_ly
+fig <- plot_ly(df_Env_Species.pca, x = ~PC1, y = ~PC2, z = ~PC3, color = ~PC3, type = "scatter3d", mode = "markers", linetypes = NULL, repel = TRUE) %>%
+  layout(title = "3D PCA Visualization")
+
+fig
