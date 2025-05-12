@@ -96,6 +96,9 @@ colnames(PlotData_Combined)[3:11] <- c("Height", "DBH",
                                        "Erosion", "Disturbance",
                                        "Pests", "Litter", "Housing") ## Renaming the columns
 
+# Let's have a quick look at the relationships between variables and the number of environmental weeds
+
+
 
 # Need to transform the data square root was given as a good transformation, so I will do that
 # SurveyData_Combined$Tier_1_sqrt <- sqrt(SurveyData_Combined$Tier_1)
@@ -105,13 +108,68 @@ colnames(PlotData_Combined)[3:11] <- c("Height", "DBH",
 library(dplyr)
 Env_Species <- left_join(RichnessWeed, PlotData_Combined, by = "Plot")  # Preserves all rows from df1
 
-WeedRichnessPlot <- ggplot(data = Env_Species, mapping = aes(x = Plot, y = unique_values)) +
+# GGPLOT for height
+WeedRichnessPlot <- ggplot(data = Env_Species, mapping = aes(x = unique_values, y = Height)) +
   geom_point(size = 2) + # Set point size
   theme_minimal() +
-  labs(x = "Plot", y = "Weed Richness") +
+  labs(x = "Weed Species Richness", y = "Central Species Height") +
   theme_classic()
 
 print(WeedRichnessPlot)
+
+# GGPLOT for DBH
+WeedRichnessSlope <- ggplot(data = Env_Species, mapping = aes(x = unique_values, y = DBH)) +
+  geom_point(size = 2) + # Set point size
+  theme_minimal() +
+  labs(x = "Weed Species Richness", y = "Central Species DBH") +
+  theme_classic()
+
+print(WeedRichnessDBH)
+
+# GGPLOT for Slope
+WeedRichnessSlope <- ggplot(data = Env_Species, mapping = aes(x = unique_values, y = Slope)) +
+  geom_point(size = 2) + # Set point size
+  theme_minimal() +
+  labs(x = "Weed Species Richness", y = "Slope") +
+  theme_classic()
+
+print(WeedRichnessSlope)
+
+# GGPLOT for Canopy
+WeedRichnessCanopy <- ggplot(data = Env_Species, mapping = aes(x = unique_values, y = Canopy)) +
+  geom_point(size = 2) + # Set point size
+  theme_minimal() +
+  labs(x = "Weed Species Richness", y = "Canopy cover") +
+  theme_classic()
+
+print(WeedRichnessCanopy)
+
+# GGPLOT for Litter
+WeedRichnessLitter <- ggplot(data = Env_Species, mapping = aes(x = unique_values, y = Litter)) +
+  geom_point(size = 2) + # Set point size
+  theme_minimal() +
+  labs(x = "Weed Species Richness", y = "Litter") +
+  theme_classic()
+
+print(WeedRichnessLitter)
+
+# GGPLOT for Housing Density
+WeedRichnessHousing <- ggplot(data = Env_Species, mapping = aes(x = unique_values, y = Housing)) +
+  geom_point(size = 2) + # Set point size
+  theme_minimal() +
+  labs(x = "Weed Species Richness", y = "Housing") +
+  theme_classic()
+
+print(WeedRichnessHousing)
+
+# Load the required packages
+library(lattice)
+library(R2jags)
+Mydotplot <- function(DataSelected)
+
+MyVar <- c("Height", "DBH", "Slope", "Litter", "Housing")
+Mydotplot(Env_Species[, MyVar])
+
 
 # Extract data
 WeedRichnessPlotData <- ggplot_build(WeedRichnessPlot)$data[[1]]
