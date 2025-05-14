@@ -19,10 +19,7 @@ tidyverse_update()
 library(dplyr)
 
 library(readr)
-SurveyData <- read_csv("SurveyData_Clean.csv")
-
-library(readr)
-SurveyData <- read_csv("SurveyData_Clean_WN_removed.csv")
+SurveyData<- read_csv("Fieldwork/SurveyData_Clean_WN_removed.csv")
 
 # The species that were entered as percent-cover need to be accounted for
 # Given that the number of plants will vary greatly, but cover plants were all
@@ -51,6 +48,10 @@ library(tidyr)
 SurveyData_Combined <- SurveyData_Combined %>%
   unite(Plot, Plot, W_N, sep = "-")
 
+# I need to make this data only include seedlings. Therefore, I need to remove
+# the rows that only include species > 51 cm.
+
+SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combined$Tier_3
 
 #### Change the data to be a matrix (n sample units x p species) ####
 
@@ -63,7 +64,7 @@ SurveyData_Combined <- SurveyData_Combined %>%
 # autotransform is not doing anything, so I need to transform my data
 # square root was given as a good transformation, so I will do that
 
-SurveyData_Combined$Tier_1_sqrt <- sqrt(SurveyData_Combined$Tier_1)
+# SurveyData_Combined$Tier_1_sqrt <- sqrt(SurveyData_Combined$Tier_1)
 
 # Filter down to only native species
 # Remove native species plots
@@ -75,7 +76,7 @@ SurveyData_Combined_Weeds <- SurveyData_Combined %>%
 # This code gives 0 values when species are not present in a plot
 Survey_wide <- SurveyData_Combined_Weeds %>%
   pivot_wider(names_from = ScientificName, 
-              values_from = Tier_1_sqrt, 
+              values_from = seedlings, 
               id_cols = Plot) %>%
   mutate_all(~ replace(., is.na(.), 0))
 
@@ -105,6 +106,9 @@ Survey_wide<-Survey_wide[,-39] # this gets rid of the the column where there is 
 Survey_wide<-Survey_wide[,-14] # this gets rid of the the column where there is a zero
 Survey_wide<-Survey_wide[,-34] # this gets rid of the the column where there is a zero
 Survey_wide<-Survey_wide[,-37] # this gets rid of the the column where there is a zero
+
+# Remove empty columns
+Survey_wide <- Survey_wide[, colSums(Survey_wide) != 0]
 
 # This code gives 0 values when species are not present in a plot
 # Survey_wide <- SurveyData_Combined %>%
@@ -193,7 +197,7 @@ z <- metaMDS(comm = doubs.dist,
              autotransform = FALSE,
              distance = "bray",
              engine = "monoMDS",
-             k = 4,
+             k = 2,
              weakties = TRUE,
              model = "global",
              maxit = 300,
@@ -340,7 +344,7 @@ plot_data<-data.frame(
   MDS2=z.points$MDS2,
   MDS3=z.points$MDS3,
   MDS4=z.points$MDS4,
-#  MDS5=z.points$MDS5,
+  #  MDS5=z.points$MDS5,
   xend=c(rep( group_centroids[1,2],27),rep(group_centroids[2,2],28), rep(group_centroids[3,2],27)),
   yend=c(rep( group_centroids[1,3],27),rep(group_centroids[2,3],28), rep(group_centroids[3,3],27)),
   zend=c(rep( group_centroids[1,4],27),rep(group_centroids[2,4],28), rep(group_centroids[3,4],27)),
@@ -355,8 +359,8 @@ ggplot(plot_data, aes(x = MDS2, y = MDS4, shape = Location, color = Location)) +
   stat_ellipse(aes(group = Location, fill = Location), geom = "polygon", alpha = 0.1) +
   geom_point(data = group_centroids, aes(x = Centroid_Y, y = Centroid_B, shape = Location, color = Location)) +
   geom_segment(data = plot_data, aes(x = MDS2, y = MDS4, 
-  xend = yend, yend = Aend, color = Location), alpha = 0.5)+
-
+                                     xend = yend, yend = Aend, color = Location), alpha = 0.5)+
+  
   theme_bw()
 
 #### PERMANOVA ####
