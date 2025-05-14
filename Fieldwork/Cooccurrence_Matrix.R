@@ -296,7 +296,7 @@ cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = TRUE, spp_names = 
 
 Prob_table <- prob.table(cooccur.Survey)
 
-plot <- plot(cooccur.Survey) # add "plotrand = TRUE" to include completely random specie
+plot <- plot(cooccur.Survey) # add "plotrand = TRUE" to include completely random species
 
 # Remove legend 
 plot + theme(legend.position = "none") + ggtitle(NULL)
