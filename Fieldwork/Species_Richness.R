@@ -39,7 +39,7 @@ tidyverse_update()
 library(dplyr)
 
 library(readr)
-SurveyData <- read_csv("SurveyData_Clean.csv")
+SurveyData <- read_csv("Fieldwork/SurveyData_Clean.csv")
 
 # Unite Site and Plot columns
 
@@ -59,8 +59,9 @@ SurveyData_Combined <- SurveyData_united %>%
 # calculate how many different values there are for ScientificName for each Central Species
 
 library(dplyr)
-Richness <- SurveyData_Combined %>% group_by(Plot, CentralSpecies) %>% summarize(unique_values = n_distinct(ScientificName))
+Richness <- SurveyData_Combined %>% group_by(Plot) %>% summarize(unique_values = n_distinct(ScientificName))
 
+SurveyData_Combined$Richness <- 
 # Calculate Summarry Statistics
 library(dplyr)
 summ_Richness <- Richness %>%

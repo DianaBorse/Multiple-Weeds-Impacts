@@ -1,4 +1,4 @@
-#### NMDS ####
+#### NMDS Seedlings below 50 cm####
 
 # Before anything else, verify that your environment is totally clear.
 # This is important, because old objects can foul up the works
@@ -52,6 +52,7 @@ SurveyData_Combined <- SurveyData_Combined %>%
 # the rows that only include species > 51 cm.
 
 SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combined$Tier_3
+SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combined$Tier_4
 
 #### Change the data to be a matrix (n sample units x p species) ####
 
@@ -64,7 +65,7 @@ SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combine
 # autotransform is not doing anything, so I need to transform my data
 # square root was given as a good transformation, so I will do that
 
-# SurveyData_Combined$Tier_1_sqrt <- sqrt(SurveyData_Combined$Tier_1)
+ SurveyData_Combined$seedlings_sqrt <- sqrt(SurveyData_Combined$seedlings)
 
 # Filter down to only native species
 # Remove native species plots
@@ -76,7 +77,7 @@ SurveyData_Combined_Weeds <- SurveyData_Combined %>%
 # This code gives 0 values when species are not present in a plot
 Survey_wide <- SurveyData_Combined_Weeds %>%
   pivot_wider(names_from = ScientificName, 
-              values_from = seedlings, 
+              values_from = seedlings_sqrt, 
               id_cols = Plot) %>%
   mutate_all(~ replace(., is.na(.), 0))
 
@@ -96,19 +97,26 @@ colSums(Survey_wide)
 
 # These are the columns that need to be removed using the data with the extra 
 # woolly nightshades removed
-Survey_wide<-Survey_wide[,-115] # this gets rid of the the column where there is a zero
-Survey_wide<-Survey_wide[,-40] # this gets rid of the the column where there is a zero
-Survey_wide<-Survey_wide[,-39] # this gets rid of the the column where there is a zero
+# Survey_wide<-Survey_wide[,-115] # this gets rid of the the column where there is a zero
+# Survey_wide<-Survey_wide[,-40] # this gets rid of the the column where there is a zero
+# Survey_wide<-Survey_wide[,-39] # this gets rid of the the column where there is a zero
 
 
 # These are the columns that need to be removed using the data without the extra woolly
 # nightshades removed
-Survey_wide<-Survey_wide[,-14] # this gets rid of the the column where there is a zero
-Survey_wide<-Survey_wide[,-34] # this gets rid of the the column where there is a zero
-Survey_wide<-Survey_wide[,-37] # this gets rid of the the column where there is a zero
+# Survey_wide<-Survey_wide[,-14] # this gets rid of the the column where there is a zero
+# Survey_wide<-Survey_wide[,-34] # this gets rid of the the column where there is a zero
+# Survey_wide<-Survey_wide[,-37] # this gets rid of the the column where there is a zero
 
 # Remove empty columns
 Survey_wide <- Survey_wide[, colSums(Survey_wide) != 0]
+Survey_wide <- Survey_wide[, rowSums(Survey_wide) != 0]
+
+rowSums(Survey_wide)
+colSums(Survey_wide)
+
+# Try removing outlier
+Survey_wide<-Survey_wide[-80, ] # this gets rid of the the row that looks to be an outlier
 
 # This code gives 0 values when species are not present in a plot
 # Survey_wide <- SurveyData_Combined %>%
@@ -141,6 +149,7 @@ library(vegan)
 #Empty sites can cause problems so let's drop it
 # Survey_wide<-Survey_wide[,-46] # this gets rid of the the column where there is a zero
 # Survey_wide<-Survey_wide[,-49,] # this gets rid of the the column where there is a zero
+??vegdist
 
 doubs.dist<-vegdist(Survey_wide)
 doubs.dist
@@ -197,7 +206,7 @@ z <- metaMDS(comm = doubs.dist,
              autotransform = FALSE,
              distance = "bray",
              engine = "monoMDS",
-             k = 2,
+             k = 4,
              weakties = TRUE,
              model = "global",
              maxit = 300,
@@ -238,6 +247,7 @@ library(dplyr)
 
 # Create a new data frame with unique Plot values
 Plot_Species <- SurveyData_Combined_Weeds %>% distinct(Plot, .keep_all = TRUE)
+Plot_Species<-Plot_Species[-80, ] # this gets rid of the the outlier
 
 grp <- Plot_Species$CentralSpecies
 
@@ -247,7 +257,8 @@ grp <- Plot_Species$CentralSpecies
 # data.scores$site <- rownames(z)  # create a column of site names, from the rownames of data.scores
 # data.scores$grp <- grp  #  add the grp variable created earlier
 # head(data.scores)  #look at the data
-
+hcl.colors(8, palette = "Cividis")
+hcl.colors(8, palette = "Tropic")
 
 # Create a data frame of NMDS results with group information
 z.points$Group <- Plot_Species$CentralSpecies # Replace with your group column
@@ -255,8 +266,8 @@ z.points$Group <- Plot_Species$CentralSpecies # Replace with your group column
 # Customize plot with ggplot2
 nmds_plot <- ggplot(data = z.points, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
   geom_point(size = 2) + # Set point size
-  scale_shape_manual(values = c(16, 15, 18, 19)) + # Customize shapes
-  scale_color_manual(values = c("#EE6677", "#228833", "#661100", "#44AA99")) + # Customize colors
+  scale_shape_manual(values = c(16, 15, 18)) + # Customize shapes
+  scale_color_manual(values = c("#070707", "#AA0065", "#F1B17F")) + # Customize colors
   theme_minimal() +
   labs(x = "NMDS1", y = "NMDS2")
 
@@ -269,7 +280,7 @@ print(nmds_plot)
 nmds_plot <- ggplot(data = z.points, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
   geom_point(size = 2) + # Set point size
   scale_shape_manual(values = c(16, 15, 18, 19)) + # Customize shapes
-  scale_color_manual(values = c("#EE6677", "#228833", "#661100", "#44AA99")) + # Customize colors
+  scale_color_manual(values = c("#7D1D67", "#ED4572", "#FF9772")) + # Customize colors
   geom_polygon(data = z.points, aes(fill = Group, group = Group), alpha = 0.1) +
   theme_minimal() +
   labs(x = "NMDS1", y = "NMDS2")
@@ -280,8 +291,8 @@ print(nmds_plot)
 # Customize plot with ggplot2 add ellipses
 nmds_plot <- ggplot(data = z.points, aes(x = MDS2, y = MDS4, shape = Group, color = Group)) +
   geom_point(size = 2) + # Set point size
-  scale_shape_manual(values = c(16, 15, 18, 19)) + # Customize shapes
-  scale_color_manual(values = c("#EE6677", "#228833", "#661100", "#44AA99")) + # Customize colors
+  scale_shape_manual(values = c(16, 15, 18)) + # Customize shapes
+  scale_color_manual(values = c("#882265", "#88CCEE", "#332288")) + # Customize colors
   stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.1) +
   theme_minimal() +
   labs(x = "NMDS1", y = "NMDS2")
@@ -302,7 +313,7 @@ print(nmds_plot)
 nmds_plot <- ggplot(data = z.points, aes(x = MDS2, y = MDS4, shape = Group, color = Group)) +
   geom_point(size = 2) + # Set point size
   scale_shape_manual(values = c(16, 15, 17)) + # Customize shapes
-  scale_color_manual(values = c("#EE6677", "#661100", "#44AA99")) + # Customize colors
+  scale_color_manual(values = c("#882265", "#88CCEE", "#332288")) + # Customize colors
   stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.1) +
   theme_minimal() +
   labs(x = "NMDS2", y = "NMDS4")
@@ -324,10 +335,10 @@ group_centroids <- data.frame(
                  mean(z.points$MDS3[z.points$Group == "Paraserianthes lophantha"])),
   Centroid_A = c(mean(z.points$MDS4[z.points$Group == "Solanum mauritianum"]),
                  mean(z.points$MDS4[z.points$Group == "Ligustrum lucidum"]),
-                 mean(z.points$MDS4[z.points$Group == "Paraserianthes lophantha"])),
-  Centroid_B = c(mean(z.points$MDS5[z.points$Group == "Solanum mauritianum"]),
-                 mean(z.points$MDS5[z.points$Group == "Ligustrum lucidum"]),
-                 mean(z.points$MDS5[z.points$Group == "Paraserianthes lophantha"]))
+                 mean(z.points$MDS4[z.points$Group == "Paraserianthes lophantha"]))
+#  Centroid_B = c(mean(z.points$MDS5[z.points$Group == "Solanum mauritianum"]),
+#                 mean(z.points$MDS5[z.points$Group == "Ligustrum lucidum"]),
+#                 mean(z.points$MDS5[z.points$Group == "Paraserianthes lophantha"]))
 )
 
 # Sort z.points.weeds to match group-centroids order
@@ -344,24 +355,72 @@ plot_data<-data.frame(
   MDS2=z.points$MDS2,
   MDS3=z.points$MDS3,
   MDS4=z.points$MDS4,
-  #  MDS5=z.points$MDS5,
-  xend=c(rep( group_centroids[1,2],27),rep(group_centroids[2,2],28), rep(group_centroids[3,2],27)),
-  yend=c(rep( group_centroids[1,3],27),rep(group_centroids[2,3],28), rep(group_centroids[3,3],27)),
-  zend=c(rep( group_centroids[1,4],27),rep(group_centroids[2,4],28), rep(group_centroids[3,4],27)),
-  Aend=c(rep( group_centroids[1,5],27),rep(group_centroids[2,5],28), rep(group_centroids[3,5],27)))
-#  Bend=c(rep(group_centroids[1,6],27),rep( group_centroids[2,6],28), rep(group_centroids[3,6],27)))
+#  MDS5=z.points$MDS5,
+  xend=c(rep( group_centroids[1,2],27),rep(group_centroids[2,2],27), rep(group_centroids[3,2],27)),
+  yend=c(rep( group_centroids[1,3],27),rep(group_centroids[2,3],27), rep(group_centroids[3,3],27)),
+  zend=c(rep( group_centroids[1,4],27),rep(group_centroids[2,4],27), rep(group_centroids[3,4],27)),
+  Aend=c(rep( group_centroids[1,5],27),rep(group_centroids[2,5],27), rep(group_centroids[3,5],27)))
+#  Bend=c(rep(group_centroids[1,6],27),rep( group_centroids[2,6],27), rep(group_centroids[3,6],27)))
 
-# ggplot with centroids
-ggplot(plot_data, aes(x = MDS2, y = MDS4, shape = Location, color = Location)) +
+# ggplot with centroids dimensions 1 and 3
+ggplot(plot_data, aes(x = MDS1, y = MDS3, shape = Location, color = Location)) +
   geom_point(size=2) +
-  scale_color_manual(values = c("#EE6677", "#661100", "#44AA99")) + 
+  scale_color_manual(values = c("#882265", "#88CCEE", "#332288")) + 
   scale_shape_manual(values = c(16, 15, 17)) + 
   stat_ellipse(aes(group = Location, fill = Location), geom = "polygon", alpha = 0.1) +
-  geom_point(data = group_centroids, aes(x = Centroid_Y, y = Centroid_B, shape = Location, color = Location)) +
+  geom_point(data = group_centroids, aes(x = Centroid_X, y = Centroid_Z, shape = Location, color = Location)) +
+  geom_segment(data = plot_data, aes(x = MDS1, y = MDS3, 
+                                     xend = xend, yend = zend, color = Location), alpha = 0.5)+
+  
+  theme_classic()
+
+# ggplot with centroids dimensions 1 and 4
+ggplot(plot_data, aes(x = MDS1, y = MDS4, shape = Location, color = Location)) +
+  geom_point(size=2) +
+  scale_color_manual(values = c("#882265", "#88CCEE", "#332288")) + 
+  scale_shape_manual(values = c(16, 15, 17)) + 
+  stat_ellipse(aes(group = Location, fill = Location), geom = "polygon", alpha = 0.1) +
+  geom_point(data = group_centroids, aes(x = Centroid_X, y = Centroid_A, shape = Location, color = Location)) +
+  geom_segment(data = plot_data, aes(x = MDS1, y = MDS4, 
+                                     xend = xend, yend = Aend, color = Location), alpha = 0.5)+
+  
+  theme_classic()
+
+# ggplot with centroids dimensions 2 and 4
+ggplot(plot_data, aes(x = MDS2, y = MDS4, shape = Location, color = Location)) +
+  geom_point(size=2) +
+  scale_color_manual(values = c("#882265", "#88CCEE", "#332288")) + 
+  scale_shape_manual(values = c(16, 15, 17)) + 
+  stat_ellipse(aes(group = Location, fill = Location), geom = "polygon", alpha = 0.1) +
+  geom_point(data = group_centroids, aes(x = Centroid_Y, y = Centroid_A, shape = Location, color = Location)) +
   geom_segment(data = plot_data, aes(x = MDS2, y = MDS4, 
                                      xend = yend, yend = Aend, color = Location), alpha = 0.5)+
   
-  theme_bw()
+  theme_classic()
+
+# ggplot with centroids dimensions 2 and 3
+ggplot(plot_data, aes(x = MDS2, y = MDS3, shape = Location, color = Location)) +
+  geom_point(size=2) +
+  scale_color_manual(values = c("#882265", "#88CCEE", "#332288")) + 
+  scale_shape_manual(values = c(16, 15, 17)) + 
+  stat_ellipse(aes(group = Location, fill = Location), geom = "polygon", alpha = 0.1) +
+  geom_point(data = group_centroids, aes(x = Centroid_Y, y = Centroid_Z, shape = Location, color = Location)) +
+  geom_segment(data = plot_data, aes(x = MDS2, y = MDS3, 
+                                     xend = yend, yend = zend, color = Location), alpha = 0.5)+
+  
+  theme_classic()
+
+# ggplot with centroids dimensions 3 and 4
+ggplot(plot_data, aes(x = MDS3, y = MDS4, shape = Location, color = Location)) +
+  geom_point(size=2) +
+  scale_color_manual(values = c("#882265", "#88CCEE", "#332288")) + 
+  scale_shape_manual(values = c(16, 15, 17)) + 
+  stat_ellipse(aes(group = Location, fill = Location), geom = "polygon", alpha = 0.1) +
+  geom_point(data = group_centroids, aes(x = Centroid_Z, y = Centroid_A, shape = Location, color = Location)) +
+  geom_segment(data = plot_data, aes(x = MDS3, y = MDS4, 
+                                     xend = zend, yend = Aend, color = Location), alpha = 0.5)+
+  
+  theme_classic()
 
 #### PERMANOVA ####
 
@@ -375,7 +434,7 @@ SurveyData_Combined_Weeds <- SurveyData_Combined %>%
 # This code gives 0 values when species are not present in a plot
 Survey_perm <- SurveyData_Combined_Weeds %>%
   pivot_wider(names_from = ScientificName, 
-              values_from = Tier_1_sqrt, 
+              values_from = seedlings_sqrt, 
               id_cols = Plot) %>%
   mutate_all(~ replace(., is.na(.), 0))
 
@@ -395,15 +454,19 @@ colSums(Survey_perm)
 
 # These are the columns that need to be removed using the data with the extra 
 # woolly nightshades removed
-Survey_perm<-Survey_perm[,-115] # this gets rid of the the column where there is a zero
-Survey_perm<-Survey_perm[,-40] # this gets rid of the the column where there is a zero
-Survey_perm<-Survey_perm[,-39] # this gets rid of the the column where there is a zero
+#Survey_perm<-Survey_perm[,-115] # this gets rid of the the column where there is a zero
+#Survey_perm<-Survey_perm[,-40] # this gets rid of the the column where there is a zero
+#Survey_perm<-Survey_perm[,-39] # this gets rid of the the column where there is a zero
 
 #Empty sites can cause problems so let's drop it
-Survey_perm<-Survey_perm[,-14] # this gets rid of the the column where there is a zero
-Survey_perm<-Survey_perm[,-34] # this gets rid of the the column where there is a zero
-Survey_perm<-Survey_perm[,-37] # this gets rid of the the column where there is a zero
+#Survey_perm<-Survey_perm[,-14] # this gets rid of the the column where there is a zero
+#Survey_perm<-Survey_perm[,-34] # this gets rid of the the column where there is a zero
+#Survey_perm<-Survey_perm[,-37] # this gets rid of the the column where there is a zero
 
+Survey_perm <- Survey_perm[, colSums(Survey_perm) != 0]
+Survey_perm <- Survey_perm[, rowSums(Survey_perm) != 0]
+
+Survey_perm<-Survey_perm[-80, ] # this gets rid of the the row that is an outlier
 
 # Make a distance matrix
 perm_dist<-vegdist(Survey_perm, method='bray')

@@ -20,11 +20,11 @@ library(dplyr)
 
 # Read in the data with 6 extra woolly nightshades
 library(readr)
-SurveyData <- read_csv("SurveyData_Clean.csv")
+SurveyData <- read_csv("Fieldwork/SurveyData_Clean.csv")
 
 # Read in the data with extra woolly nightshades removed
 library(readr)
-SurveyData <- read_csv("SurveyData_Clean_WN_removed.csv")
+SurveyData <- read_csv("Fieldwork/SurveyData_Clean_WN_removed.csv")
 
 # The species that were entered as percent-cover need to be accounted for
 # Given that the number of plants will vary greatly, but cover plants were all
@@ -108,6 +108,9 @@ Survey_wide<-Survey_wide[,-14] # this gets rid of the the column where there is 
 Survey_wide<-Survey_wide[,-34] # this gets rid of the the column where there is a zero
 Survey_wide<-Survey_wide[,-37] # this gets rid of the the column where there is a zero
 
+# Try doing this more simple method and see if this is why the other is not working
+Survey_wide <- Survey_wide[, colSums(Survey_wide) != 0]
+Survey_wide <- Survey_wide[, rowSums(Survey_wide) != 0]
 # This code gives 0 values when species are not present in a plot
 # Survey_wide <- SurveyData_Combined %>%
 #  pivot_wider(names_from = ScientificName, 

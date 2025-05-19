@@ -39,7 +39,7 @@ tidyverse_update()
 library(dplyr)
 
 library(readr)
-SurveyData <- read_csv("SurveyData_Clean.csv")
+SurveyData <- read_csv("Fieldwork/SurveyData_Clean.csv")
 
 # Subset data to only include environmental weeds
 subset_SurveyDataWeeds <- SurveyData[SurveyData$WeedList == 1, ]
