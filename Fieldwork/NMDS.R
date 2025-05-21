@@ -48,11 +48,15 @@ library(tidyr)
 SurveyData_Combined <- SurveyData_Combined %>%
   unite(Plot, Plot, W_N, sep = "-")
 
+# subset to just look at the weeds
+# Subset the data to only include species that are weeds using the WeedList Column
+SurveyData_Combined <- SurveyData_Combined[SurveyData_Combined$WeedList == 1, ]
+
 # I need to make this data only include seedlings. Therefore, I need to remove
 # the rows that only include species > 51 cm.
 
 SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combined$Tier_3
-SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combined$Tier_4
+# SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combined$Tier_4
 
 #### Change the data to be a matrix (n sample units x p species) ####
 
@@ -110,13 +114,14 @@ colSums(Survey_wide)
 
 # Remove empty columns
 Survey_wide <- Survey_wide[, colSums(Survey_wide) != 0]
-Survey_wide <- Survey_wide[, rowSums(Survey_wide) != 0]
+Survey_wide <- Survey_wide[rowSums(Survey_wide) != 0, ]
 
 rowSums(Survey_wide)
 colSums(Survey_wide)
 
 # Try removing outlier
-Survey_wide<-Survey_wide[-80, ] # this gets rid of the the row that looks to be an outlier
+ Survey_wide<-Survey_wide[-68, ] # this gets rid of the the row that looks to be an outlier
+ Survey_wide<-Survey_wide[-1, ] # this gets rid of the the row that looks to be an outlier
 
 # This code gives 0 values when species are not present in a plot
 # Survey_wide <- SurveyData_Combined %>%
@@ -149,7 +154,6 @@ library(vegan)
 #Empty sites can cause problems so let's drop it
 # Survey_wide<-Survey_wide[,-46] # this gets rid of the the column where there is a zero
 # Survey_wide<-Survey_wide[,-49,] # this gets rid of the the column where there is a zero
-??vegdist
 
 doubs.dist<-vegdist(Survey_wide)
 doubs.dist
@@ -206,7 +210,7 @@ z <- metaMDS(comm = doubs.dist,
              autotransform = FALSE,
              distance = "bray",
              engine = "monoMDS",
-             k = 4,
+             k = 2,
              weakties = TRUE,
              model = "global",
              maxit = 300,
@@ -247,7 +251,15 @@ library(dplyr)
 
 # Create a new data frame with unique Plot values
 Plot_Species <- SurveyData_Combined_Weeds %>% distinct(Plot, .keep_all = TRUE)
-Plot_Species<-Plot_Species[-80, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-74, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-68, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-67, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-62, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-53, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-24, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-15, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-12, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-1, ] # this gets rid of the the outlier
 
 grp <- Plot_Species$CentralSpecies
 
@@ -289,7 +301,7 @@ nmds_plot <- ggplot(data = z.points, aes(x = MDS1, y = MDS2, shape = Group, colo
 print(nmds_plot)
 
 # Customize plot with ggplot2 add ellipses
-nmds_plot <- ggplot(data = z.points, aes(x = MDS2, y = MDS4, shape = Group, color = Group)) +
+nmds_plot <- ggplot(data = z.points, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
   geom_point(size = 2) + # Set point size
   scale_shape_manual(values = c(16, 15, 18)) + # Customize shapes
   scale_color_manual(values = c("#882265", "#88CCEE", "#332288")) + # Customize colors
@@ -310,13 +322,13 @@ print(nmds_plot)
 
 
 # Customize plot with ggplot2 add ellipses
-nmds_plot <- ggplot(data = z.points, aes(x = MDS2, y = MDS4, shape = Group, color = Group)) +
+nmds_plot <- ggplot(data = z.points, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
   geom_point(size = 2) + # Set point size
   scale_shape_manual(values = c(16, 15, 17)) + # Customize shapes
   scale_color_manual(values = c("#882265", "#88CCEE", "#332288")) + # Customize colors
   stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.1) +
   theme_minimal() +
-  labs(x = "NMDS2", y = "NMDS4")
+  labs(x = "NMDS1", y = "NMDS2")
 
 # Print the plot
 print(nmds_plot)
@@ -329,17 +341,17 @@ group_centroids <- data.frame(
                  mean(z.points$MDS1[z.points$Group == "Paraserianthes lophantha"])),
   Centroid_Y = c(mean(z.points$MDS2[z.points$Group == "Solanum mauritianum"]),
                  mean(z.points$MDS2[z.points$Group == "Ligustrum lucidum"]),
-                 mean(z.points$MDS2[z.points$Group == "Paraserianthes lophantha"])),
-  Centroid_Z = c(mean(z.points$MDS3[z.points$Group == "Solanum mauritianum"]),
-                 mean(z.points$MDS3[z.points$Group == "Ligustrum lucidum"]),
-                 mean(z.points$MDS3[z.points$Group == "Paraserianthes lophantha"])),
-  Centroid_A = c(mean(z.points$MDS4[z.points$Group == "Solanum mauritianum"]),
-                 mean(z.points$MDS4[z.points$Group == "Ligustrum lucidum"]),
-                 mean(z.points$MDS4[z.points$Group == "Paraserianthes lophantha"]))
+                 mean(z.points$MDS2[z.points$Group == "Paraserianthes lophantha"])))
+#  Centroid_Z = c(mean(z.points$MDS3[z.points$Group == "Solanum mauritianum"]),
+#                 mean(z.points$MDS3[z.points$Group == "Ligustrum lucidum"]),
+#                 mean(z.points$MDS3[z.points$Group == "Paraserianthes lophantha"])),
+#  Centroid_A = c(mean(z.points$MDS4[z.points$Group == "Solanum mauritianum"]),
+ #                mean(z.points$MDS4[z.points$Group == "Ligustrum lucidum"]),
+ #                mean(z.points$MDS4[z.points$Group == "Paraserianthes lophantha"]))
 #  Centroid_B = c(mean(z.points$MDS5[z.points$Group == "Solanum mauritianum"]),
 #                 mean(z.points$MDS5[z.points$Group == "Ligustrum lucidum"]),
 #                 mean(z.points$MDS5[z.points$Group == "Paraserianthes lophantha"]))
-)
+
 
 # Sort z.points.weeds to match group-centroids order
 # Define the custom order for the 'group' column
@@ -353,24 +365,24 @@ plot_data<-data.frame(
   Location = z.points$Group,
   MDS1=z.points$MDS1,
   MDS2=z.points$MDS2,
-  MDS3=z.points$MDS3,
-  MDS4=z.points$MDS4,
+#  MDS3=z.points$MDS3,
+#  MDS4=z.points$MDS4,
 #  MDS5=z.points$MDS5,
-  xend=c(rep( group_centroids[1,2],27),rep(group_centroids[2,2],27), rep(group_centroids[3,2],27)),
-  yend=c(rep( group_centroids[1,3],27),rep(group_centroids[2,3],27), rep(group_centroids[3,3],27)),
-  zend=c(rep( group_centroids[1,4],27),rep(group_centroids[2,4],27), rep(group_centroids[3,4],27)),
-  Aend=c(rep( group_centroids[1,5],27),rep(group_centroids[2,5],27), rep(group_centroids[3,5],27)))
+  xend=c(rep( group_centroids[1,2],22),rep(group_centroids[2,2],23), rep(group_centroids[3,2],23)),
+  yend=c(rep( group_centroids[1,3],22),rep(group_centroids[2,3],23), rep(group_centroids[3,3],23)))
+#  zend=c(rep( group_centroids[1,4],27),rep(group_centroids[2,4],27), rep(group_centroids[3,4],27)),
+#  Aend=c(rep( group_centroids[1,5],27),rep(group_centroids[2,5],27), rep(group_centroids[3,5],27)))
 #  Bend=c(rep(group_centroids[1,6],27),rep( group_centroids[2,6],27), rep(group_centroids[3,6],27)))
 
-# ggplot with centroids dimensions 1 and 3
-ggplot(plot_data, aes(x = MDS1, y = MDS3, shape = Location, color = Location)) +
+# ggplot with centroids dimensions 1 and 2
+ggplot(plot_data, aes(x = MDS1, y = MDS2, shape = Location, color = Location)) +
   geom_point(size=2) +
   scale_color_manual(values = c("#882265", "#88CCEE", "#332288")) + 
   scale_shape_manual(values = c(16, 15, 17)) + 
   stat_ellipse(aes(group = Location, fill = Location), geom = "polygon", alpha = 0.1) +
-  geom_point(data = group_centroids, aes(x = Centroid_X, y = Centroid_Z, shape = Location, color = Location)) +
-  geom_segment(data = plot_data, aes(x = MDS1, y = MDS3, 
-                                     xend = xend, yend = zend, color = Location), alpha = 0.5)+
+  geom_point(data = group_centroids, aes(x = Centroid_X, y = Centroid_Y, shape = Location, color = Location)) +
+  geom_segment(data = plot_data, aes(x = MDS1, y = MDS2, 
+                                     xend = xend, yend = yend, color = Location), alpha = 0.5)+
   
   theme_classic()
 
@@ -424,13 +436,6 @@ ggplot(plot_data, aes(x = MDS3, y = MDS4, shape = Location, color = Location)) +
 
 #### PERMANOVA ####
 
-# Filter down to only native species
-# Remove native species plots
-# Remove rows where Group is "Native"
-
-SurveyData_Combined_Weeds <- SurveyData_Combined %>% 
-  filter(CentralSpecies != "Native")
-
 # This code gives 0 values when species are not present in a plot
 Survey_perm <- SurveyData_Combined_Weeds %>%
   pivot_wider(names_from = ScientificName, 
@@ -464,9 +469,10 @@ colSums(Survey_perm)
 #Survey_perm<-Survey_perm[,-37] # this gets rid of the the column where there is a zero
 
 Survey_perm <- Survey_perm[, colSums(Survey_perm) != 0]
-Survey_perm <- Survey_perm[, rowSums(Survey_perm) != 0]
+Survey_perm <- Survey_perm[rowSums(Survey_perm) != 0, ]
 
-Survey_perm<-Survey_perm[-80, ] # this gets rid of the the row that is an outlier
+Survey_perm<-Survey_perm[-68, ] # this gets rid of the the row that is an outlier
+Survey_perm<-Survey_perm[-1, ] # this gets rid of the the row that is an outlier
 
 # Make a distance matrix
 perm_dist<-vegdist(Survey_perm, method='bray')
@@ -487,3 +493,70 @@ Perma_result<-adonis2( perm_dist~as.factor(plot_data$Location), data=perm_dist,
                        permutations=9999)
 
 Perma_result
+
+
+#### Simper Analysis ####
+
+## make survey_wide again
+
+# This code gives 0 values when species are not present in a plot
+Survey_wide <- SurveyData_Combined_Weeds %>%
+  pivot_wider(names_from = ScientificName, 
+              values_from = seedlings_sqrt, 
+              id_cols = Plot) %>%
+  mutate_all(~ replace(., is.na(.), 0))
+
+# instead of being a tibble, I wanted to convert it back to a data frame
+Survey_wide = as.data.frame(Survey_wide)
+
+
+# Needs to remove the first column of numbers as row names and make the Scientific 
+# names of species into the row names
+row.names(Survey_wide) <- Survey_wide$Plot 
+# Remove the first column from the data frame 
+Survey_wide <- Survey_wide[, -1]
+
+#Quick checks for empty rows or columns...
+rowSums(Survey_wide)
+colSums(Survey_wide)
+
+# Remove empty columns
+Survey_wide <- Survey_wide[, colSums(Survey_wide) != 0]
+Survey_wide <- Survey_wide[rowSums(Survey_wide) != 0, ]
+
+rowSums(Survey_wide)
+colSums(Survey_wide)
+
+# Remove the outlier plot
+Survey_wide<-Survey_wide[-68, ] # this gets rid of the the row that looks to be an outlier
+Survey_wide<-Survey_wide[-1, ] # this gets rid of the the row that looks to be an outlier
+
+Plot_Species <- Plot_Species %>%
+  mutate(CentralSpecies = ifelse(CentralSpecies == "Solanum mauritianum", "SOLmau", CentralSpecies))
+Plot_Species <- Plot_Species %>%
+  mutate(CentralSpecies = ifelse(CentralSpecies == "Ligustrum lucidum", "LIGluc", CentralSpecies))
+Plot_Species <- Plot_Species %>%
+  mutate(CentralSpecies = ifelse(CentralSpecies == "Paraserianthes lophantha", "PARlop", CentralSpecies))
+
+# create a little distance matrix between the groups
+dist <- meandist(dist = vegdist(Survey_wide),
+         grouping = Plot_Species$CentralSpecies)
+
+# do the simper analysis
+simper.weeds <- simper(Survey_wide,
+       Plot_Species$CentralSpecies,
+       permutations = 999,
+       parallel = 1)
+# look at the species that contribute to the difference between woolly nightshade and tree privet
+summary(simper.weeds)$SOLmau_LIGluc %>%
+  round(3) %>%
+  head(10)
+# look at the species that contribute to the difference between woolly nightshade and brush wattle
+summary(simper.weeds)$SOLmau_PARlop %>%
+  round(3) %>%
+  head(10)
+# look at the species that contribute to the difference between tree privet and brush wattle
+summary(simper.weeds)$PARlop_LIGluc %>%
+  round(3) %>%
+  head(10)
+
