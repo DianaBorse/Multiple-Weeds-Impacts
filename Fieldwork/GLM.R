@@ -9,7 +9,7 @@ rm(list = ls())
 getwd()
 
 # Load tidyverse
-install.packages("tidyverse")
+
 library("tidyverse")
 # Check for updates
 tidyverse_update()
@@ -196,14 +196,9 @@ model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + Vascular + Disturban
 # Run all iterations of the model
 dredge <- dredge(model.full, rank = "AIC", extra = c("R^2", adjRsq = function(x) summary(x)$adj.r.squared))
 
+head(dredge, 4)
 
-
-# Chat GPT things
-model.subset <- dredge(model.full)  # Generates all possible models
-
-print(model.subset)
-
-#### PCA Fewer Factors ####
+#### PCA with selected factors ####
 
 Env_Species <- subset(Env_Species, select = -c(East, South, NonVascular, DBH,
                                                            Pests, Slope, Height))
@@ -211,9 +206,8 @@ Env_Species <- subset(Env_Species, select = -c(East, South, NonVascular, DBH,
 
 library(factoextra)
 
-Env_Species.pca <- prcomp(Env_Species[,c("Housing", "LitterCover",
-                       "Litter", "Canopy", "Disturbance", "Bare", "Vascular", "Erosion",
-                      "Debris", "WN")], center = TRUE,scale. = TRUE,tol = 0.1)
+Env_Species.pca <- prcomp(Env_Species[,c("Housing", "Height",
+                       "PopnHist", "Slope", "Vascular")], center = TRUE,scale. = TRUE,tol = 0.1)
 
 summary(Env_Species.pca)
 Env_Species.pca
@@ -239,7 +233,7 @@ pca.var$cos2
 
 
 # % contribution of the variables 
-fviz_pca_var(Env_Species.pca,  axes = c(1, 3), col.var = "contrib",
+fviz_pca_var(Env_Species.pca,  axes = c(1, 2), col.var = "contrib",
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE,
              title = " ")
