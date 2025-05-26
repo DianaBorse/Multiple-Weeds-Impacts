@@ -9,6 +9,7 @@ rm(list = ls())
 getwd()
 
 # Load tidyverse
+install.packages("tidyverse")
 library("tidyverse")
 # Check for updates
 tidyverse_update()
@@ -85,7 +86,7 @@ PlotData_Combined <- subset(PlotData_Combined, select = -c(Date, CanopyCover_App
                                                            Topography, ParentMaterial, Notes))
 
 # Need to simplify the column names 
-colnames(PlotData_Combined)[3:21] <- c("Housing","96Popn", "23Popn", "Dwellings23",
+colnames(PlotData_Combined)[3:21] <- c("Housing","PopnHist", "PopnCurr", "DwellingsCurr",
                                        "Canopy", "Height", "DBH",
                                        "Slope", "Erosion", "Disturbance",
                                        "Pests", "Litter", "East", "South", 
@@ -137,7 +138,7 @@ library(factoextra)
 Env_Species.pca <- prcomp(Env_Species[,c("Height", "DBH",
                        "Slope", "Canopy", "East", "South", "Vascular", "NonVascular", "LitterCover",
                        "Bare", "Debris", "Erosion", "Disturbance",
-                       "Pests", "Litter", "Housing","96Popn", "23Popn", "Dwellings23", "WN")], center = TRUE,scale. = TRUE,tol = 0.1)
+                       "Pests", "Litter", "Housing","PopnHist", "PopnCurr", "DwellingsCurr", "WN")], center = TRUE,scale. = TRUE,tol = 0.1)
 
 summary(Env_Species.pca)
 Env_Species.pca
@@ -163,7 +164,7 @@ pca.var$cos2
 
 
 # % contribution of the variables 
-fviz_pca_var(Env_Species.pca, axes = c(1, 3), col.var = "contrib",
+fviz_pca_var(Env_Species.pca, axes = c(1, 2), col.var = "contrib",
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE)
 
@@ -176,10 +177,31 @@ RichnessGLM <- glm.nb(Richness ~ PC1 + PC2 + PC3 + PC4 + PC5 + PC6 +
 summary(RichnessGLM)
 
 #### AIC for model selection ####
-library(stats)
 
-install.packages("MuMIn")
 library(MuMIn)
+options(na.action = "na.fail") #Must run this code once to use dredge
+model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + Vascular + NonVascular+
+                   LitterCover + Bare + Debris + Erosion + Disturbance + Pests +
+                   Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + WN, data = df_Env_Species.pca)
+
+# Run all iterations of the model
+dredge <- dredge(model.full, rank = "AIC", extra = c("R^2", adjRsq = function(x) summary(x)$adj.r.squared))
+
+# might be too many, will try with fewer
+library(MuMIn)
+options(na.action = "na.fail") #Must run this code once to use dredge
+model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + Vascular + Disturbance + Pests +
+                   Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + WN, data = df_Env_Species.pca)
+
+# Run all iterations of the model
+dredge <- dredge(model.full, rank = "AIC", extra = c("R^2", adjRsq = function(x) summary(x)$adj.r.squared))
+
+
+
+# Chat GPT things
+model.subset <- dredge(model.full)  # Generates all possible models
+
+print(model.subset)
 
 #### PCA Fewer Factors ####
 

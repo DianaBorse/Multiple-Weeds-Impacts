@@ -18,28 +18,19 @@ tidyverse_update()
 
 library(dplyr)
 
-#library(readr)
-#SurveyData <- read_csv("SurveyData_Clean.csv")
-
 library(readr)
 SurveyData <- read_csv("SurveyData_Clean_WN_removed.csv")
 
-#library(readr)
-#PlotData <- read_csv("PlotData_Clean.csv")
 
 library(readr)
 PlotData <- read_csv("PlotData_Clean_WN_removed.csv")
-
-# The species that were entered as percent-cover need to be accounted for
-# Given that the number of plants will vary greatly, but cover plants were all
-# in Tier_1, for each percent cover plant I will give a value of 
 
 # The plot needs to be numeric, so I need to change the Plot names to unique
 # numeric variables, site needs to be given a number value as does W_N
 
 # This code gives the combined plot names a simple, unique, numeric ID, but I 
 # would like clearer ID's so I will use another method
-# SurveyData_Combined$Plot <- as.numeric(as.factor(SurveyData_Combined$Plot))
+SurveyData_Combined$Plot <- as.numeric(as.factor(SurveyData_Combined$Plot))
 
 # Assigning the Site a unique numeric value
 SurveyData$Site <- as.numeric(as.factor(SurveyData$Site))
