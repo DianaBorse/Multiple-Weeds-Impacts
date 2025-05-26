@@ -22,24 +22,14 @@ library(dplyr)
 #SurveyData <- read_csv("SurveyData_Clean.csv")
 
 library(readr)
-SurveyData <- read_csv("SurveyData_Clean_WN_removed.csv")
+SurveyData <- read_csv("Fieldwork/SurveyData_Clean_WN_removed.csv")
 
 #library(readr)
 #PlotData <- read_csv("PlotData_Clean.csv")
 
 library(readr)
-PlotData <- read_csv("PlotData_Clean_WN_removed.csv")
+PlotData <- read_csv("Fieldwork/PlotData_Clean_WN_removed.csv")
 
-# The species that were entered as percent-cover need to be accounted for
-# Given that the number of plants will vary greatly, but cover plants were all
-# in Tier_1, for each percent cover plant I will give a value of 
-
-# The plot needs to be numeric, so I need to change the Plot names to unique
-# numeric variables, site needs to be given a number value as does W_N
-
-# This code gives the combined plot names a simple, unique, numeric ID, but I 
-# would like clearer ID's so I will use another method
-# SurveyData_Combined$Plot <- as.numeric(as.factor(SurveyData_Combined$Plot))
 
 # Assigning the Site a unique numeric value
 SurveyData$Site <- as.numeric(as.factor(SurveyData$Site))
@@ -95,9 +85,11 @@ PlotData_Combined <- subset(PlotData_Combined, select = -c(Date, CanopyCover_App
                                                            Topography, ParentMaterial, Notes))
 
 # Need to simplify the column names 
-colnames(PlotData_Combined)[3:18] <- c("Housing", "Canopy", "Height", "DBH",
+colnames(PlotData_Combined)[3:21] <- c("Housing","96Popn", "23Popn", "Dwellings23",
+                                       "Canopy", "Height", "DBH",
                                        "Slope", "Erosion", "Disturbance",
-                                       "Pests", "Litter", "East", "South", "Vascular", "NonVascular", "LitterCover",
+                                       "Pests", "Litter", "East", "South", 
+                                       "Vascular", "NonVascular", "LitterCover",
                                        "Bare", "Debris") ## Renaming the columns
 
 
@@ -145,7 +137,7 @@ library(factoextra)
 Env_Species.pca <- prcomp(Env_Species[,c("Height", "DBH",
                        "Slope", "Canopy", "East", "South", "Vascular", "NonVascular", "LitterCover",
                        "Bare", "Debris", "Erosion", "Disturbance",
-                       "Pests", "Litter", "Housing", "WN")], center = TRUE,scale. = TRUE,tol = 0.1)
+                       "Pests", "Litter", "Housing","96Popn", "23Popn", "Dwellings23", "WN")], center = TRUE,scale. = TRUE,tol = 0.1)
 
 summary(Env_Species.pca)
 Env_Species.pca
@@ -179,9 +171,15 @@ fviz_pca_var(Env_Species.pca, axes = c(1, 3), col.var = "contrib",
 library(MASS) ## do to the GLM
 RichnessGLM <- glm.nb(Richness ~ PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + 
                         PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + 
-                        PC13 + PC14 + PC15 + PC16 + PC17,
+                        PC13 + PC14 + PC15 + PC16 + PC17 + PC18,
                       data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
 summary(RichnessGLM)
+
+#### AIC for model selection ####
+library(stats)
+
+install.packages("MuMIn")
+library(MuMIn)
 
 #### PCA Fewer Factors ####
 
