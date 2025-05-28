@@ -60,12 +60,6 @@ SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combine
 
 #### Change the data to be a matrix (n sample units x p species) ####
 
-# This code gives NA values when species are not present in a plot
-#Survey_wideNA <- SurveyData_Combined %>%
-#  pivot_wider(names_from = Plot, 
-#              values_from = Tier_1, 
-#              id_cols = ScientificName)
-
 # autotransform is not doing anything, so I need to transform my data
 # square root was given as a good transformation, so I will do that
 
@@ -88,7 +82,6 @@ Survey_wide <- SurveyData_Combined_Weeds %>%
 # instead of being a tibble, I wanted to convert it back to a data frame
 Survey_wide = as.data.frame(Survey_wide)
 
-
 # Needs to remove the first column of numbers as row names and make the Scientific 
 # names of species into the row names
 row.names(Survey_wide) <- Survey_wide$Plot 
@@ -98,19 +91,6 @@ Survey_wide <- Survey_wide[, -1]
 #Quick checks for empty rows or columns...
 rowSums(Survey_wide)
 colSums(Survey_wide)
-
-# These are the columns that need to be removed using the data with the extra 
-# woolly nightshades removed
-# Survey_wide<-Survey_wide[,-115] # this gets rid of the the column where there is a zero
-# Survey_wide<-Survey_wide[,-40] # this gets rid of the the column where there is a zero
-# Survey_wide<-Survey_wide[,-39] # this gets rid of the the column where there is a zero
-
-
-# These are the columns that need to be removed using the data without the extra woolly
-# nightshades removed
-# Survey_wide<-Survey_wide[,-14] # this gets rid of the the column where there is a zero
-# Survey_wide<-Survey_wide[,-34] # this gets rid of the the column where there is a zero
-# Survey_wide<-Survey_wide[,-37] # this gets rid of the the column where there is a zero
 
 # Remove empty columns
 Survey_wide <- Survey_wide[, colSums(Survey_wide) != 0]
@@ -122,26 +102,6 @@ colSums(Survey_wide)
 # Try removing outlier
  Survey_wide<-Survey_wide[-68, ] # this gets rid of the the row that looks to be an outlier
  Survey_wide<-Survey_wide[-1, ] # this gets rid of the the row that looks to be an outlier
-
-# This code gives 0 values when species are not present in a plot
-# Survey_wide <- SurveyData_Combined %>%
-#  pivot_wider(names_from = ScientificName, 
-#              values_from = Tier_1_sqrt, 
-#              id_cols = Plot) %>%
-#  mutate_all(~ replace(., is.na(.), 0))
-
-# instead of being a tibble, I wanted to convert it back to a data frame
-# Survey_wide = as.data.frame(Survey_wide)
-
-
-# Needs to remove the first column of numbers as row names and make the Scientific 
-# names of species into the row names
-# row.names(Survey_wide) <- Survey_wide$Plot 
-# Remove the first column from the data frame 
-# Survey_wide <- Survey_wide[, -1]
-
-# Note is that this is not subset, may need to subset to only the 
-# most common species or species that occur more than 5 times etc.
 
 #### NMDS ####
 

@@ -48,13 +48,18 @@ library(tidyr)
 SurveyData_Combined <- SurveyData_Combined %>%
   unite(Plot, Plot, W_N, sep = "-")
 
-# Need to subset to only include the environmental weeds
-# Subset the data to only include species that are weeds using the Status column
-SurveyData_Combined_subset <- SurveyData_Combined[SurveyData_Combined$Status == 1, ]
+# subset to just look at the weeds
+# Subset the data to only include species that are weeds using the WeedList Column
+SurveyData_Combined <- SurveyData_Combined[SurveyData_Combined$WeedList == 1, ]
+
+# I need to make this data only include seedlings. Therefore, I need to remove
+# the rows that only include species > 51 cm.
+
+SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combined$Tier_3
 
 # Calculate richness value
 library(dplyr)
-RichnessWeed <- SurveyData_Combined_subset %>% group_by(Plot) %>% summarize(unique_values = n_distinct(ScientificName))
+RichnessWeed <- SurveyData_Combined %>% group_by(Plot) %>% summarize(unique_values = n_distinct(ScientificName))
 
 # rename the column
 colnames(RichnessWeed)[2] <- c("Richness") ## Renaming the columns# rename the column
@@ -94,24 +99,72 @@ colnames(PlotData_Combined)[3:21] <- c("Housing","PopnHist", "PopnCurr", "Dwelli
                                        "Bare", "Debris") ## Renaming the columns
 
 
-# I want to look at species richness rather than composition, so that means that
-# I need to make it presence/absence
-PresenceAbsence <-SurveyData_Combined_subset %>%
-  pivot_wider(id_cols = Plot, names_from=ScientificName, values_from=ScientificName,
-              values_fn=function(x) any(unique(x) == x) * 1, values_fill = 0)
-
-# instead of being a tibble, I wanted to convert it back to a data frame
-PresenceAbsence_df = as.data.frame(PresenceAbsence)
-
-library(dplyr)
-Env_Species <- left_join(PresenceAbsence, PlotData_Combined, by = "Plot")  # Preserves all rows from df1
-
 # Include Richness
-Env_Species <- left_join(RichnessWeed, PlotData_Combined, by = "Plot")  # Preserves all rows from df1
+PlotData_Combined <- left_join(RichnessWeed, PlotData_Combined, by = "Plot")  # Preserves all rows from df1
+
+SurveyData_Combined$seedlings_sqrt <- sqrt(SurveyData_Combined$seedlings)
+
+
+# Filter down to only native species
+# Remove native species plots
+# Remove rows where Group is "Native"
+
+SurveyData_Combined_Weeds <- SurveyData_Combined %>% 
+  filter(CentralSpecies != "Native")
+
+# This code gives 0 values when species are not present in a plot
+Survey_wide <- SurveyData_Combined_Weeds %>%
+  pivot_wider(names_from = ScientificName, 
+              values_from = seedlings_sqrt, 
+              id_cols = Plot) %>%
+  mutate_all(~ replace(., is.na(.), 0))
 
 # instead of being a tibble, I wanted to convert it back to a data frame
-Env_Species = as.data.frame(Env_Species)
+Survey_wide = as.data.frame(Survey_wide)
 
+# Remove native species from plot data
+# Load necessary library
+library(dplyr)
+
+# Assuming your data frame is named 'df'
+PlotData_Combined <- PlotData_Combined %>% 
+  filter(CentralSpecies %in% c("Solanum mauritianum", "Ligustrum lucidum", "Paraserianthes lophantha"))
+
+# Left Join
+Env_Species <- Survey_wide %>% 
+  left_join(PlotData_Combined, by = "Plot")
+
+# Needs to remove the first column of numbers as row names and make the Scientific 
+# names of species into the row names
+#row.names(Env_Species) <- Env_Species$Plot 
+# Remove the first column from the data frame 
+#Env_Species <- Env_Species[, -1]
+
+#Quick checks for empty rows or columns...
+rowSums(Env_Species)
+colSums(Env_Species)
+
+# Remove empty columns
+# Survey_wide <- Survey_wide[, colSums(Survey_wide) != 0]
+# Survey_wide <- Survey_wide[rowSums(Survey_wide) != 0, ]
+
+#rowSums(Survey_wide)
+#colSums(Survey_wide)
+
+# Try removing outlier
+# Survey_wide<-Survey_wide[-68, ] # this gets rid of the the row that looks to be an outlier
+# Survey_wide<-Survey_wide[-1, ] # this gets rid of the the row that looks to be an outlier
+
+# Remove plots that were removed from the survey
+Env_Species<-Env_Species[-75, ] # this gets rid of the the outlier
+Env_Species<-Env_Species[-68, ] # this gets rid of the the outlier
+Env_Species<-Env_Species[-67, ] # this gets rid of the the outlier
+Env_Species<-Env_Species[-62, ] # this gets rid of the the outlier
+Env_Species<-Env_Species[-53, ] # this gets rid of the the outlier
+Env_Species<-Env_Species[-24, ] # this gets rid of the the outlier
+Env_Species<-Env_Species[-15, ] # this gets rid of the the outlier
+Env_Species<-Env_Species[-12, ] # this gets rid of the the outlier
+Env_Species<-Env_Species[-1, ] # this gets rid of the the outlier
 
 # Needs to remove the first column of numbers as row names and make the Scientific 
 # names of species into the row names
@@ -119,23 +172,15 @@ row.names(Env_Species) <- Env_Species$Plot
 # Remove the first column from the data frame 
 Env_Species <- Env_Species[, -1]
 
-# Needs to remove the first column of numbers as row names and make the Scientific 
-# names of species into the row names
-row.names(PresenceAbsence_df) <- PresenceAbsence_df$Plot 
-# Remove the first column from the data frame 
-PresenceAbsence_df <- PresenceAbsence_df[, -1]
 
-
-# Back to the Survey data
-#Quick checks for empty rows or columns...
-rowSums(PresenceAbsence_df)
-colSums(PresenceAbsence_df)
+# instead of being a tibble, I wanted to convert it back to a data frame
+Env_Species = as.data.frame(Env_Species)
 
 
 #### PCA ####
 library(factoextra)
 
-Env_Species.pca <- prcomp(Env_Species[,c("Height", "DBH",
+Env_Species.pca <- prcomp(PlotData_Combined[,c("Height", "DBH",
                        "Slope", "Canopy", "East", "South", "Vascular", "NonVascular", "LitterCover",
                        "Bare", "Debris", "Erosion", "Disturbance",
                        "Pests", "Litter", "Housing","PopnHist", "PopnCurr", "DwellingsCurr", "WN")], center = TRUE,scale. = TRUE,tol = 0.1)
@@ -184,30 +229,47 @@ model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + Vascular + NonVascul
                    LitterCover + Bare + Debris + Erosion + Disturbance + Pests +
                    Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + WN, data = df_Env_Species.pca)
 
+# Look for Multicolliniarity
+library(car)
+vif(model.full)
+
+# Output shows that Vascular, LitterCover, Bar, PopnCurr, and DwellingsCurr all
+# have values greater than 5, so these should be omitted
+
+# Creates a visualization
+vif_values <- vif(model.full)
+barplot(vif_values, main = "VIF Values", horiz = TRUE, col = "steelblue")
+abline(v = 5, lwd = 3, lty = 2)
+
+# look at how they correlate
+data <- df_Env_Species.pca[ , c("LitterCover", "Bare", "Vascular", "PopnCurr", "DwellingsCurr")]
+cor(data)
+
+# vascular and litter cover are highly correlated. Vascular is a less significant 
+# factor, so I will keep litter cover and remove vascular
+# Current population and the current dwellings are highly correlated. I will remove 
+# current dwellings because this is somewhat covered by housing density within 250 m
+# and current population is more comparable to 96 population
+# Bare soil is highly correlated with several other factors, so I will remove it 
+# as well
+
+# Make a new model with at least one of the correlated factors omitted 
+model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + NonVascular + LitterCover +
+                    Debris + Erosion + Disturbance + Pests +
+                   Litter + Housing + PopnHist + PopnCurr + WN, data = df_Env_Species.pca)
+
+
 # Run all iterations of the model
 dredge <- dredge(model.full, rank = "AIC", extra = c("R^2", adjRsq = function(x) summary(x)$adj.r.squared))
 
-# might be too many, will try with fewer
-library(MuMIn)
-options(na.action = "na.fail") #Must run this code once to use dredge
-model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + Vascular + Disturbance + Pests +
-                   Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + WN, data = df_Env_Species.pca)
-
-# Run all iterations of the model
-dredge <- dredge(model.full, rank = "AIC", extra = c("R^2", adjRsq = function(x) summary(x)$adj.r.squared))
-
-head(dredge, 4)
+head(dredge, 10)
 
 #### PCA with selected factors ####
 
-Env_Species <- subset(Env_Species, select = -c(East, South, NonVascular, DBH,
-                                                           Pests, Slope, Height))
-
-
 library(factoextra)
 
-Env_Species.pca <- prcomp(Env_Species[,c("Housing", "Height",
-                       "PopnHist", "Slope", "Vascular")], center = TRUE,scale. = TRUE,tol = 0.1)
+Env_Species.pca <- prcomp(Env_Species[,c("Housing", "LitterCover",
+                       "PopnHist", "Erosion")], center = TRUE,scale. = TRUE,tol = 0.1)
 
 summary(Env_Species.pca)
 Env_Species.pca
