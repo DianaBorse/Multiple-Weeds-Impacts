@@ -193,6 +193,13 @@ model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + Vascular + NonVascul
                    LitterCover + Bare + Debris + Erosion + Disturbance + Pests +
                    Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + WN + SOLmau + LIGluc + PARlop, data = df_Env_Species.pca)
 
+# Richness GLM
+RichnessGLM2 <- glm.nb(Richness ~ Height + DBH + Slope + Canopy + Vascular + NonVascular+
+                         LitterCover + Bare + Debris + Erosion + Disturbance + Pests +
+                         Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + WN + SOLmau + LIGluc + PARlop, data = df_Env_Species.pca)
+
+summary(RichnessGLM2)
+
 # Look for Multicolliniarity
 library(car)
 vif(model.full)
@@ -209,8 +216,8 @@ abline(v = 5, lwd = 3, lty = 2)
 data <- df_Env_Species.pca[ , c("LitterCover", "Bare", "Vascular", "PopnCurr", "DwellingsCurr")]
 cor(data)
 
-# vascular and litter cover are highly correlated. Vascular is a less significant 
-# factor, so I will keep litter cover and remove vascular
+# vascular and litter cover are highly correlated. Vascular is a more significant 
+# factor, so I will keep vascular cover and remove litter cover and bare soil
 # Current population and the current dwellings are highly correlated. I will remove 
 # current dwellings because this is somewhat covered by housing density within 250 m
 # and current population is more comparable to 96 population
@@ -219,8 +226,8 @@ cor(data)
 
 # Re-doing the multicolinarity tests with the reduced factor set
 # Make a new model with at least one of the correlated factors omitted 
-model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + NonVascular + LitterCover +
-                   Debris + Erosion + Disturbance + Pests +
+model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + NonVascular + Vascular +
+                  Debris + Erosion + Disturbance + Pests +
                    Litter + Housing + PopnHist + PopnCurr + WN + SOLmau + LIGluc + PARlop, data = df_Env_Species.pca)
 
 # Look for Multicolliniarity
@@ -239,13 +246,19 @@ dredge <- dredge(model.full, rank = "AIC", extra = c("R^2", adjRsq = function(x)
 
 head(dredge, 10)
 
+# Install and load the writexl package
+install.packages("writexl")
+library(writexl)
+
+write_xlsx(dredge, "C:/Users/bella/Documents/dredgeresults.xlsx")
+
 # This gives the simplest possible model which includes Housing Density, 96 Population, 
 # LitterCover, PARlop, SOLmau, and Slope
 
 # Compare factors to how they relate to richness
 library(MASS) ## do to the GLM
 RichnessGLM <- glm.nb(Richness ~ Housing +
-                        PopnHist + LitterCover +
+                        PopnHist + Vascular +
                         SOLmau + PARlop + Slope,
                       data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
 summary(RichnessGLM)
@@ -274,6 +287,34 @@ ggplot(data = Env_Species, aes(SOLmau, Richness)) +
                formula = y ~ x, parse = TRUE) +
   geom_smooth(method = "lm", level = 0.95, color = "#882265",  fill = "#882240") +  # Add regression line
   labs(x = "Solanum mauritianum over 150 cm in the Plot", y = "Environmental Weed Seedling Richness") +
+  theme(legend.title = element_blank(),
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"))    #If you want to remove background) +#If you want to remove the legend
+
+# Paraserianthes lophantha
+ggplot(data = Env_Species, mapping = aes(x = PARlop, y = Richness, colour = "#882265",  size=0.1)) + 
+  geom_abline(colour = "#882265",  size=0.1) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Environmental Weed Seedling Richness") + xlab("Paraserianthes lophantha over 150 cm") +
+  theme(legend.title = element_blank(),
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"))    #If you want to remove background) +#If you want to remove the legend
+
+# Linear regression
+library(ggpmisc)
+
+ggplot(data = Env_Species, aes(PARlop, Richness)) +
+  geom_jitter(color="#332288", size=0.4, alpha=0.9) +
+  stat_poly_eq(aes(label = paste(after_stat(eq.label), after_stat(rr.label), sep = "~~~")),
+               formula = y ~ x, parse = TRUE) +
+  geom_smooth(method = "lm", level = 0.95, color = "#332288",  fill = "#332299") +  # Add regression line
+  labs(x = "Paraserianthes lophantha over 150 cm in the Plot", y = "Environmental Weed Seedling Richness") +
   theme(legend.title = element_blank(),
         legend.position = "none",
         panel.grid.major = element_blank(),#If you want to remove gridlines
@@ -317,6 +358,20 @@ ggplot(data = Env_Species, aes(Slope, Richness)) +
                formula = y ~ x, parse = TRUE) +
   geom_smooth(method = "lm", level = 0.95, color = "orange3", fill = "orange") +  # Add regression line
   labs(x = "Slope of the Plot", y = "Environmental Weed Seedling Richness") +
+  theme(legend.title = element_blank(),
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"))    #If you want to remove background) +#If you want to remove the legend
+
+# Vascular
+ggplot(data = Env_Species, aes(Vascular, Richness)) +
+  geom_jitter(color="pink4", size=0.4, alpha=0.9) +
+  stat_poly_eq(aes(label = paste(after_stat(eq.label), ..rr.label.., sep = "~~~")),
+               formula = y ~ x, parse = TRUE) +
+  geom_smooth(method = "lm", level = 0.95, color = "pink4", fill = "pink") +  # Add regression line
+  labs(x = "Percentage cover of vascular vegetation of the Plot", y = "Environmental Weed Seedling Richness") +
   theme(legend.title = element_blank(),
         legend.position = "none",
         panel.grid.major = element_blank(),#If you want to remove gridlines
