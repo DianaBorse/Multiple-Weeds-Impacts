@@ -69,6 +69,7 @@ TallWeeds <- TallWeeds %>%
   mutate(PARlop = ifelse(ScientificName == "Paraserianthes lophantha", Tier_4, 0))
 
 # Remove all other columns
+library(dplyr)
 TallWeeds <- TallWeeds %>%
   select(Plot, SOLmau, LIGluc, PARlop)
 

@@ -39,7 +39,7 @@ tidyverse_update()
 library(dplyr)
 
 library(readr)
-SurveyData <- read_csv("SurveyData_Clean.csv")
+SurveyData <- read_csv("Fieldwork/SurveyData_Clean_WN_removed.csv")
 
 # Unite Site and Plot columns
 
@@ -173,7 +173,87 @@ Prob_table <- prob.table(cooccur.Survey)
 plot <- plot(cooccur.Survey, legend = NULL) # add "plotrand = TRUE" to include completely random species
 
 # Remove legend 
-plot + theme(legend.position = "none")
+plot + theme(legend.position = "none") + ggtitle(NULL) + 
+  scale_fill_manual(values = c("#009B9F","#E5E5E5", "#C75DAA")) #Change axis title text font etc
+
+#### Co-occurrence matrix with top 15 most common environmental weeds ####
+
+# Subset the data to only include species that are weeds using the WeedList Column
+subset_SurveyData_Combined_weeds <- SurveyData_Combined[SurveyData_Combined$WeedList == 1, ]
+
+
+# Identify the top 15 most common values in the categorical column 
+top_15_values <- names(sort(table(subset_SurveyData_Combined_weeds$ScientificName), decreasing = TRUE))[1:15] 
+
+# view(top_15_values)
+
+# Subset the data frame to include only rows with the top 15 most common values 
+subset_SurveyData_Combined_weeds15 <- SurveyData_Combined[SurveyData_Combined$ScientificName %in% top_15_values, ] 
+
+
+
+# My data needs to change to presence/absence by plot. Plot needs to be the 
+# columns, and all species are rows with presence/absence denoted as a 0 or a 1
+
+# This creates a new data frame that is presence/absence
+
+library(tidyr)
+library(dplyr)
+
+PresenceAbsence <-subset_SurveyData_Combined_weeds15 %>%
+  pivot_wider(id_cols = ScientificName, names_from=Plot, values_from=Plot,
+              values_fn=function(x) any(unique(x) == x) * 1, values_fill = 0)
+
+# instead of being a tibble, I wanted to convert it back to a data frame
+PresenceAbsence_df = as.data.frame(PresenceAbsence)
+
+# Needs to remove the first column of numbers as row names and make the Scientific 
+# names of species into the row names
+row.names(PresenceAbsence_df) <- PresenceAbsence_df$ScientificName
+
+# Remove the first column from the data frame 
+PresenceAbsence_df <- PresenceAbsence_df[, -1]
+
+
+## Co-occur 
+
+# install.packages("cooccur")
+library(cooccur)
+
+cooccur.Survey <- cooccur(PresenceAbsence_df,
+                          type = "spp_site",
+                          thresh = TRUE,
+                          spp_name = TRUE)
+class(cooccur.Survey)
+summary(cooccur.Survey)
+cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = TRUE, spp_names = TRUE)
+
+Prob_table <- prob.table(cooccur.Survey)
+
+plot <- plot(cooccur.Survey) # add "plotrand = TRUE" to include completely random species
+
+# Have a look at some colorblind friendly colours
+hcl.colors(8, palette = "Tropic")
+
+# Remove legend 
+plot + theme(legend.position = "none") + ggtitle(NULL) + 
+  scale_fill_manual(values = c("#009B9F","#E5E5E5", "#C75DAA")) #Change axis title text font etc
+
+# Check the data for the target weeds
+Woolly_Cooccur <- pair(mod = cooccur.Survey, spp = "Solanum mauritianum")
+
+pair(mod = cooccur.Survey, spp = "Ligustrum lucidum")
+
+pair(mod = cooccur.Survey, spp = "Paraserianthes lophantha")
+
+# Try subsetting to non-seedlings
+
+SurveyData_Combined <- subset(SurveyData_Combined, Tier_3 != 0)
+
+
+
+
+
 
 #### Co-occurrence matrix with top 15 most common non-native species ####
 
@@ -239,74 +319,3 @@ Woolly_Cooccur <- pair(mod = cooccur.Survey, spp = "Solanum mauritianum")
 pair(mod = cooccur.Survey, spp = "Ligustrum lucidum")
 
 pair(mod = cooccur.Survey, spp = "Paraserianthes lophantha")
-
-
-#### Co-occurrence matrix with top 15 most common environmental weeds ####
-
-# Subset the data to only include species that are weeds using the WeedList Column
-subset_SurveyData_Combined_weeds <- SurveyData_Combined[SurveyData_Combined$WeedList == 1, ]
-
-
-# Identify the top 15 most common values in the categorical column 
-top_15_values <- names(sort(table(subset_SurveyData_Combined_weeds$ScientificName), decreasing = TRUE))[1:15] 
-
-# view(top_15_values)
-
-# Subset the data frame to include only rows with the top 15 most common values 
-subset_SurveyData_Combined_weeds15 <- SurveyData_Combined[SurveyData_Combined$ScientificName %in% top_15_values, ] 
-
-
-
-# My data needs to change to presence/absence by plot. Plot needs to be the 
-# columns, and all species are rows with presence/absence denoted as a 0 or a 1
-
-# This creates a new data frame that is presence/absence
-
-library(tidyr)
-library(dplyr)
-
-PresenceAbsence <-subset_SurveyData_Combined_weeds15 %>%
-  pivot_wider(id_cols = ScientificName, names_from=Plot, values_from=Plot,
-              values_fn=function(x) any(unique(x) == x) * 1, values_fill = 0)
-
-# instead of being a tibble, I wanted to convert it back to a data frame
-PresenceAbsence_df = as.data.frame(PresenceAbsence)
-
-# Needs to remove the first column of numbers as row names and make the Scientific 
-# names of species into the row names
-row.names(PresenceAbsence_df) <- PresenceAbsence_df$ScientificName
-
-# Remove the first column from the data frame 
-PresenceAbsence_df <- PresenceAbsence_df[, -1]
-
-
-## Co-occur 
-
-# install.packages("cooccur")
-library(cooccur)
-
-cooccur.Survey <- cooccur(PresenceAbsence_df,
-                          type = "spp_site",
-                          thresh = TRUE,
-                          spp_name = TRUE)
-class(cooccur.Survey)
-
-summary(cooccur.Survey)
-cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = TRUE, spp_names = TRUE)
-
-Prob_table <- prob.table(cooccur.Survey)
-
-plot <- plot(cooccur.Survey) # add "plotrand = TRUE" to include completely random species
-
-# Remove legend 
-plot + theme(legend.position = "none") + ggtitle(NULL)
-
-Woolly_Cooccur <- pair(mod = cooccur.Survey, spp = "Solanum mauritianum")
-
-pair(mod = cooccur.Survey, spp = "Ligustrum lucidum")
-
-pair(mod = cooccur.Survey, spp = "Paraserianthes lophantha")
-
-# Try subsetting to non-seedlings
-
-SurveyData_Combined <- subset(SurveyData_Combined, Tier_3 != 0)
