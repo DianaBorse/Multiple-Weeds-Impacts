@@ -55,6 +55,27 @@ library(tidyr)
 SurveyData_Combined <- SurveyData_Combined %>%
   unite(Plot, Plot, W_N, sep = "-")
 
+# I need to add columns for the count of the weeds 150 and over in each plot
+# Calculate the number of wn over 150 for each plot (tier_4)
+TallWeeds <- SurveyData_Combined %>%
+  mutate(SOLmau = ifelse(ScientificName == "Solanum mauritianum", Tier_4, 0))
+
+# For privet
+TallWeeds <- TallWeeds %>%
+  mutate(LIGluc = ifelse(ScientificName == "Ligustrum lucidum", Tier_4, 0))
+
+# For wattle
+TallWeeds <- TallWeeds %>%
+  mutate(PARlop = ifelse(ScientificName == "Paraserianthes lophantha", Tier_4, 0))
+
+# Remove all other columns
+TallWeeds <- TallWeeds %>%
+  select(Plot, SOLmau, LIGluc, PARlop)
+
+# Only include rows with unique values for Plot
+TallWeeds <- TallWeeds %>%
+  distinct(Plot, .keep_all = TRUE)
+
 # subset to just look at the weeds
 # Subset the data to only include species that are weeds using the WeedList Column
 SurveyData_Combined <- SurveyData_Combined[SurveyData_Combined$WeedList == 1, ]
@@ -77,6 +98,7 @@ RichnessWeed <- SurveyData_Combined %>% group_by(Plot) %>% summarize(unique_valu
 # rename the column
 colnames(RichnessWeed)[2] <- c("Richness") ## Renaming the columns# rename the column
 
+
 # Repeat for plot data
 # Assigning the Site a unique numeric value
 PlotData$Site <- as.numeric(as.factor(PlotData$Site))
@@ -97,6 +119,8 @@ library(tidyr)
 PlotData_Combined <- PlotData_Combined %>%
   unite(Plot, Plot, Weed_Native, sep = "-")
 
+PlotData_Combined <- left_join(TallWeeds, PlotData_Combined, by = "Plot")
+
 # Now I need to only include the environmental variables that I want to include
 # for the GLM
 
@@ -104,7 +128,7 @@ PlotData_Combined <- subset(PlotData_Combined, select = -c(Date, CentralSpecies,
                                                            Topography, ParentMaterial, Notes))
 
 # Need to simplify the column names 
-colnames(PlotData_Combined)[2:20] <- c("Housing","PopnHist", "PopnCurr", "DwellingsCurr",
+colnames(PlotData_Combined)[5:23] <- c("Housing","PopnHist", "PopnCurr", "DwellingsCurr",
                                        "Canopy", "Height", "DBH",
                                        "Slope", "Erosion", "Disturbance",
                                        "Pests", "Litter", "East", "South", 
@@ -116,14 +140,13 @@ colnames(PlotData_Combined)[2:20] <- c("Housing","PopnHist", "PopnCurr", "Dwelli
 # Include Richness in the plot data
 Env_Species <- left_join(RichnessWeed, PlotData_Combined, by = "Plot")  # Preserves all rows from df1
 
-
 #### PCA ####
 library(factoextra)
 
 Env_Species.pca <- prcomp(PlotData_Combined[,c("Height", "DBH", 
                                                "Slope", "Canopy", "East", "South", "Vascular", "NonVascular", "LitterCover",
                                                "Bare", "Debris", "Erosion", "Disturbance",
-                                               "Pests", "Litter", "Housing","PopnHist", "PopnCurr", "DwellingsCurr", "WN")], center = TRUE,scale. = TRUE,tol = 0.1)
+                                               "Pests", "Litter", "Housing","PopnHist", "PopnCurr", "DwellingsCurr", "WN", "SOLmau", "LIGluc", "PARlop")], center = TRUE,scale. = TRUE,tol = 0.1)
 summary(Env_Species.pca)
 Env_Species.pca
 
@@ -167,7 +190,7 @@ library(MuMIn)
 options(na.action = "na.fail") #Must run this code once to use dredge
 model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + Vascular + NonVascular+
                    LitterCover + Bare + Debris + Erosion + Disturbance + Pests +
-                   Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + WN, data = df_Env_Species.pca)
+                   Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + WN + SOLmau + LIGluc + PARlop, data = df_Env_Species.pca)
 
 # Look for Multicolliniarity
 library(car)
@@ -197,7 +220,7 @@ cor(data)
 # Make a new model with at least one of the correlated factors omitted 
 model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + NonVascular + LitterCover +
                    Debris + Erosion + Disturbance + Pests +
-                   Litter + Housing + PopnHist + PopnCurr + WN, data = df_Env_Species.pca)
+                   Litter + Housing + PopnHist + PopnCurr + WN + SOLmau + LIGluc + PARlop, data = df_Env_Species.pca)
 
 # Look for Multicolliniarity
 library(car)
@@ -216,17 +239,90 @@ dredge <- dredge(model.full, rank = "AIC", extra = c("R^2", adjRsq = function(x)
 head(dredge, 10)
 
 # This gives the simplest possible model which includes Housing Density, 96 Population, 
-# Litter, LitterCover, and Slope
+# LitterCover, PARlop, SOLmau, and Slope
 
 # Compare factors to how they relate to richness
 library(MASS) ## do to the GLM
 RichnessGLM <- glm.nb(Richness ~ Housing +
-                        Height + LitterCover +
-                        PopnHist + Slope,
+                        PopnHist + LitterCover +
+                        SOLmau + PARlop + Slope,
                       data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
 summary(RichnessGLM)
 
-# Make some visualizations
+# Make some visualizations with the significant ones
+# Housing, PopnHist, SOLmau, and Slope
+
+# Solanum mauritianum
+ggplot(data = Env_Species, mapping = aes(x = SOLmau, y = Richness, colour = "#882265",  size=0.1)) + 
+  geom_abline(colour = "#882265",  size=0.1) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Environmental Weed Seedling Richness") + xlab("Solanum mauritianum over 150 cm") +
+  theme(legend.title = element_blank(),
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"))    #If you want to remove background) +#If you want to remove the legend
+
+# Linear regression
+library(ggpmisc)
+
+ggplot(data = Env_Species, aes(SOLmau, Richness)) +
+  geom_jitter(color="#882265", size=0.4, alpha=0.9) +
+  stat_poly_eq(aes(label = paste(after_stat(eq.label), ..rr.label.., sep = "~~~")),
+               formula = y ~ x, parse = TRUE) +
+  geom_smooth(method = "lm", level = 0.95, color = "#882265",  fill = "#882240") +  # Add regression line
+  labs(x = "Solanum mauritianum over 150 cm in the Plot", y = "Environmental Weed Seedling Richness") +
+  theme(legend.title = element_blank(),
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"))    #If you want to remove background) +#If you want to remove the legend
+
+# Housing
+ggplot(data = Env_Species, aes(Housing, Richness)) +
+  geom_jitter(color="royalblue", size=0.4, alpha=0.9) +
+  stat_poly_eq(aes(label = paste(after_stat(eq.label), ..rr.label.., sep = "~~~")),
+               formula = y ~ x, parse = TRUE) +
+  geom_smooth(method = "lm", level = 0.95, color = "royalblue", fill = "deepskyblue") +  # Add regression line
+  labs(x = "No. of Houses withing 250 m of the site", y = "Environmental Weed Seedling Richness") +
+  theme(legend.title = element_blank(),
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"))    #If you want to remove background) +#If you want to remove the legend
+
+
+# 96 Population
+ggplot(data = Env_Species, aes(PopnHist, Richness)) +
+  geom_jitter(color="#043927", size=0.4, alpha=0.9) +
+  stat_poly_eq(aes(label = paste(after_stat(eq.label), ..rr.label.., sep = "~~~")),
+               formula = y ~ x, parse = TRUE) +
+  geom_smooth(method = "lm", level = 0.95, color = "#043927", fill = "#50C878") +  # Add regression line
+  labs(x = "Population of the area of the site in 1996", y = "Environmental Weed Seedling Richness") +
+  theme(legend.title = element_blank(),
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"))    #If you want to remove background) +#If you want to remove the legend
+
+# Slope
+ggplot(data = Env_Species, aes(Slope, Richness)) +
+  geom_jitter(color="orange3", size=0.4, alpha=0.9) +
+  stat_poly_eq(aes(label = paste(after_stat(eq.label), ..rr.label.., sep = "~~~")),
+               formula = y ~ x, parse = TRUE) +
+  geom_smooth(method = "lm", level = 0.95, color = "orange3", fill = "orange") +  # Add regression line
+  labs(x = "Slope of the Plot", y = "Environmental Weed Seedling Richness") +
+  theme(legend.title = element_blank(),
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"))    #If you want to remove background) +#If you want to remove the legend
+
 
 
 # Three dimensional plot
