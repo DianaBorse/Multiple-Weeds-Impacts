@@ -263,6 +263,9 @@ RichnessGLM <- glm.nb(Richness ~ Housing +
                       data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
 summary(RichnessGLM)
 
+
+# exponentiating the estimates
+installed.packages("brglm2")
 # Make some visualizations with the significant ones
 # Housing, PopnHist, SOLmau, and Slope
 
