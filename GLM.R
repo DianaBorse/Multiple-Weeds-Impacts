@@ -265,7 +265,10 @@ summary(RichnessGLM)
 
 
 # exponentiating the estimates
-installed.packages("brglm2")
+exp(coef(RichnessGLM))
+
+exp(confint(RichnessGLM))
+
 # Make some visualizations with the significant ones
 # Housing, PopnHist, SOLmau, and Slope
 

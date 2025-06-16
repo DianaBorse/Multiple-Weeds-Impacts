@@ -83,6 +83,43 @@ modelAbundanceWeed <- lm(Tier_1~CentralSpecies, data = subset_SurveyDataWeedsNoN
 
 anova(modelAbundanceWeed)
 
+# Try transformation
+subset_SurveyDataWeedsNoNA <- subset_SurveyDataWeedsNoNA %>%
+  mutate(ln_Tier_1 = log10(Tier_1))
+
+# Check for normality of the transformed data
+ggplot(subset_SurveyDataWeedsNoNA) +
+  geom_histogram(aes(ln_Tier_1), binwidth = 0.1)
+
+ggplot(subset_SurveyDataWeedsNoNA) +
+  geom_boxplot(aes(x = "", y = ln_Tier_1))
+
+# Visualize the data
+EnvWeedPlot <- ggplot(data = subset_SurveyDataWeedsNoNA, 
+                      aes(y = ln_Tier_1, ##Change this to variable name
+                          x = CentralSpecies)) + ##Change this to variable name
+  geom_boxplot(aes(x = factor(CentralSpecies, level=c('Native', 'Paraserianthes lophantha', 'Ligustrum lucidum', 'Solanum mauritianum'))), fill = "chocolate3", notch = TRUE, varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Abundance of Environmental Weeds") + xlab("Central Species") +   ##Change axis titles
+  theme(axis.text.x=element_text(size=8, hjust = 0.5, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+EnvWeedPlot
+
+# ANOVA
+modelAbundanceWeed <- lm(Tier_1~CentralSpecies, data = subset_SurveyDataWeedsNoNA)
+
+anova(modelAbundanceWeed)
+
+# data is not normal, do kruskal-Wallis test
+kruskal.test(ln_Tier_1 ~ CentralSpecies, data = subset_SurveyDataWeedsNoNA)
+
 # Does not appear to vary between the different central species. 
 # I want to see if there is a difference simply between weed and native plots now
 
