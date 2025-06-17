@@ -394,3 +394,42 @@ fig <- plot_ly(df_Env_Species.pca, x = ~PC1, y = ~PC2, z = ~PC3, color = ~PC3, t
   layout(title = "3D PCA Visualization")
 
 fig
+
+#### PCA with reduced factors ####
+Env_Species.pca <- prcomp(PlotData_Combined[,c("Slope", "Vascular",
+                          "Housing","PopnHist", "SOLmau", "PARlop")], center = TRUE,scale. = TRUE,tol = 0.1)
+summary(Env_Species.pca)
+Env_Species.pca
+
+
+#this generates the PC scores for each plot
+axes_Env_Species.pca <- predict(Env_Species.pca, newdata = Env_Species)
+#making sure it worked
+head(axes_Env_Species.pca, 4)
+
+#creating a new dataframe that adds the the PC scores to the end
+df_Env_Species.pca <- cbind(Env_Species, axes_Env_Species.pca)
+
+fviz_eig(Env_Species.pca,addlabels = TRUE) #scree plot
+
+eig.val <- get_eigenvalue(Env_Species.pca) #getting eighvalue from each pca
+eig.val
+
+pca.var <- get_pca_var(Env_Species.pca)
+pca.var$contrib
+pca.var$coord
+pca.var$cos2
+
+
+# % contribution of the variables 
+fviz_pca_var(Env_Species.pca, axes = c(1, 3), col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
+
+# GLM for richness and dimensions
+library(MASS) ## do to the GLM
+RichnessGLM <- glm.nb(Richness ~ PC1 + PC2 + PC3 + PC4 + PC5 + PC6,
+                      data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
+summary(RichnessGLM)
+
+
