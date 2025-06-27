@@ -19,7 +19,7 @@ tidyverse_update()
 library(dplyr)
 
 library(readr)
-SurveyData <- read_csv("SurveyData_Clean.csv")
+SurveyData <- read_csv("Fieldwork/SurveyData_Clean.csv")
 
 # Unite Site and Plot columns
 library(tidyr)
@@ -42,7 +42,11 @@ SurveyData_Combined <- subset(SurveyData_Combined, seedlings != 0)
 # Now the data.frame only includes the seedlings.
 
 #### Look at the top 20 most common "Scientific Names" ####
-top_20_values <- names(sort(table(SurveyData_Combined$ScientificName), decreasing = TRUE))[1:20] 
+top_10_values <- names(sort(table(SurveyData_Combined$ScientificName), decreasing = TRUE))[1:10] 
+
+print(top_10_values)
+
+top_20_values <- names(sort(table(SurveyData_Combined$CommonName), decreasing = TRUE))[1:20] 
 
 print(top_20_values)
 
@@ -53,12 +57,19 @@ NativeSpecies <- SurveyData_Combined[SurveyData_Combined$CentralSpecies == "Nati
 top_20_valuesN <- names(sort(table(NativeSpecies$ScientificName), decreasing = TRUE))[1:20] 
 
 print(top_20_valuesN)
+top_20_valuesN <- names(sort(table(NativeSpecies$CommonName), decreasing = TRUE))[1:20] 
+
+print(top_20_valuesN)
 
 # Subset for S mauritianum
 S_mauritianum <- SurveyData_Combined[SurveyData_Combined$CentralSpecies == "Solanum mauritianum", ]
 
 # Look at the top 20 most common Species under native species centred plots
 top_20_valuesWN <- names(sort(table(S_mauritianum$ScientificName), decreasing = TRUE))[1:20] 
+
+print(top_20_valuesWN)
+
+top_20_valuesWN <- names(sort(table(S_mauritianum$CommonName), decreasing = TRUE))[1:20] 
 
 print(top_20_valuesWN)
 
