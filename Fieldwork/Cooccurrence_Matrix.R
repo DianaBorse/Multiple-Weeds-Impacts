@@ -54,6 +54,71 @@ library(tidyr)
 SurveyData_Combined <- SurveyData_united %>%
   unite(Plot, Plot, W_N, sep = " - ")
 
+# Next I need to give each plot a unique numerical ID because the co-occurrence 
+# matrix requires this
+
+SurveyData_Combined$Plot <- as.numeric(as.factor(SurveyData_Combined$Plot))
+
+#### Co-occurrence matrix with all height tiers for weeds ####
+
+# Subset the data to only include species that are weeds using the WeedList Column
+subset_SurveyData_Combined_weeds <- SurveyData_Combined[SurveyData_Combined$WeedList == 1, ]
+
+# Identify the top 15 most common values in the categorical column 
+top_15_values <- names(sort(table(subset_SurveyData_Combined_weeds$ScientificName), decreasing = TRUE))[1:15] # Identify the top 15 most common values in the categorical column 
+
+top_15_values <- names(sort(table(subset_SurveyData_Combined_weeds$ScientificName), decreasing = TRUE))[1:15] 
+
+print(top_15_values)
+
+
+# Subset the data frame to include only rows with the top 15 most common values 
+subset_SurveyData_Combined_weeds <- SurveyData_Combined[SurveyData_Combined$ScientificName %in% top_15_values, ] 
+# View the subset data frame 
+print(subset_SurveyData_Combined_weeds)
+
+library(tidyr)
+library(dplyr)
+
+PresenceAbsence <-subset_SurveyData_Combined_weeds %>%
+  pivot_wider(id_cols = ScientificName, names_from=Plot, values_from=Plot,
+              values_fn=function(x) any(unique(x) == x) * 1, values_fill = 0)
+
+# instead of being a tibble, I wanted to convert it back to a data frame
+PresenceAbsence_df = as.data.frame(PresenceAbsence)
+
+
+# Needs to remove the first column of numbers as row names and make the Scientific 
+# names of species into the row names
+row.names(PresenceAbsence_df) <- PresenceAbsence_df$ScientificName 
+# Remove the first column from the data frame 
+PresenceAbsence_df <- PresenceAbsence_df[, -1]
+
+# install.packages("cooccur")
+library(cooccur)
+
+cooccur.Survey <- cooccur(PresenceAbsence_df,
+                          type = "spp_site",
+                          thresh = FALSE,
+                          spp_name = TRUE)
+class(cooccur.Survey)
+
+summary(cooccur.Survey)
+cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = FALSE, spp_names = TRUE)
+
+Prob_table <- prob.table(cooccur.Survey)
+
+# plot the co-occurrence matrix, need to make the plot into an object so that the legend can be removed
+
+plot <- plot(cooccur.Survey, legend = NULL) # add "plotrand = TRUE" to include completely random species
+
+# Remove legend 
+plot + theme(legend.position = "none") + ggtitle(NULL) + 
+  scale_fill_manual(values = c("#90CBCD","#E5E5E5", "#C75DAA")) #Change axis title text font etc
+
+
+#### Weed Co-occurrence matrix with seedlings only ####
+
 # I need to make this data only include seedlings. Therefore, I need to remove
 # the rows that only include species > 51 cm.
 
@@ -93,7 +158,11 @@ SurveyData_Combined$Plot <- as.numeric(as.factor(SurveyData_Combined$Plot))
 
 
 # Identify the top 15 most common values in the categorical column 
+top_15_values <- names(sort(table(SurveyData_Combined$ScientificName), decreasing = TRUE))[1:15] # Identify the top 15 most common values in the categorical column 
+
 top_15_values <- names(sort(table(SurveyData_Combined$ScientificName), decreasing = TRUE))[1:15] 
+
+print(top_15_values)
 
 # find wattle position (it is 17th most common)
 top_20_values <- names(sort(table(SurveyData_Combined$ScientificName), decreasing = TRUE))[1:20] 
@@ -159,12 +228,12 @@ library(cooccur)
 
 cooccur.Survey <- cooccur(PresenceAbsence_df,
                          type = "spp_site",
-                          thresh = TRUE,
+                          thresh = FALSE,
                              spp_name = TRUE)
 class(cooccur.Survey)
 
 summary(cooccur.Survey)
-cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = TRUE, spp_names = TRUE)
+cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = FALSE, spp_names = TRUE)
 
 Prob_table <- prob.table(cooccur.Survey)
 
@@ -230,14 +299,14 @@ cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = TRUE, spp_names = 
 
 Prob_table <- prob.table(cooccur.Survey)
 
-plot <- plot(cooccur.Survey) # add "plotrand = TRUE" to include completely random species
+plot <- plot(cooccur.Survey, plotrand = TRUE) # add "plotrand = TRUE" to include completely random species
 
 # Have a look at some colorblind friendly colours
 hcl.colors(8, palette = "Tropic")
 
 # Remove legend 
 plot + theme(legend.position = "none") + ggtitle(NULL) + 
-  scale_fill_manual(values = c("#009B9F","#E5E5E5", "#C75DAA")) #Change axis title text font etc
+  scale_fill_manual(values = c("#90CBCD","#E5E5E5", "#C75DAA")) #Change axis title text font etc
 
 # Check the data for the target weeds
 Woolly_Cooccur <- pair(mod = cooccur.Survey, spp = "Solanum mauritianum")
