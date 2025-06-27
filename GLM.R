@@ -258,7 +258,7 @@ write_xlsx(dredge, "C:/Users/bella/Documents/dredgeresults.xlsx")
 # Compare factors to how they relate to richness
 library(MASS) ## do to the GLM
 RichnessGLM <- glm.nb(Richness ~ Housing +
-                        PopnHist + Vascular +
+                        PopnHist + PopnCurr + Vascular +
                         SOLmau + PARlop + Slope,
                       data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
 summary(RichnessGLM)
@@ -270,7 +270,7 @@ source(file = "GLM Book Resources/HighstatLibV10.R")
 source(file = "GLM Book Resources/MCMCSupportHighstatV4.R")
 
 MyVar <- c("Housing", "Slope", "Vascular",
-           "PopnHist", "SOLmau", "PARlop")
+           "PopnHist", "SOLmau", "PARlop", "PopnCurr")
 Mydotplot(Env_Species[MyVar])
 
 corvif(Env_Species[MyVar])
@@ -278,17 +278,9 @@ corvif(Env_Species[MyVar])
 Myxyplot(df_Env_Species.pca, MyVar, "Richness")
 # unclear why, but this only works with the pca dataframe
 
-# Execute poisson GLM in R
-Env_Species$Housing.std <- scale(Env_Species$Housing)
-Env_Species$Slope.std <- scale(Env_Species$Slope)
-Env_Species$Vascular.std <- scale(Env_Species$Vascular)
-Env_Species$PopnHist.std <- scale(Env_Species$PopnHist)
-Env_Species$SOLmau.std <- scale(Env_Species$SOLmau)
-Env_Species$PARlop.std <- scale(Env_Species$PARlop)
-
-# Fit a model with the poisson MCMC technique standardized factors
+# Fit a model 
 M1 <- glm(Richness ~ Housing +
-            PopnHist + Vascular +
+            PopnHist + PopnCurr + Vascular +
             SOLmau + PARlop + Slope,
           family = "poisson", data = Env_Species)
 
@@ -300,6 +292,7 @@ summary(M1)
 #find the range of each variable
 range(Env_Species$Housing)
 range(Env_Species$PopnHist)
+range(Env_Species$PopnCurr)
 range(Env_Species$Vascular)
 range(Env_Species$SOLmau)
 range(Env_Species$PARlop)
@@ -308,7 +301,7 @@ range(Env_Species$Slope)
 # Calculate the means
 mean_Housing <- mean(Env_Species$Housing) # Housing Mean
 print(mean_Housing)
-mean_PopnHist <- mean(Env_Species$PopnHist) # Population Mean
+mean_PopnHist <- mean(Env_Species$PopnHist) # 96 Population Mean
 print(mean_PopnHist)
 mean_Vascular <- mean(Env_Species$Vascular) # Vascular mean
 print(mean_Vascular)
@@ -318,14 +311,16 @@ mean_PARlop <- mean(Env_Species$PARlop) # Wattle Mean
 print(mean_PARlop)
 mean_Slope <- mean(Env_Species$Slope) # Slope mean
 print(mean_Slope)
+mean_PopnCurr <- mean(Env_Species$PopnCurr) # Current Popn mean
+print(mean_PopnCurr)
 
 # Housing Plot
 plot(x = Env_Species$Housing, y = Env_Species$Richness, 
-     xlab = "Housing Density within 250 meters",
-     ylab = "Environmental Weed Richness", type = "n")
+     xlab = "Housing density within 250 meters",
+     ylab = "Weed richness", type = "n")
 MyData <- data.frame(Housing = seq(0, 258, length = 139),
                      PopnHist = 3996.604, Vascular = 36.49683, SOLmau = 0.04316547, 
-                     PARlop = 0.02877698, Slope = 13.8)
+                     PARlop = 0.02877698, Slope = 13.8, PopnCurr = 2509.273)
 P1 <- predict(M1, newdata = MyData, 
               type = "link", se = TRUE)
 lines(x = MyData$Housing, y = exp(P1$fit), col = "royalblue", lwd = 2)
@@ -339,45 +334,62 @@ text(x = 175, y = 7, labels = paste0("Exponent =  1.003"),
 # 96 Population Plot
 plot(x = Env_Species$PopnHist, y = Env_Species$Richness, 
      xlab = "Population of the area 1996",
-     ylab = "Environmental Weed Richness", type = "n")
+     ylab = "Weed richness", type = "n")
 MyData <- data.frame(PopnHist = seq(1608, 7350, length = 139),
                      Housing = 95.29496, Vascular = 36.49683, SOLmau = 0.04316547, 
-                     PARlop = 0.02877698, Slope = 13.8)
+                     PARlop = 0.02877698, Slope = 13.8, PopnCurr = 2509.273)
 P1 <- predict(M1, newdata = MyData, 
               type = "link", se = TRUE)
-lines(x = MyData$PopnHist, y = exp(P1$fit), col = "#043927", lwd = 2)
+lines(x = MyData$PopnHist, y = exp(P1$fit), col = "pink3", lwd = 2)
 lines(x = MyData$PopnHist,
-      y = exp(P1$fit + 2 * P1$se.fit), col = "#50C878", lty = 2)
+      y = exp(P1$fit + 2 * P1$se.fit), col = "pink2", lty = 2)
 lines(x = MyData$PopnHist,
-      y = exp(P1$fit - 2 * P1$se.fit), col = "#50C878", lty = 2)
+      y = exp(P1$fit - 2 * P1$se.fit), col = "pink2", lty = 2)
+text(x = 6000, y = 7, labels = paste0("Exponent =  1.000"), 
+     pos = 4, col = "#043927", cex = 1)
+
+# 23 Population Plot
+plot(x = Env_Species$PopnCurr, y = Env_Species$Richness, 
+     xlab = "Population of the area 2023",
+     ylab = "Weed richness", type = "n")
+MyData <- data.frame(PopnCurr = seq(264, 4194, length = 139),
+                     Housing = 95.29496, Vascular = 36.49683, SOLmau = 0.04316547, 
+                     PARlop = 0.02877698, Slope = 13.8, PopnHist = 3996.604)
+P1 <- predict(M1, newdata = MyData, 
+              type = "link", se = TRUE)
+lines(x = MyData$PopnCurr, y = exp(P1$fit), col = "#660099", lwd = 2)
+lines(x = MyData$PopnCurr,
+      y = exp(P1$fit + 2 * P1$se.fit), col = "#CC33FF", lty = 2)
+lines(x = MyData$PopnCurr,
+      y = exp(P1$fit - 2 * P1$se.fit), col = "#CC33FF", lty = 2)
 text(x = 6000, y = 7, labels = paste0("Exponent =  1.000"), 
      pos = 4, col = "#043927", cex = 1)
 
 # Vascular Vegetation Plot
 plot(x = Env_Species$Vascular, y = Env_Species$Richness, 
-     xlab = "Cover of Vascular Vegetation",
-     ylab = "Environmental Weed Richness", type = "n")
+     xlab = "Cover of vascular vegetation",
+     ylab = "Weed richness", type = "n")
 MyData <- data.frame(Vascular = seq(2.25, 84.75, length = 139),
                      Housing = 95.29496, PopnHist = 3996.604, SOLmau = 0.04316547, 
-                     PARlop = 0.02877698, Slope = 13.8)
+                     PARlop = 0.02877698, Slope = 13.8, PopnCurr = 2509.273)
 P1 <- predict(M1, newdata = MyData, 
               type = "link", se = TRUE)
-lines(x = MyData$Vascular, y = exp(P1$fit), col = "pink3", lwd = 2)
+lines(x = MyData$Vascular, y = exp(P1$fit), col = "#043927", lwd = 2)
 lines(x = MyData$Vascular,
-      y = exp(P1$fit + 2 * P1$se.fit), col = "pink2", lty = 2)
+      y = exp(P1$fit + 2 * P1$se.fit), col = "#50C878", lty = 2)
 lines(x = MyData$Vascular,
-      y = exp(P1$fit - 2 * P1$se.fit), col = "pink2", lty = 2)
+      y = exp(P1$fit - 2 * P1$se.fit), col = "#50C878", lty = 2)
 text(x = 60, y = 7, labels = paste0("Exponent =  1.004"), 
      pos = 4, col = "pink3", cex = 1)
 
 
 # Woolly Nightshade Plot
 plot(x = Env_Species$SOLmau, y = Env_Species$Richness, 
-     xlab = "Number of Woolly Nightshade taller than 150 cm",
-     ylab = "Environmental Weed Richness", type = "n")
+     xlab = "Number of S. mauritianum taller than 150 cm",
+     ylab = "Weed richness", type = "n")
 MyData <- data.frame(SOLmau = seq(0, 4, length = 139),
                      Housing = 95.29496, PopnHist = 3996.604, Vascular = 36.49683, 
-                     PARlop = 0.02877698, Slope = 13.8)
+                     PARlop = 0.02877698, Slope = 13.8, PopnCurr = 2509.273)
 P1 <- predict(M1, newdata = MyData, 
               type = "link", se = TRUE)
 lines(x = MyData$SOLmau, y = exp(P1$fit), col = "#882265", lwd = 2)
@@ -390,11 +402,11 @@ text(x = 2.75, y = 7, labels = paste0("Exponent =  1.24"),
 
 # Brush wattle Plot
 plot(x = Env_Species$PARlop, y = Env_Species$Richness, 
-     xlab = "Number of brush wattle taller than 150 cm",
-     ylab = "Environmental Weed Richness", type = "n")
+     xlab = "Number of P. lophantha taller than 150 cm",
+     ylab = "Weed richness", type = "n")
 MyData <- data.frame(PARlop = seq(0, 4, length = 139),
                      Housing = 95.29496, PopnHist = 3996.604, Vascular = 36.49683, 
-                     SOLmau = 0.04316547, Slope = 13.8)
+                     SOLmau = 0.04316547, Slope = 13.8, PopnCurr = 2509.273)
 P1 <- predict(M1, newdata = MyData, 
               type = "link", se = TRUE)
 lines(x = MyData$PARlop, y = exp(P1$fit), col = "#332288", lwd = 2)
@@ -408,10 +420,10 @@ text(x = 2.75, y = 7, labels = paste0("Exponent =  0.702"),
 # Slope Plot
 plot(x = Env_Species$Slope, y = Env_Species$Richness, 
      xlab = "Slope of the Plot",
-     ylab = "Environmental Weed Richness", type = "n")
+     ylab = "Weed richness", type = "n")
 MyData <- data.frame(Slope = seq(0, 65, length = 139),
                      Housing = 95.29496, PopnHist = 3996.604, Vascular = 36.49683, 
-                     SOLmau = 0.04316547, PARlop = 0.02877698)
+                     SOLmau = 0.04316547, PARlop = 0.02877698, PopnCurr = 2509.273)
 P1 <- predict(M1, newdata = MyData, 
               type = "link", se = TRUE)
 lines(x = MyData$Slope, y = exp(P1$fit), col = "orange3", lwd = 2)
