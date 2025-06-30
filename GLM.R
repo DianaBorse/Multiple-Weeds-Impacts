@@ -108,6 +108,9 @@ PlotData$Weed_Native <- as.numeric(as.factor(PlotData$Weed_Native))
 
 # Create another Column for WeedvsNative central species
 PlotData$WN <- PlotData$Weed_Native
+# Making a column for site so I can add it as a factor
+PlotData$Place <- PlotData$Site
+
 
 # Now combine this into unique numerical plot names
 library(tidyr)
@@ -148,7 +151,7 @@ library(factoextra)
 Env_Species.pca <- prcomp(PlotData_Combined[,c("Height", "DBH", 
                                                "Slope", "Canopy", "East", "South", "Vascular", "NonVascular", "LitterCover",
                                                "Bare", "Debris", "Erosion", "Disturbance",
-                                               "Pests", "Litter", "Housing","PopnHist", "PopnCurr", "DwellingsCurr", "WN", "SOLmau", "LIGluc", "PARlop")], center = TRUE,scale. = TRUE,tol = 0.1)
+                                               "Pests", "Litter", "Housing","PopnHist", "PopnCurr", "DwellingsCurr", "WN", "SOLmau", "LIGluc", "PARlop", "Place")], center = TRUE,scale. = TRUE,tol = 0.1)
 summary(Env_Species.pca)
 Env_Species.pca
 
@@ -181,7 +184,7 @@ fviz_pca_var(Env_Species.pca, axes = c(1, 4), col.var = "contrib",
 library(MASS) ## do to the GLM
 RichnessGLM <- glm.nb(Richness ~ PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + 
                         PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + 
-                        PC13 + PC14 + PC15 + PC16 + PC17 + PC18 + PC19,
+                        PC13 + PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + PC20,
                       data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
 summary(RichnessGLM)
 
@@ -192,12 +195,12 @@ library(MuMIn)
 options(na.action = "na.fail") #Must run this code once to use dredge
 model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + Vascular + NonVascular+
                    LitterCover + Bare + Debris + Erosion + Disturbance + Pests +
-                   Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + WN + SOLmau + LIGluc + PARlop, data = df_Env_Species.pca)
+                   Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + WN + SOLmau + LIGluc + PARlop + Place, data = df_Env_Species.pca)
 
 # Richness GLM
 RichnessGLM2 <- glm.nb(Richness ~ Height + DBH + Slope + Canopy + Vascular + NonVascular+
                          LitterCover + Bare + Debris + Erosion + Disturbance + Pests +
-                         Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + WN + SOLmau + LIGluc + PARlop, data = df_Env_Species.pca)
+                         Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + WN + SOLmau + LIGluc + PARlop + Place, data = df_Env_Species.pca)
 
 summary(RichnessGLM2)
 
@@ -227,30 +230,29 @@ cor(data)
 
 # Re-doing the multicolinarity tests with the reduced factor set
 # Make a new model with at least one of the correlated factors omitted 
-model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + NonVascular + Vascular +
-                  Debris + Erosion + Disturbance + Pests +
-                   Litter + Housing + PopnHist + PopnCurr + WN + SOLmau + LIGluc + PARlop, data = df_Env_Species.pca)
+model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + Vascular + Pests +
+                  Erosion + Disturbance + Litter + Housing + PopnHist + 
+                  PopnCurr + WN + SOLmau + LIGluc + PARlop + Place, data = df_Env_Species.pca)
 
 # Look for Multicolliniarity
 library(car)
 vif(model.full)
 
 # look at how they correlate
-data <- df_Env_Species.pca[ , c("Height", "DBH", "Slope", "Canopy", "NonVascular", 
-                                "LitterCover", "Debris", "Erosion", "Disturbance", 
-                                 "Pests", "Litter", "Housing", "PopnHist", "PopnCurr", "WN")]
+data <- df_Env_Species.pca[ , c("Height", "DBH", "Slope", "Canopy", "Vascular", "Pests", 
+                                "Erosion", "Disturbance", "Litter", "Housing", "PopnHist", "PopnCurr", "WN", "Place")]
 cor(data)
 
 
 # Run all iterations of the model
-dredge <- dredge(model.full, rank = "AIC", extra = c("R^2", adjRsq = function(x) summary(x)$adj.r.squared))
+dredge <- dredge(model.full, rank = "AICc", extra = c("R^2", adjRsq = function(x) summary(x)$adj.r.squared))
 
 head(dredge, 10)
 
 # Install and load the writexl package
 library(writexl)
 
-write_xlsx(dredge, "C:/Users/bella/Documents/dredgeresults.xlsx")
+write_xlsx(dredge, "C:/Users/bella/Documents/dredgeresults30June.xlsx")
 
 # This gives the simplest possible model which includes Housing Density, 96 Population, 
 # LitterCover, PARlop, SOLmau, and Slope
