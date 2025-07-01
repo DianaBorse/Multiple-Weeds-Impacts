@@ -253,7 +253,6 @@ head(dredge, 10)
 library(writexl)
 
 write_xlsx(dredge, "C:/Users/bella/Documents/dredgeresults30June.xlsx")
-
 # This gives the simplest possible model which includes Housing Density, 96 Population, 
 # LitterCover, PARlop, SOLmau, and Slope
 
@@ -287,6 +286,32 @@ M1 <- glm(Richness ~ Housing +
           family = "poisson", data = Env_Species)
 
 summary(M1)
+??glm
+# can do for nb glm as well
+library(MASS)
+M2 <- glm.nb(Richness ~ Housing +
+               PopnHist + PopnCurr + Vascular +
+               SOLmau + PARlop + Slope,
+               data = Env_Species)
+E2 <- resid(M2, type = "pearson")
+N <- nrow(Env_Species)
+p <- length(coef(M2)) + 1
+sum(E2^2) / (N - p)
+
+summary(M2)
+drop1(M2, test = "Chi")
+
+
+# exponentiating the estimates# exponentiating the estimTRUEates
+exp(coef(M1))
+
+exp(confint(RichnessGLM))
+library(DHARMa)
+testOverdispersionParametric(M1)
+
+
+library(performance)
+check_overdispersion(M1)
 
 
 # Making a plot
@@ -436,28 +461,9 @@ lines(x = MyData$Slope,
 text(x = 50, y = 7.25, labels = paste0("Exponent =  1.016"), 
      pos = 4, col = "orange3", cex = 1)
 
-# can do for nb glm as well
-library(MASS)
-M2 <- glm.nb(Richness ~ Housing +
-               PopnHist + Vascular +
-               SOLmau + PARlop + Slope,
-               data = Env_Species)
-E2 <- resid(M2, type = "pearson")
-N <- nrow(Env_Species)
-p <- length(coef(M2)) + 1
-sum(E2^2) / (N - p)
-
-summary(M2)
-drop1(M2, test = "Chi")
 
 
-# exponentiating the estimates# exponentiating the estimTRUEates
-exp(coef(RichnessGLM))
-
-exp(confint(RichnessGLM))
-
-# Make some visualizations with the significant ones
-# Housing, PopnHist, SOLmau, and Slope
+# Visualizations with the raw data (not needed)
 
 # Solanum mauritianum
 ggplot(data = Env_Species, mapping = aes(x = SOLmau, y = Richness, colour = "#882265",  size=0.1)) + 
