@@ -230,9 +230,9 @@ cor(data)
 
 # Re-doing the multicolinarity tests with the reduced factor set
 # Make a new model with at least one of the correlated factors omitted 
-model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + Vascular + Pests +
+model.full <- glm(Richness ~ Height + DBH + Slope + Canopy + Vascular + Pests +
                   Erosion + Disturbance + Litter + Housing + PopnHist + 
-                  PopnCurr + WN + SOLmau + LIGluc + PARlop + Place, data = df_Env_Species.pca)
+                  PopnCurr + WN + SOLmau + LIGluc + PARlop + Place, family = "poisson", data = df_Env_Species.pca)
 
 # Look for Multicolliniarity
 library(car)
@@ -249,10 +249,21 @@ dredge <- dredge(model.full, rank = "AICc", extra = c("R^2", adjRsq = function(x
 
 head(dredge, 10)
 
+# Let's try it with just the factors from the top model of that result: housing 
+# density, 2023 population, 1996 population, SOLmau, PARlop, Slope, Vascular veg
+model.full <- glm(Richness ~ Housing +
+                   PopnHist + PopnCurr + Vascular +
+                   SOLmau + PARlop + Slope,
+                  family = "poisson", data = df_Env_Species.pca)
+
+dredge <- dredge(model.full, rank = "AICc", extra = c("R^2", adjRsq = function(x) summary(x)$adj.r.squared))
+
+head(dredge, 10)
+
 # Install and load the writexl package
 library(writexl)
 
-write_xlsx(dredge, "C:/Users/bella/Documents/dredgeresults30June.xlsx")
+write_xlsx(dredge, "C:/Users/bella/Documents/dredgeresultsProperGLM.xlsx")
 # This gives the simplest possible model which includes Housing Density, 96 Population, 
 # LitterCover, PARlop, SOLmau, and Slope
 
@@ -281,12 +292,54 @@ Myxyplot(df_Env_Species.pca, MyVar, "Richness")
 
 # Fit a model 
 M1 <- glm(Richness ~ Housing +
-            PopnHist + PopnCurr + Vascular +
-            SOLmau + PARlop + Slope,
+            PopnCurr + PARlop + Slope,
           family = "poisson", data = Env_Species)
 
 summary(M1)
-??glm
+
+# look at the effects
+library(effects)
+
+eff <- allEffects(M1)
+summary(eff)
+plot(eff)
+
+
+percent_change <- (exp(coef(M1)["Housing"])- 1)*100
+print(percent_change)
+(exp(coef(M1)["PopnCurr"])- 1)*100
+(exp(coef(M1)["PARlop"])- 1)*100
+(exp(coef(M1)["Slope"])- 1)*100
+
+
+# Housing density effects plot
+plot(Effect("Housing", M1), xlab = "Housing density within 250 meters",
+     ylab = "Weed richness", main = "", colors = "royalblue")
+
+# 96 population effects plot
+#plot(Effect("PopnHist", M1), xlab = "Population of the area 1996",
+#     ylab = "Weed richness", main = "", colors = "pink3")
+
+# 23 population effects plot
+plot(Effect("PopnCurr", M1), xlab = "Population of the area 2023",
+     ylab = "Weed richness", main = "", colors = "#660099")
+
+# Vascular Vegetation effects plot
+#plot(Effect("Vascular", M1), xlab = "Cover of vascular vegetation",
+#     ylab = "Weed richness", main = "", colors = "#043927")
+
+# Woolly Nightshade effects plot
+#plot(Effect("SOLmau", M1), xlab = "Number of S. mauritianum taller than 150 cm",
+#     ylab = "Weed richness", main = "", colors = "#882265")
+
+# Brush Wattle effects plot
+plot(Effect("PARlop", M1), xlab = "Number of P. lophantha taller than 150 cm",
+     ylab = "Weed richness", main = "", colors = "orange3")
+
+# Slope effects plot
+plot(Effect("Slope", M1), xlab = "Slope of the plot",
+     ylab = "Weed richness", main = "", colors = "maroon")
+
 # can do for nb glm as well
 library(MASS)
 M2 <- glm.nb(Richness ~ Housing +
@@ -306,6 +359,8 @@ drop1(M2, test = "Chi")
 exp(coef(M1))
 
 exp(confint(RichnessGLM))
+
+
 library(DHARMa)
 testOverdispersionParametric(M1)
 
