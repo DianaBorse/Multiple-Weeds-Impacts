@@ -514,9 +514,9 @@ summary(simper.weeds)$SOLmau_LIGluc %>%
 # look at the species that contribute to the difference between woolly nightshade and brush wattle
 summary(simper.weeds)$SOLmau_PARlop %>%
   round(3) %>%
-  head(10)
+  head(15)
 # look at the species that contribute to the difference between tree privet and brush wattle
 summary(simper.weeds)$PARlop_LIGluc %>%
   round(3) %>%
-  head(10)
+  head(15)
 
