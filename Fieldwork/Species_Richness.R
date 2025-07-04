@@ -39,7 +39,7 @@ tidyverse_update()
 library(dplyr)
 
 library(readr)
-SurveyData <- read_csv("Fieldwork/SurveyData_Clean.csv")
+SurveyData <- read_csv("Fieldwork/SurveyData_Clean_WN_removed.csv")
 
 # Unite Site and Plot columns
 
@@ -61,7 +61,8 @@ SurveyData_Combined <- SurveyData_united %>%
 library(dplyr)
 Richness <- SurveyData_Combined %>% group_by(Plot) %>% summarize(unique_values = n_distinct(ScientificName))
 
-SurveyData_Combined$Richness <- 
+SurveyData_Combined <- left_join(Richness, SurveyData_Combined, by = "Plot") 
+
 # Calculate Summarry Statistics
 library(dplyr)
 summ_Richness <- Richness %>%
@@ -291,3 +292,66 @@ RichnessPlotWeed <- ggplot(data = RichnessWeed,
 RichnessPlotWeed
 
 ?geom_boxplot
+
+
+#### Does native species richness decrease as weed species richness increases? ####
+
+library(readr)
+SurveyData <- read_csv("Fieldwork/SurveyData_Clean_WN_removed.csv")
+
+# Unite Site and Plot columns
+
+library(tidyr)
+SurveyData_united <- SurveyData %>%
+  unite(Plot, Site, Plot, sep = " - ")
+
+# Unite Plot and Weed vs Native columns so that now the plot id is all in one
+# column that includes the site, plot number, and whether it is weed or native
+
+library(tidyr)
+SurveyData_Combined <- SurveyData_united %>%
+  unite(Plot, Plot, W_N, sep = " - ")
+
+# calculate native species richness
+
+# subset the data to only include the native speices
+subset_SurveyData_Combined_Native <- SurveyData_Combined[SurveyData_Combined$Status == 0, ]
+
+library(dplyr)
+RichnessNative <- subset_SurveyData_Combined_Native %>% group_by(Plot) %>% summarize(unique_values = n_distinct(ScientificName))
+
+colnames(RichnessNative)[colnames(RichnessNative) == "unique_values"] <- "NativeRichness"
+
+SurveyData_Combined <- left_join(RichnessNative, SurveyData_Combined, by = "Plot") 
+
+# calculate weed species richness
+# subset the data to only include the weed speices
+subset_SurveyData_Combined_Weed <- SurveyData_Combined[SurveyData_Combined$WeedList == 1, ]
+
+library(dplyr)
+RichnessWeed <- subset_SurveyData_Combined_Weed %>% group_by(Plot) %>% summarize(unique_values = n_distinct(ScientificName))
+
+colnames(RichnessWeed)[colnames(RichnessWeed) == "unique_values"] <- "WeedRichness"
+
+SurveyData_Combined <- left_join(RichnessWeed, SurveyData_Combined, by = "Plot") 
+
+library(ggplot2)
+RichnessPlotWeed <- ggplot(data = SurveyData_Combined, 
+                           aes(y = NativeRichness, ##Change this to variable name
+                               x = WeedRichness)) + ##Change this to variable name
+  geom_point(colour = "maroon") +
+  geom_smooth(method = "lm", se = TRUE, color = "maroon4") +
+  geom_jitter(color="maroon", size=0.4, alpha=0.9) +
+  ylab("Native Species Richness") + xlab("Weed Species Richness") +   ##Change axis titles
+  theme(axis.text.x=element_text(face = "italic", size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+RichnessPlotWeed
+
+  
