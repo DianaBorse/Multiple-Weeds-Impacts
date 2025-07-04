@@ -335,12 +335,15 @@ colnames(RichnessWeed)[colnames(RichnessWeed) == "unique_values"] <- "WeedRichne
 
 SurveyData_Combined <- left_join(RichnessWeed, SurveyData_Combined, by = "Plot") 
 
+library(ggpubr)
 library(ggplot2)
 RichnessPlotWeed <- ggplot(data = SurveyData_Combined, 
                            aes(y = NativeRichness, ##Change this to variable name
                                x = WeedRichness)) + ##Change this to variable name
   geom_point(colour = "maroon") +
   geom_smooth(method = "lm", se = TRUE, color = "maroon4") +
+#  stat_regline_equation(aes(label = ..eq.label..), label.x = 4, label.y = 10) +
+  stat_cor(aes(label = ..rr.label..), label.x = 7.5, label.y = 7.5) +
   geom_jitter(color="maroon", size=0.4, alpha=0.9) +
   ylab("Native Species Richness") + xlab("Weed Species Richness") +   ##Change axis titles
   theme(axis.text.x=element_text(face = "italic", size=10, color = 'black'), #Change axis text font size and angle and colour etc
