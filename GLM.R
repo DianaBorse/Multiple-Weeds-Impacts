@@ -195,12 +195,12 @@ library(MuMIn)
 options(na.action = "na.fail") #Must run this code once to use dredge
 model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + Vascular + NonVascular+
                    LitterCover + Bare + Debris + Erosion + Disturbance + Pests +
-                   Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + WN + SOLmau + LIGluc + PARlop + Place, data = df_Env_Species.pca)
+                   Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + Place, data = df_Env_Species.pca)
 
 # Richness GLM
 RichnessGLM2 <- glm.nb(Richness ~ Height + DBH + Slope + Canopy + Vascular + NonVascular+
                          LitterCover + Bare + Debris + Erosion + Disturbance + Pests +
-                         Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + WN + SOLmau + LIGluc + PARlop + Place, data = df_Env_Species.pca)
+                         Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + Place, data = df_Env_Species.pca)
 
 summary(RichnessGLM2)
 
@@ -232,7 +232,7 @@ cor(data)
 # Make a new model with at least one of the correlated factors omitted 
 model.full <- glm(Richness ~ Height + DBH + Slope + Canopy + Vascular + Pests +
                   Erosion + Disturbance + Litter + Housing + PopnHist + 
-                  PopnCurr + WN + SOLmau + LIGluc + PARlop + Place, family = "poisson", data = df_Env_Species.pca)
+                  PopnCurr + Place, family = "poisson", data = df_Env_Species.pca)
 
 # Look for Multicolliniarity
 library(car)
@@ -240,7 +240,7 @@ vif(model.full)
 
 # look at how they correlate
 data <- df_Env_Species.pca[ , c("Height", "DBH", "Slope", "Canopy", "Vascular", "Pests", 
-                                "Erosion", "Disturbance", "Litter", "Housing", "PopnHist", "PopnCurr", "WN", "Place")]
+                                "Erosion", "Disturbance", "Litter", "Housing", "PopnHist", "PopnCurr", "Place")]
 cor(data)
 
 
@@ -253,7 +253,7 @@ head(dredge, 10)
 # density, 2023 population, 1996 population, SOLmau, PARlop, Slope, Vascular veg
 model.full <- glm(Richness ~ Housing +
                    PopnHist + PopnCurr + Vascular +
-                   SOLmau + PARlop + Slope,
+                   Height + Erosion + Slope,
                   family = "poisson", data = df_Env_Species.pca)
 
 dredge <- dredge(model.full, rank = "AICc", extra = c("R^2", adjRsq = function(x) summary(x)$adj.r.squared))
@@ -270,8 +270,7 @@ write_xlsx(dredge, "C:/Users/bella/Documents/dredgeresultsProperGLM.xlsx")
 # Compare factors to how they relate to richness
 library(MASS) ## do to the GLM
 RichnessGLM <- glm.nb(Richness ~ Housing +
-                        PopnHist + PopnCurr + Vascular +
-                        SOLmau + PARlop + Slope,
+                        PopnCurr +  Slope,
                       data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
 summary(RichnessGLM)
 
@@ -281,8 +280,7 @@ library(R2jags)
 source(file = "GLM Book Resources/HighstatLibV10.R")
 source(file = "GLM Book Resources/MCMCSupportHighstatV4.R")
 
-MyVar <- c("Housing", "Slope", "Vascular",
-           "PopnHist", "SOLmau", "PARlop", "PopnCurr")
+MyVar <- c("Housing", "Slope", "PopnCurr")
 Mydotplot(Env_Species[MyVar])
 
 corvif(Env_Species[MyVar])
@@ -292,7 +290,7 @@ Myxyplot(df_Env_Species.pca, MyVar, "Richness")
 
 # Fit a model 
 M1 <- glm(Richness ~ Housing +
-            PopnCurr + PARlop + Slope,
+            PopnCurr + Slope,
           family = "poisson", data = Env_Species)
 
 summary(M1)
@@ -308,7 +306,6 @@ plot(eff)
 percent_change <- (exp(coef(M1)["Housing"])- 1)*100
 print(percent_change)
 (exp(coef(M1)["PopnCurr"])- 1)*100
-(exp(coef(M1)["PARlop"])- 1)*100
 (exp(coef(M1)["Slope"])- 1)*100
 
 
@@ -333,8 +330,8 @@ plot(Effect("PopnCurr", M1), xlab = "Population of the area 2023",
 #     ylab = "Weed richness", main = "", colors = "#882265")
 
 # Brush Wattle effects plot
-plot(Effect("PARlop", M1), xlab = "Number of P. lophantha taller than 150 cm",
-     ylab = "Weed richness", main = "", colors = "orange3")
+#plot(Effect("PARlop", M1), xlab = "Number of P. lophantha taller than 150 cm",
+#     ylab = "Weed richness", main = "", colors = "orange3")
 
 # Slope effects plot
 plot(Effect("Slope", M1), xlab = "Slope of the plot",
