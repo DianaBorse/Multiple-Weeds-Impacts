@@ -333,16 +333,22 @@ Height$AverageGR <- rowMeans(Height[, 26:31], na.rm = TRUE)
 Height<-Height[-592, ] 
 Height<-Height[-591, ] 
 Height<-Height[-590, ] 
-Height<-Height[-589, ] 
+Height<-Height[-589, ]
+Height<-Height[-100, ]
+Height<-Height[-99, ]
+Height<-Height[-98, ]
+Height<-Height[-97, ]
+Height<-Height[-981, ]
+Height<-Height[-957, ]
+Height<-Height[-956, ]
+Height<-Height[-955, ]
+Height<-Height[-954, ]
+Height<-Height[-641, ]
+Height<-Height[-548, ]
+
 
 #### Let's look at Sapling height ####
 SaplingH <- Height[Height$Plant == "ManukaSapling", ]
-
-SaplingH<-SaplingH[-243, ] 
-SaplingH<-SaplingH[-242, ] 
-SaplingH<-SaplingH[-241, ] 
-SaplingH<-SaplingH[-240, ] 
-
 
 ggplot(SaplingH, aes(x = Group, y = AverageGR))+
   geom_boxplot() +
@@ -362,7 +368,7 @@ summ_SaplingH <- SaplingH %>%
 ratio <-(max(summ_SaplingH$sd_AverageGR))/(min(summ_SaplingH$sd_AverageGR))
 print(ratio)
 
-# Not working, try ANOVA
+# Normal enough <3
 
 # Set up for ANOVA
 model01 <- lm(AverageGR~Group, data = SaplingH)
@@ -382,10 +388,6 @@ summary(tukey)
 #### Seedling analysis ####
 
 SeedlingH <- Height[Height$Plant == "ManukaSeedling", ]
-
-SeedlingH<-SeedlingH[-170, ] 
-SeedlingH<-SeedlingH[-169, ] 
-SeedlingH<-SeedlingH[-168, ] 
 
 ggplot(SeedlingH, aes(x = Group, y = AverageGR))+
   geom_boxplot() +
@@ -409,3 +411,172 @@ print(ratio)
 kruskal.test(AverageGR ~ Group, data = SeedlingH)
 
 # no difference
+
+#### Woolly nightshade analysis ####
+NightshadeH <- Height[Height$Plant == "Nightshade", ]
+
+ggplot(NightshadeH, aes(x = Group, y = AverageGR))+
+  geom_boxplot() +
+  theme_bw() 
+ggplot(NightshadeH) +
+  geom_histogram(aes(AverageGR), binwidth = 1)+
+  facet_wrap(~Group)
+ggplot(NightshadeH)+
+  geom_qq(aes(sample = AverageGR, color = Group))
+
+# Check for Homogeneous variance
+summ_NightshadeH <- NightshadeH %>%
+  group_by(Group) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            n_AverageGR = n())
+ratio <-(max(summ_NightshadeH$sd_AverageGR))/(min(summ_NightshadeH$sd_AverageGR))
+print(ratio)
+
+# Normal enough, <3
+# Set up for ANOVA
+model01 <- lm(AverageGR~Group, data = NightshadeH)
+
+autoplot(model01)
+
+anova(model01)
+
+summary(model01)
+
+# There is a significant difference, tukey test
+model01 <- lm(AverageGR~Group, data = NightshadeH)
+
+# Perform unplanned Tukey test
+tukey <- glht(model01, linfct = mcp(Group = "Tukey"))
+summary(tukey)
+
+#### Privet Analysis ####
+PrivetH <- Height[Height$Plant == "Privet", ]
+
+ggplot(PrivetH, aes(x = Group, y = AverageGR))+
+  geom_boxplot() +
+  theme_bw() 
+ggplot(PrivetH) +
+  geom_histogram(aes(AverageGR), binwidth = 1)+
+  facet_wrap(~Group)
+ggplot(PrivetH)+
+  geom_qq(aes(sample = AverageGR, color = Group))
+
+# Check for Homogeneous variance
+summ_PrivetH <- PrivetH %>%
+  group_by(Group) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            n_AverageGR = n())
+ratio <-(max(summ_PrivetH$sd_AverageGR))/(min(summ_PrivetH$sd_AverageGR))
+print(ratio)
+
+# Normal enough, <3
+# Set up for ANOVA
+model01 <- lm(AverageGR~Group, data = PrivetH)
+
+autoplot(model01)
+
+anova(model01)
+
+summary(model01)
+
+# There is a significant difference, tukey test
+model01 <- lm(AverageGR~Group, data = PrivetH)
+
+# Perform unplanned Tukey test
+tukey <- glht(model01, linfct = mcp(Group = "Tukey"))
+summary(tukey)
+
+#### Wattle Analysis ####
+WattleH <- Height[Height$Plant == "Wattle", ]
+
+WattleH<-WattleH[-20, ]
+
+ggplot(WattleH, aes(x = Group, y = AverageGR))+
+  geom_boxplot() +
+  theme_bw() 
+ggplot(WattleH) +
+  geom_histogram(aes(AverageGR), binwidth = 1)+
+  facet_wrap(~Group)
+ggplot(WattleH)+
+  geom_qq(aes(sample = AverageGR, color = Group))
+
+# Check for Homogeneous variance
+summ_WattleH <- WattleH %>%
+  group_by(Group) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            n_AverageGR = n())
+ratio <-(max(summ_WattleH$sd_AverageGR))/(min(summ_WattleH$sd_AverageGR))
+print(ratio)
+
+# Normal enough, <3
+# Set up for ANOVA
+model01 <- lm(AverageGR~Group, data = WattleH)
+
+autoplot(model01)
+
+anova(model01)
+
+summary(model01)
+
+# There is a significant difference, tukey test
+model01 <- lm(AverageGR~Group, data = WattleH)
+
+# Perform unplanned Tukey test
+tukey <- glht(model01, linfct = mcp(Group = "Tukey"))
+summary(tukey)
+
+library(ggplot2)
+WattlePlot <- ggplot(data = WattleH, 
+                       aes(y = AverageGR, ##Change this to variable name
+                           x = Group)) + ##Change this to variable name
+  geom_boxplot(fill = "#332288", notch = TRUE, varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Average Growth Rate") + xlab("Treatment Group") +   ##Change axis titles
+  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+WattlePlot
+
+NightshadePlot <- ggplot(data = NightshadeH, 
+                     aes(y = AverageGR, ##Change this to variable name
+                         x = Group)) + ##Change this to variable name
+  geom_boxplot(fill = "#882265", notch = TRUE, varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Average Growth Rate") + xlab("Treatment Group") +   ##Change axis titles
+  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+NightshadePlot
+
+PrivetPlot <- ggplot(data = PrivetH, 
+                     aes(y = AverageGR, ##Change this to variable name
+                         x = Group)) + ##Change this to variable name
+  geom_boxplot(fill = "#88CCEE", notch = TRUE, varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Average Growth Rate") + xlab("Treatment Group") +   ##Change axis titles
+  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+PrivetPlot 
+
