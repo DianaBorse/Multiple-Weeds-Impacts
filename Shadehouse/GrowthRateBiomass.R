@@ -32,9 +32,13 @@ Biomass<-Biomass[-959, ]
 # Removing rows where the mass is blank
 Biomass <- Biomass[!is.na(Biomass$Mass_g), ]
 
+# Remove seedling from tg2, there should be no seedlings in that tg
+Biomass<-Biomass[-63, ]
+
 # simplifying the experiment 1 treatment group name to Group and Mass_g to Mass
 colnames(Biomass)[5:5] <- c("Group") ## Renaming the columns
 colnames(Biomass)[10:10] <- c("Mass") ## Renaming the columns
+Biomass$Group <- as.factor(Biomass$Group)
 
 
 # ggfortify is a package that works with ggplot2 to make nice plots
@@ -102,6 +106,8 @@ kruskal.test(logMass ~ Group, data = Sapling)
 #### Have a look at how seedling biomass varies by treatment group ####
 Seedling <- Biomass[Biomass$Plant == "ManukaSeedling", ]
 
+Seedling<-Seedling[-81, ]
+
 Seedling$Group <- as.factor(Seedling$Group)
 
 ggplot(Seedling, aes(x = Group, y = Mass))+
@@ -122,22 +128,9 @@ summ_Seedling <- Seedling %>%
 ratio <-(max(summ_Seedling$sd_Mass))/(min(summ_Seedling$sd_Mass))
 print(ratio)
 
-# Not normal, need to try a transformation
-Seedling <- Seedling %>%
-  mutate(logMass = log(Mass))
-
-# Check for Homogeneous variance
-summ_Seedling <- Seedling %>%
-  group_by(Group) %>% 
-  summarise(mean_logMass = mean(logMass),
-            sd_logMass = sd(logMass),
-            n_logMass = n())
-ratio <-(max(summ_Seedling$sd_logMass))/(min(summ_Seedling$sd_logMass))
-print(ratio)
-
 # Looks a lot better
 # Set up for ANOVA
-model01 <- lm(logMass~Group, data = Seedling)
+model01 <- aov(Mass~Group, data = Seedling)
 
 autoplot(model01)
 
@@ -148,11 +141,6 @@ summary(model01)
 # Perform unplanned Tukey test
 tukey <- glht(model01, linfct = mcp(Group = "Tukey"))
 summary(tukey)
-
-# Visualize transformed data
-ggplot(Seedling, aes(x = Group, y = logMass))+
-  geom_boxplot() +
-  theme_classic() 
 
 # Very interesting, the seedling biomass is significantly higher in groups 4 and 5
 # which have wattle and woolly and wattle and privet than when growing with conspecifics only
@@ -181,7 +169,7 @@ ratio <-(max(summ_Nightshade$sd_Mass))/(min(summ_Nightshade$sd_Mass))
 print(ratio)
 
 # Set up for ANOVA
-model01 <- lm(Mass~Group, data = Nightshade)
+model01 <- aov(Mass~Group, data = Nightshade)
 
 autoplot(model01)
 
@@ -190,8 +178,11 @@ anova(model01)
 summary(model01)
 
 # Perform unplanned Tukey test
-tukey <- glht(model01, linfct = mcp(Group = "Tukey"))
+tukey <- TukeyHSD(model01)
 summary(tukey)
+print(tukey)
+plot(tukey, las = 1)
+
 
 # Visualize transformed data
 ggplot(Nightshade, aes(x = Group, y = Mass))+
@@ -222,7 +213,7 @@ ratio <-(max(summ_Privet$sd_Mass))/(min(summ_Privet$sd_Mass))
 print(ratio)
 
 # Set up for ANOVA
-model01 <- lm(Mass~Group, data = Privet)
+model01 <- aov(Mass~Group, data = Privet)
 
 autoplot(model01)
 
@@ -231,8 +222,10 @@ anova(model01)
 summary(model01)
 
 # Perform unplanned Tukey test
-tukey <- glht(model01, linfct = mcp(Group = "Tukey"))
+tukey <- TukeyHSD(model01)
 summary(tukey)
+print(tukey)
+plot(tukey, las = 1)
 
 # Visualize transformed data
 ggplot(Privet, aes(x = Group, y = Mass))+
@@ -276,7 +269,7 @@ ratio <-(max(summ_Wattle$sd_logMass))/(min(summ_Wattle$sd_logMass))
 print(ratio)
 
 # Set up for ANOVA
-model01 <- lm(logMass~Group, data = Wattle)
+model01 <- aov(logMass~Group, data = Wattle)
 
 autoplot(model01)
 
@@ -285,14 +278,35 @@ anova(model01)
 summary(model01)
 
 # Perform unplanned Tukey test
-tukey <- glht(model01, linfct = mcp(Group = "Tukey"))
+tukey <- TukeyHSD(model01)
 summary(tukey)
+print(tukey)
+plot(tukey, las = 1)
+
 
 
 # Visualize transformed data
 ggplot(Wattle, aes(x = Group, y = logMass))+
   geom_boxplot() +
   theme_classic() 
+
+# Make a new df without saplings because they are too big
+BiomassSeedlings <- Biomass %>% filter(Plant != "ManukaSapling")
+
+# Make a boxplot with all values on it
+ggplot(BiomassSeedlings, aes(x = Group, y = Mass, fill = Plant)) +
+  geom_boxplot(position = position_dodge(width = 0.8)) +
+  theme_minimal() +
+  labs(x = "Treatment group", y = "Dry biomass g", fill = "Species") +
+  scale_fill_manual(values = c(
+    "ManukaSapling" = "#33B08D",  
+    "ManukaSeedling"  = "#82C782", 
+    "Nightshade" = "#CF597E",  
+    "Privet" = "#E57F6C" , 
+    "Wattle" = "#E9A96C"),
+    labels = c("ManukaSapling" = "L. scoparium sapling", "ManukaSeedling" = "L. scoparium seedling","Nightshade" = "S. mauritianum",
+               "Privet" = "L. lucidum", "Wattle" = "P. lophantha")) +
+  theme_classic()
 
 
 
@@ -311,6 +325,10 @@ Height$Height4 <- as.numeric(Height$Height4)
 Height$Height5 <- as.numeric(Height$Height5)
 Height$Height6 <- as.numeric(Height$Height6)
 Height$Height7 <- as.numeric(Height$Height7)
+
+# Remove rows with seedlings in treatment group 2
+Height<-Height[-610, ]
+Height<-Height[-82, ]
 
 # Calculating growth rate
 Height <- Height %>%
@@ -331,26 +349,13 @@ Height$AverageGR <- rowMeans(Height[, 26:31], na.rm = TRUE)
 Height$AverageGR <- Height$AverageGR * 10
 
 # Clean up empty rows
-Height<-Height[-592, ] 
-Height<-Height[-591, ] 
-Height<-Height[-590, ] 
-Height<-Height[-589, ]
-Height<-Height[-100, ]
-Height<-Height[-99, ]
-Height<-Height[-98, ]
-Height<-Height[-97, ]
-Height<-Height[-981, ]
-Height<-Height[-957, ]
-Height<-Height[-956, ]
-Height<-Height[-955, ]
-Height<-Height[-954, ]
-Height<-Height[-641, ]
-Height<-Height[-548, ]
-Height<-Height[-974, ]
-Height<-Height[-951, ]
-Height<-Height[-639, ]
-Height<-Height[-547, ]
+library(dplyr)
 
+Height <- Height %>% 
+  filter(!is.na(AverageGR))
+
+Height <- Height %>% 
+  filter(!is.na(Group))
 
 #### Let's look at Sapling height ####
 SaplingH <- Height[Height$Plant == "ManukaSapling", ]
@@ -414,8 +419,15 @@ summ_SeedlingH <- SeedlingH %>%
 ratio <-(max(summ_SeedlingH$sd_AverageGR))/(min(summ_SeedlingH$sd_AverageGR))
 print(ratio)
 
-# Not normal, but too many zeros, try kruskal-wallis
-kruskal.test(AverageGR ~ Group, data = SeedlingH)
+# Normal, do and ANOVA
+model01 <- aov(AverageGR~Group, data = SeedlingH)
+
+autoplot(model01)
+
+anova(model01)
+
+summary(model01)
+
 
 # no difference
 
@@ -504,10 +516,9 @@ summary(tukey)
 print(tukey)
 plot(tukey, las = 1)
 
+
 #### Wattle Analysis ####
 WattleH <- Height[Height$Plant == "Wattle", ]
-
-WattleH<-WattleH[-20, ]
 
 ggplot(WattleH, aes(x = Group, y = AverageGR))+
   geom_boxplot() +
@@ -549,7 +560,7 @@ WattlePlot <- ggplot(data = WattleH,
                            x = Group)) + ##Change this to variable name
   geom_boxplot(fill = "#E9A96C", notch = TRUE, varwidth = TRUE) +
   geom_jitter(color="black", size=0.4, alpha=0.9) +
-  ylab("Relative Growth Rate mm/month") + xlab("Treatment Group") +   ##Change axis titles
+  ylab("Relative growth rate ln(mm/month)") + xlab("Treatment Group") +   ##Change axis titles
   theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
         axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
         axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
@@ -566,7 +577,7 @@ NightshadePlot <- ggplot(data = NightshadeH,
                          x = Group)) + ##Change this to variable name
   geom_boxplot(fill = "#CF597E", notch = TRUE, varwidth = TRUE) +
   geom_jitter(color="black", size=0.4, alpha=0.9) +
-  ylab("Relative Growth Rate mm/month") + xlab("Treatment Group") +   ##Change axis titles
+  ylab("Relative growth rate ln(mm/month)h") + xlab("Treatment Group") +   ##Change axis titles
   theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
         axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
         axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
@@ -583,7 +594,7 @@ PrivetPlot <- ggplot(data = PrivetH,
                          x = Group)) + ##Change this to variable name
   geom_boxplot(fill = "#E57F6C", notch = TRUE, varwidth = TRUE) +
   geom_jitter(color="black", size=0.4, alpha=0.9) +
-  ylab("Relative Growth Rate mm/month") + xlab("Treatment Group") +   ##Change axis titles
+  ylab("Relative growth rate ln(mm/month)") + xlab("Treatment Group") +   ##Change axis titles
   theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
         axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
         axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
@@ -600,7 +611,7 @@ SaplingPlot <- ggplot(data = SaplingH,
                          x = Group)) + ##Change this to variable name
   geom_boxplot(fill = "#33B08D", notch = TRUE, varwidth = TRUE) +
   geom_jitter(color="black", size=0.4, alpha=0.9) +
-  ylab("Relative Growth Rate mm/month") + xlab("Treatment Group") +   ##Change axis titles
+  ylab("Relative growth rate ln(mm/month)") + xlab("Treatment Group") +   ##Change axis titles
   theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
         axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
         axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
@@ -617,7 +628,7 @@ SeedlingPlot <- ggplot(data = SeedlingH,
                           x = Group)) + ##Change this to variable name
   geom_boxplot(fill = "#82C782", notch = TRUE, varwidth = TRUE) +
   geom_jitter(color="black", size=0.4, alpha=0.9) +
-  ylab("Relative Growth Rate mm/month") + xlab("Treatment Group") +   ##Change axis titles
+  ylab("Relative growth rate ln(mm/month)") + xlab("Treatment Group") +   ##Change axis titles
   theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
         axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
         axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
@@ -633,15 +644,28 @@ SeedlingPlot
 ggplot(Height, aes(x = Group, y = AverageGR, fill = Plant)) +
   geom_boxplot(position = position_dodge(width = 0.8)) +
   theme_minimal() +
-  labs(x = "Group", y = "Relative Growth Rate mm/month", fill = "Species") +
+  labs(x = "Treatment group", y = "Relative growth rate ln(mm/month)", fill = "Species") +
   scale_fill_manual(values = c(
     "ManukaSapling" = "#33B08D",  
     "ManukaSeedling"  = "#82C782", 
     "Nightshade" = "#CF597E",  
     "Privet" = "#E57F6C" , 
-    "Wattle" = "#E9A96C"  
-  )) +
+    "Wattle" = "#E9A96C"),
+    labels = c("ManukaSapling" = "L. scoparium sapling", "ManukaSeedling" = "L. scoparium seedling","Nightshade" = "S. mauritianum",
+               "Privet" = "L. lucidum", "Wattle" = "P. lophantha")) +
   theme_classic()
 
 hcl.colors(8, palette = "Temps") # remove # to look at colors below
 # "#089392" "#33B08D" "#82C782" "#CBD98E" "#EACF87" "#E9A96C" "#E57F6C" "#CF597E"
+
+# Calculate averages for each group
+# calculate summary stats
+summ_Height <- Height %>%
+  group_by(Plant) %>%
+  summarise(mean_AverageGR = mean(AverageGR),
+            median_AverageGR = median(AverageGR),
+            IQR_AverageGR = IQR(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            var_AverageGR = var(AverageGR),
+            se_AverageGR = sd(AverageGR)/sqrt(189))
+print(summ_Height)
