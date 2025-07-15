@@ -669,3 +669,23 @@ summ_Height <- Height %>%
             var_AverageGR = var(AverageGR),
             se_AverageGR = sd(AverageGR)/sqrt(189))
 print(summ_Height)
+
+
+#### Survival Analysis ####
+
+# Use Kaplan-Meier survival curves
+
+library(lubridate)
+library(ggsurvfit)
+library(gtsummary)
+library(tidycmprsk)
+
+# I need to calculate survival time, that will be how many months until one of the
+# notes columns says 'dead'
+
+# So then if Notes2 = dead, survival time = 33 days, if notes5 = dead, survival time = 130 days etc.
+# So then I need to make some code to make a survival time column that follows these rules
+
+
+# Then I need to make a status column that just gives 0 if the plants never died
+# and 1 if the plants died.
