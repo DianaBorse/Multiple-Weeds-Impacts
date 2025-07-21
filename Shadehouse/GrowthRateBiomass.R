@@ -142,6 +142,18 @@ summary(model01)
 tukey <- glht(model01, linfct = mcp(Group = "Tukey"))
 summary(tukey)
 
+# The sample sizes are not quite even and therefore we need to use Type 3 analysis
+contrasts(Seedling$Group) <- contr.sum(8)
+
+model <- lm(Mass ~ Group, data = Seedling)
+
+# Run Type III ANOVA
+Anova(model, type = 3)
+
+# Tukey-Kramer test (automatically applied for unequal sample sizes)
+TukeyHSD(model01)
+
+
 # Very interesting, the seedling biomass is significantly higher in groups 4 and 5
 # which have wattle and woolly and wattle and privet than when growing with conspecifics only
 
@@ -177,7 +189,7 @@ anova(model01)
 
 summary(model01)
 
-# Perform unplanned Tukey test
+# Perform Tukey test
 tukey <- TukeyHSD(model01)
 summary(tukey)
 print(tukey)
@@ -188,6 +200,14 @@ plot(tukey, las = 1)
 ggplot(Nightshade, aes(x = Group, y = Mass))+
   geom_boxplot() +
   theme_classic() 
+
+# The sample sizes are not quite even and therefore we need to use Type 3 analysis
+contrasts(Nightshade$Group) <- contr.sum(8)
+
+model <- lm(Mass ~ Group, data = Nightshade)
+
+# Run Type III ANOVA
+Anova(model, type = 3)
 
 #### privet analysis ####
 Privet <- Biomass[Biomass$Plant == "Privet", ]
@@ -221,7 +241,7 @@ anova(model01)
 
 summary(model01)
 
-# Perform unplanned Tukey test
+# Perform Tukey test
 tukey <- TukeyHSD(model01)
 summary(tukey)
 print(tukey)
@@ -231,6 +251,14 @@ plot(tukey, las = 1)
 ggplot(Privet, aes(x = Group, y = Mass))+
   geom_boxplot() +
   theme_classic() 
+
+# The sample sizes are not quite even and therefore we need to use Type 3 analysis
+contrasts(Privet$Group) <- contr.sum(8)
+
+model <- lm(Mass ~ Group, data = Privet)
+
+# Run Type III ANOVA
+Anova(model, type = 3)
 
 #### wattle analysis ####
 Wattle <- Biomass[Biomass$Plant == "Wattle", ]
@@ -277,18 +305,24 @@ anova(model01)
 
 summary(model01)
 
-# Perform unplanned Tukey test
+# Perform Tukey test
 tukey <- TukeyHSD(model01)
 summary(tukey)
 print(tukey)
 plot(tukey, las = 1)
 
-
-
 # Visualize transformed data
 ggplot(Wattle, aes(x = Group, y = logMass))+
   geom_boxplot() +
   theme_classic() 
+
+# The sample sizes are not quite even and therefore we need to use Type 3 analysis
+contrasts(Wattle$Group) <- contr.sum(8)
+
+model <- lm(Mass ~ Group, data = Wattle)
+
+# Run Type III ANOVA
+Anova(model, type = 3)
 
 # Make a new df without saplings because they are too big
 BiomassSeedlings <- Biomass %>% filter(Plant != "ManukaSapling")
@@ -397,6 +431,16 @@ plot(tukey, las = 1)
 
 # No difference in the average sapling Growth Rate by group
 
+# The sample sizes are not quite even and therefore we need to use Type 3 analysis
+contrasts(SaplingH$Group) <- contr.sum(8)
+
+model <- lm(AverageGR ~ Group, data = SaplingH)
+
+# Run Type III ANOVA
+Anova(model, type = 3)
+
+# Still not significant
+
 #### Seedling analysis ####
 
 SeedlingH <- Height[Height$Plant == "ManukaSeedling", ]
@@ -428,8 +472,17 @@ anova(model01)
 
 summary(model01)
 
-
 # no difference
+
+# The sample sizes are not quite even and therefore we need to use Type 3 analysis
+contrasts(SeedlingH$Group) <- contr.sum(8)
+
+model <- lm(AverageGR ~ Group, data = SeedlingH)
+
+# Run Type III ANOVA
+Anova(model, type = 3)
+
+# Still not significant
 
 #### Woolly nightshade analysis ####
 NightshadeH <- Height[Height$Plant == "Nightshade", ]
@@ -479,6 +532,14 @@ summ_NightshadeH <- NightshadeH %>%
             se_AverageGR = sd(AverageGR)/sqrt(189))
 print(summ_NightshadeH)
 
+# The sample sizes are not quite even and therefore we need to use Type 3 analysis
+contrasts(NightshadeH$Group) <- contr.sum(8)
+
+model <- lm(AverageGR ~ Group, data = NightshadeH)
+
+# Run Type III ANOVA
+Anova(model, type = 3)
+
 #### Privet Analysis ####
 PrivetH <- Height[Height$Plant == "Privet", ]
 
@@ -516,6 +577,13 @@ summary(tukey)
 print(tukey)
 plot(tukey, las = 1)
 
+# The sample sizes are not quite even and therefore we need to use Type 3 analysis
+contrasts(PrivetH$Group) <- contr.sum(8)
+
+model <- lm(AverageGR ~ Group, data = PrivetH)
+
+# Run Type III ANOVA
+Anova(model, type = 3)
 
 #### Wattle Analysis ####
 WattleH <- Height[Height$Plant == "Wattle", ]
@@ -553,6 +621,23 @@ tukey <- TukeyHSD(model01)
 summary(tukey)
 print(tukey)
 plot(tukey, las = 1)
+
+# The sample sizes are not quite even and therefore we need to use Type 3 analysis
+contrasts(WattleH$Group) <- contr.sum(8)
+
+model <- lm(AverageGR ~ Group, data = WattleH)
+
+# Run Type III ANOVA
+Anova(model, type = 3)
+
+
+library(FSA)
+
+# Dunn's test with Bonferroni correction
+dunnTest(AverageGR ~ Group, data = WattleH, method = "bonferroni")
+
+
+#### Nice Box plots ####
 
 library(ggplot2)
 WattlePlot <- ggplot(data = WattleH, 
@@ -689,3 +774,194 @@ library(tidycmprsk)
 
 # Then I need to make a status column that just gives 0 if the plants never died
 # and 1 if the plants died.
+
+# Make a new data frame for survival time in days
+library(dplyr)
+
+Height$Notes2[Height$Notes2 == "dead, fell out"] <- "dead"
+Height$Notes3[Height$Notes3 == "dead, fell out"] <- "dead"
+Height$Notes4[Height$Notes4 == "dead, fell out"] <- "dead"
+Height$Notes5[Height$Notes5 == "dead, fell out"] <- "dead"
+Height$Notes6[Height$Notes6 == "dead, fell out"] <- "dead"
+Height$Notes7[Height$Notes7 == "dead, fell out"] <- "dead"
+
+Height$Notes2[Height$Notes2 == "dead, pulled out"] <- "dead"
+Height$Notes3[Height$Notes3 == "dead, pulled out"] <- "dead"
+Height$Notes4[Height$Notes4 == "dead, pulled out"] <- "dead"
+Height$Notes5[Height$Notes5 == "dead, pulled out"] <- "dead"
+Height$Notes6[Height$Notes6 == "dead, pulled out"] <- "dead"
+Height$Notes7[Height$Notes7 == "dead, pulled out"] <- "dead"
+
+Height <- Height %>%
+  mutate(time = case_when(
+    Notes2 == "dead" ~ 33,
+    Notes3 == "dead" ~ 57,
+    Notes4 == "dead" ~ 99,
+    Notes5 == "dead" ~ 130,
+    Notes6 == "dead" ~ 159,
+    Notes7 == "dead" ~ 190,
+    TRUE ~ 190
+  ))
+
+# Now the time variable should be the number of days a plant survived for. 
+Height$status <- ifelse(Height$Notes7 == "dead", 1, 0)
+Height$status[is.na(Height$Notes7)] <- 0
+
+# Start by looking at just saplings
+SaplingS <- Height[Height$Plant == "ManukaSapling", ]
+
+
+# Code from co-pilot
+# Load required packages
+library(survival)
+library(survminer)
+library(knitr)
+library(dplyr)
+library(survival)
+library(ggplot2)
+library(tibble)
+library(lubridate)
+library(ggsurvfit)
+library(gtsummary)
+library(tidycmprsk)
+
+# Create survival object
+surv_obj <- Surv(time = SaplingS$time, event = SaplingS$status)
+
+# Fit Kaplan-Meier curves
+fit <- survfit(surv_obj ~ Group, data = SaplingS)
+
+# Plot the curves
+ggsurvplot(fit, data = SaplingS, pval = TRUE, risk.table = TRUE, xlim = c(0, 200)) +
+  labs(
+    x = "Days",
+    y = "Overall survival probability"
+  ) 
+
+survdiff(Surv(time, status) ~ Group, data = SaplingS)
+?sruvdiff
+
+## Stratified 8-sample test (7 df)
+survdiff(Surv(time, status) ~ Group, data=SaplingS)
+check <- coxph(Surv(time, status) ~ factor(Group), SaplingS)
+round(summary(check)$sctest, 3)
+
+# Can I do an ANOVA for survival? 
+# See if time differs by group, need to account for different group sample sizes
+# The sample sizes are not quite even and therefore we need to use Type 3 analysis
+contrasts(SaplingS$Group) <- contr.sum(8)
+
+model <- lm(time ~ Group, data = SaplingS)
+
+# Run Type III ANOVA
+Anova(model, type = 3)
+
+# tukey-kramer test
+model01 <- aov(time~Group, data = SaplingS)
+tukey <- TukeyHSD(model01)
+summary(tukey)
+print(tukey)
+
+# Not sure how useful this is...
+
+#### Seedling survival analysis ####
+
+SeedlingS <- Height[Height$Plant == "ManukaSeedling", ]
+
+# Create survival object
+surv_obj <- Surv(time = SeedlingS$time, event = SeedlingS$status)
+
+# Fit Kaplan-Meier curves
+fit <- survfit(surv_obj ~ Group, data = SeedlingS)
+
+# Plot the curves
+ggsurvplot(fit, data = SeedlingS, pval = TRUE, risk.table = TRUE, xlim = c(0, 200)) +
+  labs(
+    x = "Days",
+    y = "Overall survival probability"
+  ) 
+
+survdiff(Surv(time, status) ~ Group, data = SeedlingS)
+
+## Stratified 8-sample test (7 df)
+survdiff(Surv(time, status) ~ Group, data=SeedlingS)
+check <- coxph(Surv(time, status) ~ factor(Group), SeedlingS)
+round(summary(check)$sctest, 3)
+
+# Looks like there weren't survival differences between groups for the seedlings
+
+#### Nightshade Survival ####
+NightshadeS <- Height[Height$Plant == "Nightshade", ]
+
+# Create survival object
+surv_obj <- Surv(time = NightshadeS$time, event = NightshadeS$status)
+
+# Fit Kaplan-Meier curves
+fit <- survfit(surv_obj ~ Group, data = NightshadeS)
+
+# Plot the curves
+ggsurvplot(fit, data = NightshadeS, pval = TRUE, risk.table = TRUE, xlim = c(0, 200)) +
+  labs(
+    x = "Days",
+    y = "Overall survival probability"
+  ) 
+
+survdiff(Surv(time, status) ~ Group, data = NightshadeS)
+
+## Stratified 8-sample test (7 df)
+survdiff(Surv(time, status) ~ Group, data=NightshadeS)
+check <- coxph(Surv(time, status) ~ factor(Group), NightshadeS)
+round(summary(check)$sctest, 3)
+
+# No difference for Nightshade either
+
+#### Privet Survival ####
+
+PrivetS <- Height[Height$Plant == "Privet", ]
+
+# Create survival object
+surv_obj <- Surv(time = PrivetS$time, event = PrivetS$status)
+
+# Fit Kaplan-Meier curves
+fit <- survfit(surv_obj ~ Group, data = PrivetS)
+
+# Plot the curves
+ggsurvplot(fit, data = PrivetS, pval = TRUE, risk.table = TRUE, xlim = c(0, 200)) +
+  labs(
+    x = "Days",
+    y = "Overall survival probability"
+  ) 
+
+survdiff(Surv(time, status) ~ Group, data = PrivetS)
+
+## Stratified 8-sample test (7 df)
+survdiff(Surv(time, status) ~ Group, data=PrivetS)
+check <- coxph(Surv(time, status) ~ factor(Group), SeedlingS)
+round(summary(check)$sctest, 3)
+
+# Not many privets died
+
+#### Wattle Analysis ####
+WattleS <- Height[Height$Plant == "Wattle", ]
+
+# Create survival object
+surv_obj <- Surv(time = WattleS$time, event = WattleS$status)
+
+# Fit Kaplan-Meier curves
+fit <- survfit(surv_obj ~ Group, data = WattleS)
+
+# Plot the curves
+ggsurvplot(fit, data = WattleS, pval = TRUE, risk.table = TRUE, xlim = c(0, 200)) +
+  labs(
+    x = "Days",
+    y = "Overall survival probability"
+  ) 
+
+survdiff(Surv(time, status) ~ Group, data = WattleS)
+
+## Stratified 8-sample test (7 df)
+survdiff(Surv(time, status) ~ Group, data=WattleS)
+check <- coxph(Surv(time, status) ~ factor(Group), WattleS)
+round(summary(check)$sctest, 3)
+
+# Not significant
