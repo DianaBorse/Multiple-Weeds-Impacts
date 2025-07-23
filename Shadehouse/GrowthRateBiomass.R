@@ -148,6 +148,7 @@ contrasts(Seedling$Group) <- contr.sum(8)
 model <- lm(Mass ~ Group, data = Seedling)
 
 # Run Type III ANOVA
+library(car)
 Anova(model, type = 3)
 
 # Tukey-Kramer test (automatically applied for unequal sample sizes)
@@ -838,6 +839,7 @@ ggsurvplot(fit, data = SaplingS, pval = TRUE, risk.table = TRUE, xlim = c(0, 200
     y = "Overall survival probability"
   ) 
 
+# logrank test
 survdiff(Surv(time, status) ~ Group, data = SaplingS)
 ?sruvdiff
 
