@@ -382,7 +382,7 @@ plot <- plot(cooccur.Survey) # add "plotrand = TRUE" to include completely rando
 # Remove legend 
 plot + theme(legend.position = "none") + ggtitle(NULL)
 
-
+# Look at significant relationships for each of my species of interest
 Woolly_Cooccur <- pair(mod = cooccur.Survey, spp = "Solanum mauritianum")
 
 pair(mod = cooccur.Survey, spp = "Ligustrum lucidum")
