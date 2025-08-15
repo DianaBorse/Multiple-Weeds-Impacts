@@ -50,6 +50,12 @@ top_20_values <- names(sort(table(SurveyData_Combined$CommonName), decreasing = 
 
 print(top_20_values)
 
+top_counts <- SurveyData_Combined |>
+  dplyr::count(ScientificName, sort = TRUE) |>
+  dplyr::slice_head(n = 15)
+
+print(top_counts)
+
 # Subset to Native species
 NativeSpecies <- SurveyData_Combined[SurveyData_Combined$CentralSpecies == "Native", ]
 
@@ -60,6 +66,13 @@ print(top_20_valuesN)
 top_20_valuesN <- names(sort(table(NativeSpecies$CommonName), decreasing = TRUE))[1:20] 
 
 print(top_20_valuesN)
+
+top_counts <- NativeSpecies |>
+  dplyr::count(ScientificName, sort = TRUE) |>
+  dplyr::slice_head(n = 15)
+
+print(top_counts)
+
 
 # Subset for S mauritianum
 S_mauritianum <- SurveyData_Combined[SurveyData_Combined$CentralSpecies == "Solanum mauritianum", ]
@@ -73,6 +86,12 @@ top_20_valuesWN <- names(sort(table(S_mauritianum$CommonName), decreasing = TRUE
 
 print(top_20_valuesWN)
 
+top_counts <- S_mauritianum |>
+  dplyr::count(ScientificName, sort = TRUE) |>
+  dplyr::slice_head(n = 15)
+
+print(top_counts)
+
 # Subset for L. lucidum
 L_lucidum <- SurveyData_Combined[SurveyData_Combined$CentralSpecies == "Ligustrum lucidum", ]
 
@@ -81,6 +100,12 @@ top_20_valuesLL <- names(sort(table(L_lucidum$ScientificName), decreasing = TRUE
 
 print(top_20_valuesLL)
 
+top_counts <- L_lucidum |>
+  dplyr::count(ScientificName, sort = TRUE) |>
+  dplyr::slice_head(n = 15)
+
+print(top_counts)
+
 # Subset for P. lophantha
 P_lophantha <- SurveyData_Combined[SurveyData_Combined$CentralSpecies == "Paraserianthes lophantha", ]
 
@@ -88,6 +113,12 @@ P_lophantha <- SurveyData_Combined[SurveyData_Combined$CentralSpecies == "Parase
 top_20_valuesPL <- names(sort(table(P_lophantha$ScientificName), decreasing = TRUE))[1:20] 
 
 print(top_20_valuesPL)
+
+top_counts <- P_lophantha |>
+  dplyr::count(ScientificName, sort = TRUE) |>
+  dplyr::slice_head(n = 15)
+
+print(top_counts)
 
 
 #### Look at the top 20 most common "Common Names" #####
