@@ -108,6 +108,26 @@ print(shannon_values)
 # Step 4: Create dataframe and merge with PlotData
 shannon_by_plot <- data.frame(Plot = plot_ids, NativeDiversity = shannon_values)
 
+# Let's try total diversity for older plants
+abundance_matrix <- SurveyData_Combined %>%
+  group_by(Plot, ScientificName) %>%
+  summarise(Abundance = sum(Tier_3, na.rm = TRUE), .groups = "drop") %>%
+  tidyr::pivot_wider(names_from = ScientificName, values_from = Abundance, values_fill = 0)
+
+# Step 3: Calculate Shannon diversity per plot
+# Remove Plot column for diversity calculation, but keep it for merging
+plot_ids <- abundance_matrix$Plot
+abundance_matrix_numeric <- abundance_matrix %>% select(-Plot)
+
+shannon_values <- diversity(abundance_matrix_numeric, index = "shannon")
+
+# View result
+print(shannon_values)
+
+# Step 4: Create dataframe and merge with PlotData
+shannon_by_plot_total <- data.frame(Plot = plot_ids, TotalDiversity = shannon_values)
+
+
 # subset to just look at the weeds
 # Subset the data to only include species that are weeds using the WeedList Column
 SurveyData_Combined <- SurveyData_Combined[SurveyData_Combined$WeedList == 1, ]
@@ -163,6 +183,13 @@ PlotData_Combined <- PlotData_Combined %>%
 PlotData_Combined <- PlotData_Combined %>%
   mutate(NativeDiversity = if_else(is.na(NativeDiversity), 0, NativeDiversity))
 
+# Add total diversity as well
+PlotData_Combined <- PlotData_Combined %>%
+  left_join(shannon_by_plot_total, by = "Plot")
+
+PlotData_Combined <- PlotData_Combined %>%
+  mutate(TotalDiversity = if_else(is.na(TotalDiversity), 0, TotalDiversity))
+
 # Now I need to only include the environmental variables that I want to include
 # for the GLM
 
@@ -189,7 +216,8 @@ library(factoextra)
 Env_Species.pca <- prcomp(PlotData_Combined[,c("Height", "DBH", 
                                                "Slope", "Canopy", "East", "South", "Vascular", "NonVascular", "LitterCover",
                                                "Bare", "Debris", "Erosion", "Disturbance",
-                                               "Pests", "Litter", "Housing","PopnHist", "PopnCurr", "DwellingsCurr", "WN", "SOLmau", "LIGluc", "PARlop", "Place", "NativeDiversity")], center = TRUE,scale. = TRUE,tol = 0.1)
+                                               "Pests", "Litter", "Housing","PopnHist", "PopnCurr", "DwellingsCurr", "WN", 
+                                               "SOLmau", "LIGluc", "PARlop", "Place", "NativeDiversity", "TotalDiversity")], center = TRUE,scale. = TRUE,tol = 0.1)
 summary(Env_Species.pca)
 Env_Species.pca
 
@@ -223,7 +251,7 @@ library(MASS) ## do to the GLM
 RichnessGLM <- glm.nb(Richness ~ PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + 
                         PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + 
                         PC13 + PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + 
-                        PC20 + PC21 + PC22 + PC23,
+                        PC20 + PC21 + PC22 + PC23 +PC24,
                       data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
 summary(RichnessGLM)
 
@@ -234,12 +262,12 @@ library(MuMIn)
 options(na.action = "na.fail") #Must run this code once to use dredge
 model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + Vascular + NonVascular+
                    LitterCover + Bare + Debris + Erosion + Disturbance + Pests +
-                   Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + Place + NativeDiversity, data = df_Env_Species.pca)
+                   Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + Place + NativeDiversity + TotalDiversity, data = df_Env_Species.pca)
 
 # Richness GLM
 RichnessGLM2 <- glm.nb(Richness ~ Height + DBH + Slope + Canopy + Vascular + NonVascular+
                          LitterCover + Bare + Debris + Erosion + Disturbance + Pests +
-                         Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + Place + NativeDiversity, data = df_Env_Species.pca)
+                         Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + Place + NativeDiversity + TotalDiversity, data = df_Env_Species.pca)
 
 summary(RichnessGLM2)
 
@@ -271,7 +299,7 @@ cor(data)
 # Make a new model with at least one of the correlated factors omitted 
 model.full <- glm(Richness ~ Height + DBH + Slope + Canopy + Vascular + Pests +
                   Erosion + Disturbance + Litter + Housing + PopnHist + 
-                  PopnCurr + Place + NativeDiversity, family = "poisson", data = df_Env_Species.pca)
+                  PopnCurr + Place + NativeDiversity + TotalDiversity, family = "poisson", data = df_Env_Species.pca)
 
 # Look for Multicolliniarity
 library(car)
@@ -279,7 +307,7 @@ vif(model.full)
 
 # look at how they correlate
 data <- df_Env_Species.pca[ , c("Height", "DBH", "Slope", "Canopy", "Vascular", "Pests", 
-                                "Erosion", "Disturbance", "Litter", "Housing", "PopnHist", "PopnCurr", "Place", "NativeDiversity")]
+                                "Erosion", "Disturbance", "Litter", "Housing", "PopnHist", "PopnCurr", "Place", "NativeDiversity", "TotalDiversity")]
 cor(data)
 
 
@@ -302,7 +330,7 @@ head(dredge, 10)
 # Install and load the writexl package
 library(writexl)
 
-write_xlsx(dredge, "C:/Users/bella/Documents/dredgeresultsGLM9Sept.xlsx")
+write_xlsx(dredge, "C:/Users/bella/Documents/dredgeresultsGLM9SeptTotalDiversity.xlsx")
 # This gives the simplest possible model which includes Housing Density, 96 Population, 
 # LitterCover, PARlop, SOLmau, and Slope
 
