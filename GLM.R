@@ -347,7 +347,7 @@ library(R2jags)
 source(file = "GLM Book Resources/HighstatLibV10.R")
 source(file = "GLM Book Resources/MCMCSupportHighstatV4.R")
 
-MyVar <- c("Housing", "Slope", "PopnCurr")
+MyVar <- c("Housing", "Slope", "PopnCurr", "TotalDiversity")
 Mydotplot(Env_Species[MyVar])
 
 corvif(Env_Species[MyVar])
@@ -357,7 +357,7 @@ Myxyplot(df_Env_Species.pca, MyVar, "Richness")
 
 # Fit a model 
 M1 <- glm(Richness ~ Housing +
-            PopnCurr + Slope,
+            PopnCurr + Slope + TotalDiversity,
           family = "poisson", data = Env_Species)
 
 summary(M1)
@@ -374,6 +374,7 @@ percent_change <- (exp(coef(M1)["Housing"])- 1)*100
 print(percent_change)
 (exp(coef(M1)["PopnCurr"])- 1)*100
 (exp(coef(M1)["Slope"])- 1)*100
+(exp(coef(M1)["TotalDiversity"])- 1)*100
 
 
 # Housing density effects plot
@@ -404,6 +405,10 @@ plot(Effect("PopnCurr", M1), xlab = "Population of the area 2023",
 plot(Effect("Slope", M1), xlab = "Slope of the plot",
      ylab = "Weed richness", main = "", colors = "maroon")
 
+# Diversity effects plot
+plot(Effect("TotalDiversity", M1), xlab = "Diversity of mature species in the plot",
+     ylab = "Weed richness", main = "", colors = "darkgreen")
+
 # can do for nb glm as well
 library(MASS)
 M2 <- glm.nb(Richness ~ Housing +
@@ -433,6 +438,10 @@ library(performance)
 check_overdispersion(M1)
 
 
+
+
+
+#### Old plotting ####
 # Making a plot
 
 #find the range of each variable
