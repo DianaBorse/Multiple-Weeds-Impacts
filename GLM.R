@@ -337,7 +337,7 @@ write_xlsx(dredge, "C:/Users/bella/Documents/dredgeresultsGLM9SeptTotalDiversity
 # Compare factors to how they relate to richness
 library(MASS) ## do to the GLM
 RichnessGLM <- glm.nb(Richness ~ Housing +
-                        PopnCurr +  Slope,
+                        PopnCurr +  Slope + TotalDiversity,
                       data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
 summary(RichnessGLM)
 
