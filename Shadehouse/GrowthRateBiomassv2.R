@@ -231,6 +231,37 @@ Seedling <- Biomass[Biomass$Plant == "ManukaSeedling", ]
 
 Seedling$Group <- as.factor(Seedling$Group)
 
+# control vs weeds
+library(dplyr)
+
+Seedling <- Seedling %>%
+  mutate(group_label = case_when(
+    Group == 1 ~ "Control",
+    Group %in% c(3, 4, 5) ~ "Weeds",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
+
+# Remove NA values
+SeedlingControl <- Seedling %>%
+  filter(!is.na(group_label))
+
+ggplot(SeedlingControl, aes(x = group_label, y = Mass))+
+  geom_boxplot(fill = "#DAB1DA", varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Seedling Biomass (g)") + xlab("Treatment Group") +  
+  theme_bw() 
+ggplot(SeedlingControl) +
+  geom_histogram(aes(Mass), binwidth = 1)+
+  facet_wrap(~group_label)
+ggplot(SeedlingControl)+
+  geom_qq(aes(sample = Mass, color = group_label))
+
+# Performing the t-test
+t.test(Mass ~ group_label, data = SeedlingControl, var.equal = TRUE)
+# Welch's t-test
+t.test(Mass ~ group_label, data = SeedlingControl, var.equal = FALSE)
+
+
 # Woolly and Privet compared to Woolly and wattle
 library(dplyr)
 
@@ -761,7 +792,7 @@ t.test(AverageGR ~ group_label, data = SaplingWoolly, var.equal = TRUE)
 # Welch's t-test
 t.test(AverageGR ~ group_label, data = SaplingWoolly, var.equal = FALSE)
 
-# privet monoculture vs woolly cooccurence
+# privet monoculture vs privet cooccurence
 
 SaplingH <- SaplingH %>%
   mutate(group_label = case_when(
@@ -853,6 +884,47 @@ ggplot(SaplingPrivetWoolly)+
 t.test(AverageGR ~ group_label, data = SaplingPrivetWoolly, var.equal = TRUE)
 # Welch's t-test
 t.test(AverageGR ~ group_label, data = SaplingPrivetWoolly, var.equal = FALSE)
+
+# Privet monoculture vs wattle monoculture
+
+SaplingH <- SaplingH %>%
+  mutate(group_label = case_when(
+    Group == 8 ~ "PrivetMonoculture",
+    Group %in% c(7) ~ "WattleMonoculture",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
+
+
+# Remove NA values
+SaplingPrivetWattle <- SaplingH %>%
+  filter(!is.na(group_label))
+
+
+ggplot(SaplingPrivetWattle,aes(x = group_label, y = AverageGR))+
+  geom_boxplot(fill = "lightgreen", varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Sapling RGR") + xlab("Treatment Group") +  
+  theme_bw() 
+ggplot(SaplingPrivetWattle) +
+  geom_histogram(aes(AverageGR), binwidth = .1)+
+  facet_wrap(~group_label)
+ggplot(SaplingPrivetWattle)+
+  geom_qq(aes(sample = AverageGR, color = group_label))
+
+# Check for homogeneous variance
+summ_SaplingPrivetWattle <- SaplingPrivetWattle %>%
+  group_by(group_label) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            n_AverageGR = n())
+ratio <-(max(summ_SaplingPrivetWattle$sd_AverageGR))/(min(summ_SaplingPrivetWattle$sd_AverageGR))
+print(ratio)
+
+# Performing the t-test
+t.test(AverageGR ~ group_label, data = SaplingPrivetWattle, var.equal = TRUE)
+# Welch's t-test
+t.test(AverageGR ~ group_label, data = SaplingPrivetWattle, var.equal = FALSE)
+
 
 # Wattle + Privet vs All weeds
 SaplingH <- SaplingH %>%
@@ -1093,3 +1165,439 @@ ggplot(SaplingWoollyPairs)+
 t.test(AverageGR ~ group_label, data = SaplingWoollyPairs, var.equal = TRUE)
 # Welch's t-test
 t.test(AverageGR ~ group_label, data = SaplingWoollyPairs, var.equal = FALSE)
+
+#### Growth rate of seedlings ####
+
+SeedlingH <- Height[Height$Plant == "ManukaSeedling", ]
+
+# Look at control vs groups that have weeds
+SeedlingH <- SeedlingH %>%
+  mutate(group_label = case_when(
+    Group == 1 ~ "Control",
+    Group %in% c(3, 4, 5) ~ "Weeds",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
+
+# Remove NA values
+SeedlingControl <- SeedlingH %>%
+  filter(!is.na(group_label))
+
+
+ggplot(SeedlingControl,aes(x = group_label, y = AverageGR))+
+  geom_boxplot(fill = "lightgreen", varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Seedling RGR") + xlab("Treatment Group") +  
+  theme_bw() 
+ggplot(SeedlingControl) +
+  geom_histogram(aes(AverageGR), binwidth = 1)+
+  facet_wrap(~group_label)
+ggplot(SeedlingControl)+
+  geom_qq(aes(sample = AverageGR, color = group_label))
+
+# Check for homogeneous variance
+summ_SeedlingControl <- SeedlingControl %>%
+  group_by(group_label) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            n_AverageGR = n())
+ratio <-(max(summ_SeedlingControl$sd_AverageGR))/(min(summ_SeedlingControl$sd_AverageGR))
+print(ratio)
+
+# Performing the t-test
+t.test(AverageGR ~ group_label, data = SeedlingControl, var.equal = TRUE)
+# Welch's t-test
+t.test(AverageGR ~ group_label, data = SeedlingControl, var.equal = FALSE)
+
+# woolly and privet vs woolly and wattle
+
+# Look at control vs groups that have weeds
+SeedlingH <- SeedlingH %>%
+  mutate(group_label = case_when(
+    Group == 3 ~ "WoollyPrivet",
+    Group %in% c(4) ~ "WoollyWattle",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
+
+# Remove NA values
+SeedlingWoollyPairs <- SeedlingH %>%
+  filter(!is.na(group_label))
+
+
+ggplot(SeedlingWoollyPairs,aes(x = group_label, y = AverageGR))+
+  geom_boxplot(fill = "lightgreen", varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Seedling RGR") + xlab("Treatment Group") +  
+  theme_bw() 
+ggplot(SeedlingWoollyPairs) +
+  geom_histogram(aes(AverageGR), binwidth = 1)+
+  facet_wrap(~group_label)
+ggplot(SeedlingWoollyPairs)+
+  geom_qq(aes(sample = AverageGR, color = group_label))
+
+# Check for homogeneous variance
+summ_SeedlingWoollyPairs <- SeedlingWoollyPairs %>%
+  group_by(group_label) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            n_AverageGR = n())
+ratio <-(max(summ_SeedlingWoollyPairs$sd_AverageGR))/(min(summ_SeedlingWoollyPairs$sd_AverageGR))
+print(ratio)
+
+# Performing the t-test
+t.test(AverageGR ~ group_label, data = SeedlingWoollyPairs, var.equal = TRUE)
+# Welch's t-test
+t.test(AverageGR ~ group_label, data = SeedlingWoollyPairs, var.equal = FALSE)
+
+# woolly and privet vs privet and wattle
+
+# Look at control vs groups that have weeds
+SeedlingH <- SeedlingH %>%
+  mutate(group_label = case_when(
+    Group == 3 ~ "PrivetWoolly",
+    Group %in% c(5) ~ "PrivetWattle",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
+
+# Remove NA values
+SeedlingPrivetPairs <- SeedlingH %>%
+  filter(!is.na(group_label))
+
+
+ggplot(SeedlingPrivetPairs,aes(x = group_label, y = AverageGR))+
+  geom_boxplot(fill = "lightgreen", varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Seedling RGR") + xlab("Treatment Group") +  
+  theme_bw() 
+ggplot(SeedlingPrivetPairs) +
+  geom_histogram(aes(AverageGR), binwidth = 1)+
+  facet_wrap(~group_label)
+ggplot(SeedlingPrivetPairs)+
+  geom_qq(aes(sample = AverageGR, color = group_label))
+
+# Check for homogeneous variance
+summ_SeedlingPrivetPairs <- SeedlingPrivetPairs %>%
+  group_by(group_label) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            n_AverageGR = n())
+ratio <-(max(summ_SeedlingPrivetPairs$sd_AverageGR))/(min(summ_SeedlingPrivetPairs$sd_AverageGR))
+print(ratio)
+
+# Performing the t-test
+t.test(AverageGR ~ group_label, data = SeedlingPrivetPairs, var.equal = TRUE)
+# Welch's t-test
+t.test(AverageGR ~ group_label, data = SeedlingPrivetPairs, var.equal = FALSE)
+
+# woolly and wattle vs privet and wattle
+
+# Look at control vs groups that have weeds
+SeedlingH <- SeedlingH %>%
+  mutate(group_label = case_when(
+    Group == 4 ~ "WattleWoolly",
+    Group %in% c(5) ~ "WattlePrivet",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
+
+# Remove NA values
+SeedlingWattlePairs <- SeedlingH %>%
+  filter(!is.na(group_label))
+
+
+ggplot(SeedlingWattlePairs,aes(x = group_label, y = AverageGR))+
+  geom_boxplot(fill = "lightgreen", varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Seedling RGR") + xlab("Treatment Group") +  
+  theme_bw() 
+ggplot(SeedlingWattlePairs) +
+  geom_histogram(aes(AverageGR), binwidth = 1)+
+  facet_wrap(~group_label)
+ggplot(SeedlingWattlePairs)+
+  geom_qq(aes(sample = AverageGR, color = group_label))
+
+# Check for homogeneous variance
+summ_SeedlingWattlePairs <- SeedlingWattlePairs %>%
+  group_by(group_label) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            n_AverageGR = n())
+ratio <-(max(summ_SeedlingWattlePairs$sd_AverageGR))/(min(summ_SeedlingWattlePairs$sd_AverageGR))
+print(ratio)
+
+# Performing the t-test
+t.test(AverageGR ~ group_label, data = SeedlingWattlePairs, var.equal = TRUE)
+# Welch's t-test
+t.test(AverageGR ~ group_label, data = SeedlingWattlePairs, var.equal = FALSE)
+
+#### Wattle RGR ####
+
+WattleH <- Height[Height$Plant == "Wattle", ]
+
+# Look at monoculture vs coocurrence
+WattleH <- WattleH %>%
+  mutate(group_label = case_when(
+    Group == 7 ~ "WattleMonoculture",
+    Group %in% c(2, 4, 5) ~ "WattleCooccur",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
+
+# Remove NA values
+WattleMono <- WattleH %>%
+  filter(!is.na(group_label))
+
+
+ggplot(WattleMono,aes(x = group_label, y = AverageGR))+
+  geom_boxplot(fill = "pink2", varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Wattle RGR") + xlab("Treatment Group") +  
+  theme_bw() 
+ggplot(WattleMono) +
+  geom_histogram(aes(AverageGR), binwidth = 1)+
+  facet_wrap(~group_label)
+ggplot(WattleMono)+
+  geom_qq(aes(sample = AverageGR, color = group_label))
+
+# Check for homogeneous variance
+summ_WattleMono <- WattleMono %>%
+  group_by(group_label) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            n_AverageGR = n())
+ratio <-(max(summ_WattleMono$sd_AverageGR))/(min(summ_WattleMono$sd_AverageGR))
+print(ratio)
+
+# Performing the t-test
+t.test(AverageGR ~ group_label, data = WattleMono, var.equal = TRUE)
+# Welch's t-test
+t.test(AverageGR ~ group_label, data = WattleMono, var.equal = FALSE)
+
+# Look at wattle + privet vs wattle monoculture
+WattleH <- WattleH %>%
+  mutate(group_label = case_when(
+    Group == 7 ~ "WattleMonoculture",
+    Group %in% c(5) ~ "WattlePrivet",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
+
+# Remove NA values
+WattlePrivetMono <- WattleH %>%
+  filter(!is.na(group_label))
+
+
+ggplot(WattlePrivetMono,aes(x = group_label, y = AverageGR))+
+  geom_boxplot(fill = "pink2", varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Wattle RGR") + xlab("Treatment Group") +  
+  theme_bw() 
+ggplot(WattlePrivetMono) +
+  geom_histogram(aes(AverageGR), binwidth = 1)+
+  facet_wrap(~group_label)
+ggplot(WattlePrivetMono)+
+  geom_qq(aes(sample = AverageGR, color = group_label))
+
+# Check for homogeneous variance
+summ_WattlePrivetMono <- WattlePrivetMono %>%
+  group_by(group_label) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            n_AverageGR = n())
+ratio <-(max(summ_WattlePrivetMono$sd_AverageGR))/(min(summ_WattlePrivetMono$sd_AverageGR))
+print(ratio)
+
+# Performing the t-test
+t.test(AverageGR ~ group_label, data = WattlePrivetMono, var.equal = TRUE)
+# Welch's t-test
+t.test(AverageGR ~ group_label, data = WattlePrivetMono, var.equal = FALSE)
+
+# Look at wattle + woolly vs wattle + privet
+WattleH <- WattleH %>%
+  mutate(group_label = case_when(
+    Group == 4 ~ "WattleWoolly",
+    Group %in% c(5) ~ "WattlePrivet",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
+
+# Remove NA values
+WattlePrivetWoolly <- WattleH %>%
+  filter(!is.na(group_label))
+
+
+ggplot(WattlePrivetWoolly,aes(x = group_label, y = AverageGR))+
+  geom_boxplot(fill = "pink2", varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Wattle RGR") + xlab("Treatment Group") +  
+  theme_bw() 
+ggplot(WattlePrivetWoolly) +
+  geom_histogram(aes(AverageGR), binwidth = 1)+
+  facet_wrap(~group_label)
+ggplot(WattlePrivetWoolly)+
+  geom_qq(aes(sample = AverageGR, color = group_label))
+
+# Check for homogeneous variance
+summ_WattlePrivetWoolly <- WattlePrivetWoolly %>%
+  group_by(group_label) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            n_AverageGR = n())
+ratio <-(max(summ_WattlePrivetWoolly$sd_AverageGR))/(min(summ_WattlePrivetWoolly$sd_AverageGR))
+print(ratio)
+
+# Performing the t-test
+t.test(AverageGR ~ group_label, data = WattlePrivetWoolly, var.equal = TRUE)
+# Welch's t-test
+t.test(AverageGR ~ group_label, data = WattlePrivetWoolly, var.equal = FALSE)
+
+#### Privet RGR ####
+
+PrivetH <- Height[Height$Plant == "Privet", ]
+
+# Privet monoculture vs all groupings with privet
+PrivetH <- PrivetH %>%
+  mutate(group_label = case_when(
+    Group == 8 ~ "PrivetMonoculture",
+    Group %in% c(2, 3, 5) ~ "PrivetCooccur",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
+
+# Remove NA values
+PrivetMono <- PrivetH %>%
+  filter(!is.na(group_label))
+
+
+ggplot(PrivetMono,aes(x = group_label, y = AverageGR))+
+  geom_boxplot(fill = "orange2", varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Wattle RGR") + xlab("Treatment Group") +  
+  theme_bw() 
+ggplot(PrivetMono) +
+  geom_histogram(aes(AverageGR), binwidth = 1)+
+  facet_wrap(~group_label)
+ggplot(PrivetMono)+
+  geom_qq(aes(sample = AverageGR, color = group_label))
+
+# Check for homogeneous variance
+summ_PrivetMono <- PrivetMono %>%
+  group_by(group_label) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            n_AverageGR = n())
+ratio <-(max(summ_PrivetMono$sd_AverageGR))/(min(summ_PrivetMono$sd_AverageGR))
+print(ratio)
+
+# Performing the t-test
+t.test(AverageGR ~ group_label, data = PrivetMono, var.equal = TRUE)
+# Welch's t-test
+t.test(AverageGR ~ group_label, data = PrivetMono, var.equal = FALSE)
+
+# Privet monoculture vs wattle + privet
+PrivetH <- PrivetH %>%
+  mutate(group_label = case_when(
+    Group == 8 ~ "PrivetMonoculture",
+    Group %in% c(5) ~ "PrivetWattle",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
+
+# Remove NA values
+PrivetMonoWattle <- PrivetH %>%
+  filter(!is.na(group_label))
+
+
+ggplot(PrivetMonoWattle,aes(x = group_label, y = AverageGR))+
+  geom_boxplot(fill = "orange2", varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Wattle RGR") + xlab("Treatment Group") +  
+  theme_bw() 
+ggplot(PrivetMonoWattle) +
+  geom_histogram(aes(AverageGR), binwidth = 1)+
+  facet_wrap(~group_label)
+ggplot(PrivetMonoWattle)+
+  geom_qq(aes(sample = AverageGR, color = group_label))
+
+# Check for homogeneous variance
+summ_PrivetMonoWattle <- PrivetMonoWattle %>%
+  group_by(group_label) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            n_AverageGR = n())
+ratio <-(max(summ_PrivetMonoWattle$sd_AverageGR))/(min(summ_PrivetMonoWattle$sd_AverageGR))
+print(ratio)
+
+# Performing the t-test
+t.test(AverageGR ~ group_label, data = PrivetMonoWattle, var.equal = TRUE)
+# Welch's t-test
+t.test(AverageGR ~ group_label, data = PrivetMonoWattle, var.equal = FALSE)
+
+# Privet woolly vs wattle + privet
+PrivetH <- PrivetH %>%
+  mutate(group_label = case_when(
+    Group == 3 ~ "PrivetWoolly",
+    Group %in% c(5) ~ "PrivetWattle",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
+
+# Remove NA values
+PrivetPairs <- PrivetH %>%
+  filter(!is.na(group_label))
+
+
+ggplot(PrivetPairs,aes(x = group_label, y = AverageGR))+
+  geom_boxplot(fill = "orange2", varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Wattle RGR") + xlab("Treatment Group") +  
+  theme_bw() 
+ggplot(PrivetPairs) +
+  geom_histogram(aes(AverageGR), binwidth = 1)+
+  facet_wrap(~group_label)
+ggplot(PrivetPairs)+
+  geom_qq(aes(sample = AverageGR, color = group_label))
+
+# Check for homogeneous variance
+summ_PrivetPairs <- PrivetPairs %>%
+  group_by(group_label) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            n_AverageGR = n())
+ratio <-(max(summ_PrivetPairs$sd_AverageGR))/(min(summ_PrivetPairs$sd_AverageGR))
+print(ratio)
+
+# Performing the t-test
+t.test(AverageGR ~ group_label, data = PrivetPairs, var.equal = TRUE)
+# Welch's t-test
+t.test(AverageGR ~ group_label, data = PrivetPairs, var.equal = FALSE)
+
+# Privet woolly vs all other privet groups
+PrivetH <- PrivetH %>%
+  mutate(group_label = case_when(
+    Group == 3 ~ "PrivetWoolly",
+    Group %in% c(2, 5, 8) ~ "PrivetOthers",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
+
+# Remove NA values
+PrivetWoolly <- PrivetH %>%
+  filter(!is.na(group_label))
+
+
+ggplot(PrivetWoolly,aes(x = group_label, y = AverageGR))+
+  geom_boxplot(fill = "orange2", varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Wattle RGR") + xlab("Treatment Group") +  
+  theme_bw() 
+ggplot(PrivetWoolly) +
+  geom_histogram(aes(AverageGR), binwidth = 1)+
+  facet_wrap(~group_label)
+ggplot(PrivetWoolly)+
+  geom_qq(aes(sample = AverageGR, color = group_label))
+
+# Check for homogeneous variance
+summ_PrivetWoolly <- PrivetWoolly %>%
+  group_by(group_label) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            n_AverageGR = n())
+ratio <-(max(summ_PrivetWoolly$sd_AverageGR))/(min(summ_PrivetWoolly$sd_AverageGR))
+print(ratio)
+
+# Performing the t-test
+t.test(AverageGR ~ group_label, data = PrivetWoolly, var.equal = TRUE)
+# Welch's t-test
+t.test(AverageGR ~ group_label, data = PrivetWoolly, var.equal = FALSE)
