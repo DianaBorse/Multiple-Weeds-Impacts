@@ -226,15 +226,15 @@ library(dplyr)
 
 # Create a new data frame with unique Plot values
 Plot_Species <- SurveyData_Combined_Weeds %>% distinct(Plot, .keep_all = TRUE)
-Plot_Species<-Plot_Species[-74, ] # this gets rid of the the outlier
-Plot_Species<-Plot_Species[-68, ] # this gets rid of the the outlier
-Plot_Species<-Plot_Species[-67, ] # this gets rid of the the outlier
-Plot_Species<-Plot_Species[-62, ] # this gets rid of the the outlier
-Plot_Species<-Plot_Species[-53, ] # this gets rid of the the outlier
-Plot_Species<-Plot_Species[-24, ] # this gets rid of the the outlier
-Plot_Species<-Plot_Species[-15, ] # this gets rid of the the outlier
-Plot_Species<-Plot_Species[-12, ] # this gets rid of the the outlier
-Plot_Species<-Plot_Species[-1, ] # this gets rid of the the outlier
+#Plot_Species<-Plot_Species[-74, ] # this gets rid of the the outlier
+#Plot_Species<-Plot_Species[-68, ] # this gets rid of the the outlier
+#Plot_Species<-Plot_Species[-67, ] # this gets rid of the the outlier
+#Plot_Species<-Plot_Species[-62, ] # this gets rid of the the outlier
+#Plot_Species<-Plot_Species[-53, ] # this gets rid of the the outlier
+#Plot_Species<-Plot_Species[-24, ] # this gets rid of the the outlier
+#Plot_Species<-Plot_Species[-15, ] # this gets rid of the the outlier
+#Plot_Species<-Plot_Species[-12, ] # this gets rid of the the outlier
+#Plot_Species<-Plot_Species[-1, ] # this gets rid of the the outlier
 # Remove these for form-specific seedling
 
 # for seedling by form
@@ -242,9 +242,9 @@ Plot_Species<-Plot_Species[-75, ] # this gets rid of the the outlier
 Plot_Species<-Plot_Species[-70, ] # this gets rid of the the outlier
 Plot_Species<-Plot_Species[-69, ] # this gets rid of the the outlier
 Plot_Species<-Plot_Species[-68, ] # this gets rid of the the outlier
-Plot_Species<-Plot_Species[-67, ] # this gets rid of the the outlier for the form based seedling
+Plot_Species<-Plot_Species[-67, ] # this gets rid of the the outlier 
 Plot_Species<-Plot_Species[-62, ] # this gets rid of the the outlier
-Plot_Species<-Plot_Species[-57, ] # this gets rid of the the outlier for the form based seedling
+Plot_Species<-Plot_Species[-57, ] # this gets rid of the the outlier 
 Plot_Species<-Plot_Species[-53, ] # this gets rid of the the outlier
 Plot_Species<-Plot_Species[-33, ] # this gets rid of the the outlier
 Plot_Species<-Plot_Species[-32, ] # this gets rid of the the outlier
@@ -525,8 +525,8 @@ rowSums(Survey_wide)
 colSums(Survey_wide)
 
 # Remove the outlier plot
-Survey_wide<-Survey_wide[-68, ] # this gets rid of the the row that looks to be an outlier
-Survey_wide<-Survey_wide[-1, ] # this gets rid of the the row that looks to be an outlier
+#Survey_wide<-Survey_wide[-68, ] # this gets rid of the the row that looks to be an outlier
+#Survey_wide<-Survey_wide[-1, ] # this gets rid of the the row that looks to be an outlier
 
 # Remove the outlier plot for form seedling
 Survey_wide<-Survey_wide[-29, ] # this gets rid of the the row that looks to be an outlier

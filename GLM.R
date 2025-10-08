@@ -57,25 +57,25 @@ SurveyData_Combined <- SurveyData_Combined %>%
 
 # I need to add columns for the count of the weeds 150 and over in each plot
 # Calculate the number of wn over 150 for each plot (tier_4)
-TallWeeds <- SurveyData_Combined %>%
-  mutate(SOLmau = ifelse(ScientificName == "Solanum mauritianum", Tier_4, 0))
+#TallWeeds <- SurveyData_Combined %>%
+#  mutate(SOLmau = ifelse(ScientificName == "Solanum mauritianum", Tier_4, 0))
 
 # For privet
-TallWeeds <- TallWeeds %>%
-  mutate(LIGluc = ifelse(ScientificName == "Ligustrum lucidum", Tier_4, 0))
+#TallWeeds <- TallWeeds %>%
+#  mutate(LIGluc = ifelse(ScientificName == "Ligustrum lucidum", Tier_4, 0))
 
 # For wattle
-TallWeeds <- TallWeeds %>%
-  mutate(PARlop = ifelse(ScientificName == "Paraserianthes lophantha", Tier_4, 0))
+#TallWeeds <- TallWeeds %>%
+#  mutate(PARlop = ifelse(ScientificName == "Paraserianthes lophantha", Tier_4, 0))
 
 # Remove all other columns
-library(dplyr)
-TallWeeds <- TallWeeds %>%
-  select(Plot, SOLmau, LIGluc, PARlop)
+#library(dplyr)
+#TallWeeds <- TallWeeds %>%
+#  select(Plot, SOLmau, LIGluc, PARlop)
 
 # Only include rows with unique values for Plot
-TallWeeds <- TallWeeds %>%
-  distinct(Plot, .keep_all = TRUE)
+#TallWeeds <- TallWeeds %>%
+#  distinct(Plot, .keep_all = TRUE)
 
 # Calculate Shannon diversity index of native species > 50 cm tall
 # tier 3 will include both those in tier 3 and 4, so I need native sp. diversity 
@@ -90,10 +90,21 @@ filtered_SurveyData <- SurveyData_Combined %>%
   filter(WeedList == 0)
 
 # Step 2: Summarize abundance per species per plot
+#abundance_matrix <- filtered_SurveyData %>%
+#  group_by(Plot, ScientificName) %>%
+#  summarise(Abundance = sum(Tier_3, na.rm = TRUE), .groups = "drop") %>%
+#  tidyr::pivot_wider(names_from = ScientificName, values_from = Abundance, values_fill = 0)
+
+# This summarizes abundance per species per plot by form-based resident species calculations
 abundance_matrix <- filtered_SurveyData %>%
+  mutate(Abundance = case_when(
+    GrowthHabit %in% c("Tree", "Shrub") ~ Tier_3,
+    GrowthHabit %in% c("Vine", "Grass", "Forb") ~ Tier_2,
+    TRUE ~ NA_real_  # Handles unexpected GrowthHabit values
+  )) %>%
   group_by(Plot, ScientificName) %>%
-  summarise(Abundance = sum(Tier_3, na.rm = TRUE), .groups = "drop") %>%
-  tidyr::pivot_wider(names_from = ScientificName, values_from = Abundance, values_fill = 0)
+  summarise(Abundance = sum(Abundance, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = ScientificName, values_from = Abundance, values_fill = 0)
 
 # Step 3: Calculate Shannon diversity per plot
 # Remove Plot column for diversity calculation, but keep it for merging
@@ -108,11 +119,27 @@ print(shannon_values)
 # Step 4: Create dataframe and merge with PlotData
 shannon_by_plot <- data.frame(Plot = plot_ids, NativeDiversity = shannon_values)
 
-# Let's try total diversity for older plants
-abundance_matrix <- SurveyData_Combined %>%
+# Let's try weed diversity of resident species.
+# Filter for WeedList == 1
+filtered_SurveyDataWeed <- SurveyData_Combined %>% 
+  filter(WeedList == 1)
+
+#abundance_matrix <- SurveyData_Combined %>%
+#  group_by(Plot, ScientificName) %>%
+#  summarise(Abundance = sum(Tier_3, na.rm = TRUE), .groups = "drop") %>%
+#  tidyr::pivot_wider(names_from = ScientificName, values_from = Abundance, values_fill = 0)
+
+# This summarizes abundance per species per plot by form-based resident species calculations
+abundance_matrix <- filtered_SurveyDataWeed %>%
+  mutate(Abundance = case_when(
+    GrowthHabit %in% c("Tree", "Shrub") ~ Tier_3,
+    GrowthHabit %in% c("Vine", "Grass", "Forb") ~ Tier_2,
+    TRUE ~ NA_real_  # Handles unexpected GrowthHabit values
+  )) %>%
   group_by(Plot, ScientificName) %>%
-  summarise(Abundance = sum(Tier_3, na.rm = TRUE), .groups = "drop") %>%
-  tidyr::pivot_wider(names_from = ScientificName, values_from = Abundance, values_fill = 0)
+  summarise(Abundance = sum(Abundance, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = ScientificName, values_from = Abundance, values_fill = 0)
+
 
 # Step 3: Calculate Shannon diversity per plot
 # Remove Plot column for diversity calculation, but keep it for merging
@@ -125,7 +152,7 @@ shannon_values <- diversity(abundance_matrix_numeric, index = "shannon")
 print(shannon_values)
 
 # Step 4: Create dataframe and merge with PlotData
-shannon_by_plot_total <- data.frame(Plot = plot_ids, TotalDiversity = shannon_values)
+shannon_by_plot_weed <- data.frame(Plot = plot_ids, WeedDiversity = shannon_values)
 
 
 # subset to just look at the weeds
@@ -135,7 +162,17 @@ SurveyData_Combined <- SurveyData_Combined[SurveyData_Combined$WeedList == 1, ]
 # I need to make this data only include seedlings. Therefore, I need to remove
 # the rows that only include species > 51 cm.
 
-SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combined$Tier_3
+#SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combined$Tier_3
+
+# Now let's use a form-specific cutoff for seedling status
+library(dplyr)
+
+SurveyData_Combined <- SurveyData_Combined %>%
+  mutate(seedlings = case_when(
+    GrowthHabit %in% c("Tree", "Shrub") ~ Tier_1 - Tier_3,
+    GrowthHabit %in% c("Forb", "Vine", "Grass") ~ Tier_1 - Tier_2,
+    TRUE ~ NA_real_  # fallback for unexpected GrowthHabit values
+  ))
 
 # Remove any rows for which seedlings is empty so that richness is only calculated 
 # From seedlings
@@ -174,7 +211,7 @@ library(tidyr)
 PlotData_Combined <- PlotData_Combined %>%
   unite(Plot, Plot, Weed_Native, sep = "-")
 
-PlotData_Combined <- left_join(TallWeeds, PlotData_Combined, by = "Plot")
+#PlotData_Combined <- left_join(TallWeeds, PlotData_Combined, by = "Plot")
 
 # Add diversity to plot data
 PlotData_Combined <- PlotData_Combined %>%
@@ -183,12 +220,12 @@ PlotData_Combined <- PlotData_Combined %>%
 PlotData_Combined <- PlotData_Combined %>%
   mutate(NativeDiversity = if_else(is.na(NativeDiversity), 0, NativeDiversity))
 
-# Add total diversity as well
+# Add weed diversity as well
 PlotData_Combined <- PlotData_Combined %>%
-  left_join(shannon_by_plot_total, by = "Plot")
+  left_join(shannon_by_plot_weed, by = "Plot")
 
 PlotData_Combined <- PlotData_Combined %>%
-  mutate(TotalDiversity = if_else(is.na(TotalDiversity), 0, TotalDiversity))
+  mutate(WeedDiversity = if_else(is.na(WeedDiversity), 0, WeedDiversity))
 
 # Now I need to only include the environmental variables that I want to include
 # for the GLM
@@ -197,7 +234,7 @@ PlotData_Combined <- subset(PlotData_Combined, select = -c(Date, CentralSpecies,
                                                            Topography, ParentMaterial, Notes))
 
 # Need to simplify the column names 
-colnames(PlotData_Combined)[5:23] <- c("Housing","PopnHist", "PopnCurr", "DwellingsCurr",
+colnames(PlotData_Combined)[2:20] <- c("Housing","PopnHist", "PopnCurr", "DwellingsCurr",
                                        "Canopy", "Height", "DBH",
                                        "Slope", "Erosion", "Disturbance",
                                        "Pests", "Litter", "East", "South", 
@@ -217,7 +254,7 @@ Env_Species.pca <- prcomp(PlotData_Combined[,c("Height", "DBH",
                                                "Slope", "Canopy", "East", "South", "Vascular", "NonVascular", "LitterCover",
                                                "Bare", "Debris", "Erosion", "Disturbance",
                                                "Pests", "Litter", "Housing","PopnHist", "PopnCurr", "DwellingsCurr", "WN", 
-                                               "SOLmau", "LIGluc", "PARlop", "Place", "NativeDiversity", "TotalDiversity")], center = TRUE,scale. = TRUE,tol = 0.1)
+                                               "Place", "NativeDiversity", "WeedDiversity")], center = TRUE,scale. = TRUE,tol = 0.1)
 summary(Env_Species.pca)
 Env_Species.pca
 
@@ -251,7 +288,7 @@ library(MASS) ## do to the GLM
 RichnessGLM <- glm.nb(Richness ~ PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + 
                         PC7 + PC8 + PC9 + PC10 + PC11 + PC12 + 
                         PC13 + PC14 + PC15 + PC16 + PC17 + PC18 + PC19 + 
-                        PC20 + PC21 + PC22 + PC23 +PC24,
+                        PC20 + PC21 + PC22,
                       data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
 summary(RichnessGLM)
 
@@ -261,13 +298,13 @@ summary(RichnessGLM)
 library(MuMIn)
 options(na.action = "na.fail") #Must run this code once to use dredge
 model.full <- lm(Richness ~ Height + DBH + Slope + Canopy + Vascular + NonVascular+
-                   LitterCover + Bare + Debris + Erosion + Disturbance + Pests +
-                   Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + Place + NativeDiversity + TotalDiversity, data = df_Env_Species.pca)
+                   LitterCover + Bare + Debris + Erosion + Disturbance + Pests + WN +
+                   Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + Place + NativeDiversity + WeedDiversity, data = df_Env_Species.pca)
 
 # Richness GLM
 RichnessGLM2 <- glm.nb(Richness ~ Height + DBH + Slope + Canopy + Vascular + NonVascular+
-                         LitterCover + Bare + Debris + Erosion + Disturbance + Pests +
-                         Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + Place + NativeDiversity + TotalDiversity, data = df_Env_Species.pca)
+                         LitterCover + Bare + Debris + Erosion + Disturbance + Pests + WN +
+                         Litter + Housing + PopnHist + PopnCurr + DwellingsCurr + Place + NativeDiversity + WeedDiversity, data = df_Env_Species.pca)
 
 summary(RichnessGLM2)
 
@@ -297,17 +334,17 @@ cor(data)
 
 # Re-doing the multicolinarity tests with the reduced factor set
 # Make a new model with at least one of the correlated factors omitted 
-model.full <- glm(Richness ~ Height + DBH + Slope + Canopy + Vascular + Pests +
+model.full <- glm(Richness ~ Height + DBH + Slope + Canopy + Vascular + Pests + WN +
                   Erosion + Disturbance + Litter + Housing + PopnHist + 
-                  PopnCurr + Place + NativeDiversity + TotalDiversity, family = "poisson", data = df_Env_Species.pca)
+                  PopnCurr + Place + NativeDiversity + WeedDiversity, family = "poisson", data = df_Env_Species.pca)
 
 # Look for Multicolliniarity
 library(car)
 vif(model.full)
 
 # look at how they correlate
-data <- df_Env_Species.pca[ , c("Height", "DBH", "Slope", "Canopy", "Vascular", "Pests", 
-                                "Erosion", "Disturbance", "Litter", "Housing", "PopnHist", "PopnCurr", "Place", "NativeDiversity", "TotalDiversity")]
+data <- df_Env_Species.pca[ , c("Height", "DBH", "Slope", "Canopy", "Vascular", "Pests", "WN",
+                                "Erosion", "Disturbance", "Litter", "Housing", "PopnHist", "PopnCurr", "Place", "NativeDiversity", "WeedDiversity")]
 cor(data)
 
 
@@ -318,26 +355,26 @@ head(dredge, 10)
 
 # Let's try it with just the factors from the top model of that result: housing 
 # density, 2023 population, 1996 population, SOLmau, PARlop, Slope, Vascular veg
-model.full <- glm(Richness ~ Housing +
-                   PopnHist + PopnCurr + Vascular +
-                   Height + Erosion + Slope,
-                  family = "poisson", data = df_Env_Species.pca)
+#model.full <- glm(Richness ~ Housing +
+ #                  PopnHist + PopnCurr + Vascular +
+#                   Height + Erosion + Slope,
+#                  family = "poisson", data = df_Env_Species.pca)
 
-dredge <- dredge(model.full, rank = "AICc", extra = c("R^2", adjRsq = function(x) summary(x)$adj.r.squared))
+#dredge <- dredge(model.full, rank = "AICc", extra = c("R^2", adjRsq = function(x) summary(x)$adj.r.squared))
 
-head(dredge, 10)
+#head(dredge, 10)
 
 # Install and load the writexl package
 library(writexl)
 
-write_xlsx(dredge, "C:/Users/bella/Documents/dredgeresultsGLM9SeptTotalDiversity.xlsx")
+write_xlsx(dredge, "C:/Users/bella/Documents/dredgeresultsGLM9Oct.xlsx")
 # This gives the simplest possible model which includes Housing Density, 96 Population, 
 # LitterCover, PARlop, SOLmau, and Slope
 
 # Compare factors to how they relate to richness
 library(MASS) ## do to the GLM
 RichnessGLM <- glm.nb(Richness ~ Housing +
-                        PopnCurr +  Slope + TotalDiversity,
+                        Vascular +  Slope + WeedDiversity,
                       data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
 summary(RichnessGLM)
 
@@ -347,7 +384,7 @@ library(R2jags)
 source(file = "GLM Book Resources/HighstatLibV10.R")
 source(file = "GLM Book Resources/MCMCSupportHighstatV4.R")
 
-MyVar <- c("Housing", "Slope", "PopnCurr", "TotalDiversity")
+MyVar <- c("Housing", "Slope", "Vascular", "WeedDiversity")
 Mydotplot(Env_Species[MyVar])
 
 corvif(Env_Species[MyVar])
@@ -357,7 +394,7 @@ Myxyplot(df_Env_Species.pca, MyVar, "Richness")
 
 # Fit a model 
 M1 <- glm(Richness ~ Housing +
-            PopnCurr + Slope + TotalDiversity,
+            Vascular + Slope + WeedDiversity,
           family = "poisson", data = Env_Species)
 
 summary(M1)
@@ -372,22 +409,22 @@ plot(eff)
 
 percent_change <- (exp(coef(M1)["Housing"])- 1)*100
 print(percent_change)
-(exp(coef(M1)["PopnCurr"])- 1)*100
+(exp(coef(M1)["Vascular"])- 1)*100
 (exp(coef(M1)["Slope"])- 1)*100
-(exp(coef(M1)["TotalDiversity"])- 1)*100
+(exp(coef(M1)["WeedDiversity"])- 1)*100
 
 
 # Housing density effects plot
 plot(Effect("Housing", M1), xlab = "Housing density within 250 meters",
-     ylab = "Weed richness", main = "", colors = "royalblue")
+     ylab = "Weed richness", main = "", colors = "royalblue", cex.lab = 2)
 
 # 96 population effects plot
 #plot(Effect("PopnHist", M1), xlab = "Population of the area 1996",
 #     ylab = "Weed richness", main = "", colors = "pink3")
 
 # 23 population effects plot
-plot(Effect("PopnCurr", M1), xlab = "Population of the area 2023",
-     ylab = "Weed richness", main = "", colors = "#660099")
+plot(Effect("Vascular", M1), xlab = "Cover of vascular vegetation in the plot",
+     ylab = "Weed richness", main = "", colors = "#660099", cex.lab = 2)
 
 # Vascular Vegetation effects plot
 #plot(Effect("Vascular", M1), xlab = "Cover of vascular vegetation",
@@ -403,11 +440,11 @@ plot(Effect("PopnCurr", M1), xlab = "Population of the area 2023",
 
 # Slope effects plot
 plot(Effect("Slope", M1), xlab = "Slope of the plot",
-     ylab = "Weed richness", main = "", colors = "maroon")
+     ylab = "Weed richness", main = "", colors = "maroon", cex.lab = 2)
 
 # Diversity effects plot
-plot(Effect("TotalDiversity", M1), xlab = "Diversity of mature species in the plot",
-     ylab = "Weed richness", main = "", colors = "darkgreen")
+plot(Effect("WeedDiversity", M1), xlab = "Diversity of resident weeds in the plot",
+     ylab = "Weed richness", main = "", colors = "darkgreen", cex.lab = 2)
 
 # can do for nb glm as well
 library(MASS)
