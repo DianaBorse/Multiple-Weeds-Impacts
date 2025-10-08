@@ -55,8 +55,19 @@ SurveyData_Combined <- SurveyData_Combined[SurveyData_Combined$WeedList == 1, ]
 # I need to make this data only include seedlings. Therefore, I need to remove
 # the rows that only include species > 51 cm.
 
-SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combined$Tier_3
+#SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combined$Tier_3
 # SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combined$Tier_4
+
+# form-specific seedling calculation
+library(dplyr)
+
+SurveyData_Combined <- SurveyData_Combined %>%
+  mutate(seedlings = case_when(
+    GrowthHabit %in% c("Tree", "Shrub") ~ Tier_1 - Tier_3,
+    GrowthHabit %in% c("Forb", "Vine", "Grass") ~ Tier_1 - Tier_2,
+    TRUE ~ NA_real_  # fallback for unexpected GrowthHabit values
+  ))
+
 
 #### Change the data to be a matrix (n sample units x p species) ####
 
@@ -99,10 +110,14 @@ Survey_wide <- Survey_wide[rowSums(Survey_wide) != 0, ]
 rowSums(Survey_wide)
 colSums(Survey_wide)
 
-# Try removing outlier
- Survey_wide<-Survey_wide[-68, ] # this gets rid of the the row that looks to be an outlier
- Survey_wide<-Survey_wide[-1, ] # this gets rid of the the row that looks to be an outlier
-
+# Try removing outliers for seedling < 50 cm calculation
+# Survey_wide<-Survey_wide[-68, ] # this gets rid of the the row that looks to be an outlier
+# Survey_wide<-Survey_wide[-1, ] # this gets rid of the the row that looks to be an outlier
+ 
+# remove outliers for seedling based on form 
+ Survey_wide<-Survey_wide[-29, ] # this gets rid of the the row that looks to be an outlier
+ Survey_wide<-Survey_wide[-18, ] # this gets rid of the the row that looks to be an outlier
+ 
 #### NMDS ####
 
 library(vegan)
@@ -220,14 +235,31 @@ Plot_Species<-Plot_Species[-24, ] # this gets rid of the the outlier
 Plot_Species<-Plot_Species[-15, ] # this gets rid of the the outlier
 Plot_Species<-Plot_Species[-12, ] # this gets rid of the the outlier
 Plot_Species<-Plot_Species[-1, ] # this gets rid of the the outlier
+# Remove these for form-specific seedling
+
+# for seedling by form
+Plot_Species<-Plot_Species[-75, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-70, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-69, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-68, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-67, ] # this gets rid of the the outlier for the form based seedling
+Plot_Species<-Plot_Species[-62, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-57, ] # this gets rid of the the outlier for the form based seedling
+Plot_Species<-Plot_Species[-53, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-33, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-32, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-24, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-20, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-15, ] # this gets rid of the the outlier
+Plot_Species<-Plot_Species[-12, ] # this gets rid of the the outlier
 
 grp <- Plot_Species$CentralSpecies
 
 # I don't think I need these
 
 # data.scores <- as.data.frame(scores(z))  #Using the scores function from vegan to extract the site scores and convert to a data.frame
-# data.scores$site <- rownames(z)  # create a column of site names, from the rownames of data.scores
-# data.scores$grp <- grp  #  add the grp variable created earlier
+#data.scores$site <- rownames(z)  # create a column of site names, from the rownames of data.scores
+#data.scores$grp <- grp  #  add the grp variable created earlier
 # head(data.scores)  #look at the data
 hcl.colors(8, palette = "Cividis")
 hcl.colors(8, palette = "Tropic")
@@ -328,8 +360,8 @@ plot_data<-data.frame(
 #  MDS3=z.points$MDS3,
 #  MDS4=z.points$MDS4,
 #  MDS5=z.points$MDS5,
-  xend=c(rep( group_centroids[1,2],22),rep(group_centroids[2,2],23), rep(group_centroids[3,2],23)),
-  yend=c(rep( group_centroids[1,3],22),rep(group_centroids[2,3],23), rep(group_centroids[3,3],23)))
+  xend=c(rep( group_centroids[1,2],21),rep(group_centroids[2,2],21), rep(group_centroids[3,2],21)),
+  yend=c(rep( group_centroids[1,3],21),rep(group_centroids[2,3],21), rep(group_centroids[3,3],21)))
 #  zend=c(rep( group_centroids[1,4],27),rep(group_centroids[2,4],27), rep(group_centroids[3,4],27)),
 #  Aend=c(rep( group_centroids[1,5],27),rep(group_centroids[2,5],27), rep(group_centroids[3,5],27)))
 #  Bend=c(rep(group_centroids[1,6],27),rep( group_centroids[2,6],27), rep(group_centroids[3,6],27)))
@@ -431,8 +463,13 @@ colSums(Survey_perm)
 Survey_perm <- Survey_perm[, colSums(Survey_perm) != 0]
 Survey_perm <- Survey_perm[rowSums(Survey_perm) != 0, ]
 
-Survey_perm<-Survey_perm[-68, ] # this gets rid of the the row that is an outlier
-Survey_perm<-Survey_perm[-1, ] # this gets rid of the the row that is an outlier
+# Remove the outlier plot
+#Survey_wide<-Survey_wide[-68, ] # this gets rid of the the row that looks to be an outlier
+#Survey_wide<-Survey_wide[-1, ] # this gets rid of the the row that looks to be an outlier
+
+# remove outliers for form based plot
+Survey_perm<-Survey_perm[-29, ] # this gets rid of the the row that is an outlier
+Survey_perm<-Survey_perm[-18, ] # this gets rid of the the row that is an outlier
 
 # Make a distance matrix
 perm_dist<-vegdist(Survey_perm, method='bray')
@@ -490,6 +527,11 @@ colSums(Survey_wide)
 # Remove the outlier plot
 Survey_wide<-Survey_wide[-68, ] # this gets rid of the the row that looks to be an outlier
 Survey_wide<-Survey_wide[-1, ] # this gets rid of the the row that looks to be an outlier
+
+# Remove the outlier plot for form seedling
+Survey_wide<-Survey_wide[-29, ] # this gets rid of the the row that looks to be an outlier
+Survey_wide<-Survey_wide[-18, ] # this gets rid of the the row that looks to be an outlier
+
 
 Plot_Species <- Plot_Species %>%
   mutate(CentralSpecies = ifelse(CentralSpecies == "Solanum mauritianum", "SOLmau", CentralSpecies))

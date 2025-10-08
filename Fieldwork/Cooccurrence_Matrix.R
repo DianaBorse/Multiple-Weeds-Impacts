@@ -122,31 +122,96 @@ plot + theme(legend.position = "none") + ggtitle(NULL) +
 # I need to make this data only include seedlings. Therefore, I need to remove
 # the rows that only include species > 51 cm.
 
-SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combined$Tier_3
+#SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combined$Tier_3
 
-SurveyData_Combined <- subset(SurveyData_Combined, seedlings != 0)
+# SurveyData_Combined <- subset(SurveyData_Combined, seedlings != 0)
 # Now the data.frame only includes the seedlings.
 
+# Now let's use a form-specific cutoff for seedling status
+library(dplyr)
 
+SurveyData_Combined <- SurveyData_Combined %>%
+  mutate(seedlings = case_when(
+    GrowthHabit %in% c("Tree", "Shrub") ~ Tier_1 - Tier_3,
+    GrowthHabit %in% c("Forb", "Vine", "Grass") ~ Tier_1 - Tier_2,
+    TRUE ~ NA_real_  # fallback for unexpected GrowthHabit values
+  ))
+
+SurveyData_Combined <- subset(SurveyData_Combined, seedlings != 0)
 # Next I need to give each plot a unique numerical ID because the co-occurrence 
 # matrix requires this
 
 SurveyData_Combined$Plot <- as.numeric(as.factor(SurveyData_Combined$Plot))
 
-# I need to subset to just the most common species because I have too many species
-# to run the co-occurrence for
-
-# This shows me what the most common species are but does not subset my data
-
-# SurveyData_Combined_Subset <- SurveyData_Combined %>%
-#  count(ScientificName) %>%
-#  top_n(15) %>%
-#  arrange(n, ScientificName) %>%
-#  mutate(ScientificName = factor(ScientificName, levels = unique(ScientificName)))
-
-# That only yields a result with the top occurring species and their count
+# Subset the data to only include species that are weeds using the WeedList Column
+subset_SurveyData_Combined_weeds <- SurveyData_Combined[SurveyData_Combined$WeedList == 1, ]
 
 
+# Identify the top 15 most common values in the categorical column 
+top_15_values <- names(sort(table(subset_SurveyData_Combined_weeds$ScientificName), decreasing = TRUE))[1:15] 
+
+# view(top_15_values)
+
+# Subset the data frame to include only rows with the top 15 most common values 
+subset_SurveyData_Combined_weeds15 <- SurveyData_Combined[SurveyData_Combined$ScientificName %in% top_15_values, ] 
+
+# My data needs to change to presence/absence by plot. Plot needs to be the 
+# columns, and all species are rows with presence/absence denoted as a 0 or a 1
+
+# This creates a new data frame that is presence/absence
+
+library(tidyr)
+library(dplyr)
+
+PresenceAbsence <-subset_SurveyData_Combined_weeds15 %>%
+  pivot_wider(id_cols = ScientificName, names_from=Plot, values_from=Plot,
+              values_fn=function(x) any(unique(x) == x) * 1, values_fill = 0)
+
+# instead of being a tibble, I wanted to convert it back to a data frame
+PresenceAbsence_df = as.data.frame(PresenceAbsence)
+
+# Needs to remove the first column of numbers as row names and make the Scientific 
+# names of species into the row names
+row.names(PresenceAbsence_df) <- PresenceAbsence_df$ScientificName
+
+# Remove the first column from the data frame 
+PresenceAbsence_df <- PresenceAbsence_df[, -1]
+
+
+## Co-occur 
+
+# install.packages("cooccur")
+library(cooccur)
+
+cooccur.Survey <- cooccur(PresenceAbsence_df,
+                          type = "spp_site",
+                          thresh = TRUE,
+                          spp_name = TRUE)
+class(cooccur.Survey)
+summary(cooccur.Survey)
+cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = TRUE, spp_names = TRUE)
+
+Prob_table <- prob.table(cooccur.Survey)
+
+plot <- plot(cooccur.Survey, plotrand = TRUE) # add "plotrand = TRUE" to include completely random species
+
+# Have a look at some colorblind friendly colours
+hcl.colors(8, palette = "Tropic")
+
+# Remove legend 
+plot + theme(legend.position = "none") + ggtitle(NULL) + 
+  scale_fill_manual(values = c("#90CBCD","#E5E5E5", "#C75DAA")) #Change axis title text font etc
+
+# Check the data for the target weeds
+Woolly_Cooccur <- pair(mod = cooccur.Survey, spp = "Solanum mauritianum")
+
+pair(mod = cooccur.Survey, spp = "Ligustrum lucidum")
+
+pair(mod = cooccur.Survey, spp = "Paraserianthes lophantha")
+
+# Try subsetting to non-seedlings
+
+SurveyData_Combined <- subset(SurveyData_Combined, Tier_3 != 0)
 
 #### Co-occurrence Matrix with top 15 most commonly occurring scientific name ####
 
