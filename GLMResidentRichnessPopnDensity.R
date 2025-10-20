@@ -379,7 +379,7 @@ plot(Effect("Vascular", M1), xlab = "Cover of vascular vegetation in the plot",
 #     ylab = "Weed richness", main = "", colors = "orange3")
 
 # Slope effects plot
-plot(Effect("PopnHist", M1), xlab = "1996 human population",
+plot(Effect("PopDensityHist", M1), xlab = "1996 human population density",
      ylab = "Weed richness", main = "", colors = "maroon", cex.lab = 3)
 
 # Diversity effects plot

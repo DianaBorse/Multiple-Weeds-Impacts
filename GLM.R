@@ -164,6 +164,44 @@ SurveyData_Combined <- SurveyData_Combined[SurveyData_Combined$WeedList == 1, ]
 
 #SurveyData_Combined$seedlings <- SurveyData_Combined$Tier_1 - SurveyData_Combined$Tier_3
 
+# Instead of Shannon Diversity, can see if simple richness of resident species
+# is a good predictor of weed seedling richness
+# Filter for WeedList == 0
+filtered_SurveyData <- SurveyData_Combined %>% 
+  filter(WeedList == 0)
+
+library(dplyr)
+
+SurveyData_CombinedNativeRichness <- filtered_SurveyData %>%
+  mutate(ResdidentNatives = case_when(
+    GrowthHabit %in% c("Tree", "Shrub") ~ Tier_3,
+    GrowthHabit %in% c("Forb", "Vine", "Grass") ~ Tier_2,
+    TRUE ~ NA_real_  # fallback for unexpected GrowthHabit values
+  ))
+
+# Calculate richness value
+library(dplyr)
+RichnessNatives <- SurveyData_CombinedNativeRichness %>% group_by(Plot) %>% summarize(unique_values = n_distinct(ScientificName))
+
+# Now for resident weed richness
+filtered_SurveyData <- SurveyData_Combined %>% 
+  filter(WeedList == 1)
+
+library(dplyr)
+
+SurveyData_CombinedWeedRichness <- filtered_SurveyData %>%
+  mutate(ResdidentWeeds = case_when(
+    GrowthHabit %in% c("Tree", "Shrub") ~ Tier_3,
+    GrowthHabit %in% c("Forb", "Vine", "Grass") ~ Tier_2,
+    TRUE ~ NA_real_  # fallback for unexpected GrowthHabit values
+  ))
+
+# Calculate richness value
+library(dplyr)
+RichnesResidentsWeeds <- SurveyData_CombinedNativeRichness %>% group_by(Plot) %>% summarize(unique_values = n_distinct(ScientificName))
+
+# rename the column
+colnames(RichnesResidentsWeeds)[2] <- c("RichnessResidentWeeds") ## Renaming the columns# rename the column
 # Now let's use a form-specific cutoff for seedling status
 library(dplyr)
 
@@ -176,7 +214,6 @@ SurveyData_Combined <- SurveyData_Combined %>%
 
 # Remove any rows for which seedlings is empty so that richness is only calculated 
 # From seedlings
-# Assuming your data frame is named 'df'
 SurveyData_Combined <- SurveyData_Combined %>% 
   filter(seedlings != 0)
 
