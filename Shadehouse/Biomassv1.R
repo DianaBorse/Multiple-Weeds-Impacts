@@ -67,6 +67,229 @@ library(dplyr)
 library(metafor)
 library(ggplot2)
 
+
+# let's have a look at simply doing a response ratio (no log)
+
+# Add a column that is the mass of each sample / mean control mass
+group1_mean <- mean(Sapling$Mass[Sapling$Group == 1], na.rm = TRUE)
+
+Sapling$ResponseRatio <- Sapling$Mass / group1_mean
+
+# Let's have a look at that
+library(dplyr)
+library(ggplot2)
+
+Sapling %>%
+  filter(Group %in% 2:8) %>%
+  ggplot(aes(x = Group, y = ResponseRatio)) +
+  geom_boxplot(fill = "#33B08D", varwidth = TRUE) +
+  geom_jitter(color = "black", size = 0.4, alpha = 0.9) +
+  ylab("Sapling Biomass mixture / control (g)") +
+  xlab("Treatment Group") +
+  theme_classic()
+
+
+# Seedlings
+Seedling <- Biomass[Biomass$Plant == "ManukaSeedling", ]
+
+Seedling<-Seedling[-81, ]
+
+Seedling$Group <- as.factor(Seedling$Group)
+
+# Add a column that is the mass of each sample / mean control mass
+group1_mean <- mean(Seedling$Mass[Seedling$Group == 1], na.rm = TRUE)
+
+Seedling$ResponseRatio <- Seedling$Mass / group1_mean
+
+# Let's have a look at that
+library(dplyr)
+library(ggplot2)
+
+Seedling %>%
+  filter(Group %in% 2:8) %>%
+  ggplot(aes(x = Group, y = ResponseRatio)) +
+  geom_boxplot(fill = "#82C782", varwidth = TRUE) +
+  geom_jitter(color = "black", size = 0.4, alpha = 0.9) +
+  ylab("Seedling Biomass mixture / control (g)") +
+  xlab("Treatment Group") +
+  theme_classic()
+
+# Wattle
+Wattle <- Biomass[Biomass$Plant == "Wattle", ]
+
+Wattle$Group <- as.factor(Wattle$Group)
+
+# Add a column that is the mass of each sample / mean control mass
+group7_mean <- mean(Wattle$Mass[Wattle$Group == 7], na.rm = TRUE)
+
+Wattle$ResponseRatio <- Wattle$Mass / group7_mean
+
+# Let's have a look at that
+library(dplyr)
+library(ggplot2)
+
+Wattle %>%
+  filter(Group %in% 2:6) %>%
+  ggplot(aes(x = Group, y = ResponseRatio)) +
+  geom_boxplot(fill = "#E9A96C", varwidth = TRUE) +
+  geom_jitter(color = "black", size = 0.4, alpha = 0.9) +
+  ylab("Wattle Biomass mixture / control (g)") +
+  xlab("Treatment Group") +
+  theme_classic()
+
+# Woolly
+Woolly <- Biomass[Biomass$Plant == "Nightshade", ]
+
+Woolly$Group <- as.factor(Woolly$Group)
+
+# Add a column that is the mass of each sample / mean control mass
+group6_mean <- mean(Woolly$Mass[Woolly$Group == 6], na.rm = TRUE)
+
+Woolly$ResponseRatio <- Woolly$Mass / group6_mean
+
+# Let's have a look at that
+library(dplyr)
+library(ggplot2)
+
+Woolly %>%
+  filter(Group %in% 2:5) %>%
+  ggplot(aes(x = Group, y = ResponseRatio)) +
+  geom_boxplot(fill = "#CF597E", varwidth = TRUE) +
+  geom_jitter(color = "black", size = 0.4, alpha = 0.9) +
+  ylab("Woolly Biomass mixture / control (g)") +
+  xlab("Treatment Group") +
+  theme_classic()
+
+# Check for homogeneous variance
+summ_Woolly <- Woolly %>%
+  group_by(Group) %>% 
+  summarise(mean_Mass = mean(Mass),
+            sd_Mass = sd(Mass),
+            n_Mass = n())
+ratio <-(max(summ_Woolly$sd_Mass))/(min(summ_Woolly$sd_Mass))
+print(ratio)
+
+# Check for homogeneous variance
+summ_Woolly <- Woolly %>%
+  group_by(Group) %>% 
+  summarise(mean_ResponseRatio = mean(ResponseRatio),
+            sd_ResponseRatio = sd(ResponseRatio),
+            n_ResponseRatio = n()) 
+ratio <-(max(summ_Woolly$sd_ResponseRatio))/(min(summ_Woolly$sd_ResponseRatio))
+print(ratio)
+
+# ratio < 3
+# For mass
+# The sample sizes are not quite even and therefore we need to use Type 3 analysis
+contrasts(Woolly$Group) <- contr.sum(8)
+
+model <- lm(Mass ~ Group, data = Woolly)
+# Run Type III ANOVA
+library(car)
+Anova(model, type = 3)
+
+# Set up for ANOVA
+model01 <- aov(ResponseRatio~Group, data = Woolly)
+
+autoplot(model01)
+
+anova(model01)
+
+summary(model01)
+# Tukey-Kramer test (automatically applied for unequal sample sizes)
+TukeyHSD(model01)
+
+# For Response Ratio
+# The sample sizes are not quite even and therefore we need to use Type 3 analysis
+contrasts(Woolly$Group) <- contr.sum(8)
+
+model <- lm(ResponseRatio ~ Group, data = Woolly)
+# Run Type III ANOVA
+library(car)
+Anova(model, type = 3)
+
+# Set up for ANOVA
+model01 <- aov(Mass~Group, data = Woolly)
+
+autoplot(model01)
+
+anova(model01)
+
+summary(model01)
+
+# Tukey-Kramer test (automatically applied for unequal sample sizes)
+TukeyHSD(model01)
+
+# privet
+Privet <- Biomass[Biomass$Plant == "Privet", ]
+
+Privet$Group <- as.factor(Privet$Group)
+
+# Add a column that is the mass of each sample / mean control mass
+group8_mean <- mean(Privet$Mass[Privet$Group == 8], na.rm = TRUE)
+
+Privet$ResponseRatio <- Privet$Mass / group8_mean
+
+# Let's have a look at that
+library(dplyr)
+library(ggplot2)
+
+Privet %>%
+#  filter(Group %in% 2:5) %>%
+  ggplot(aes(x = Group, y = ResponseRatio)) +
+  geom_boxplot(fill = "#E57F6C", varwidth = TRUE) +
+  geom_jitter(color = "black", size = 0.4, alpha = 0.9) +
+  ylab("Privet Biomass mixture / control (g)") +
+  xlab("Treatment Group") +
+  theme_classic()
+
+# Check for homogeneous variance
+summ_Privet <- Privet %>%
+  group_by(Group) %>% 
+  summarise(mean_Mass = mean(Mass),
+            sd_Mass = sd(Mass),
+            n_Mass = n())
+ratio <-(max(summ_Privet$sd_Mass))/(min(summ_Privet$sd_Mass))
+print(ratio)
+
+# Check for homogeneous variance
+summ_Privet <- Privet %>%
+  group_by(Group) %>% 
+  summarise(mean_ResponseRatio = mean(ResponseRatio),
+            sd_ResponseRatio = sd(ResponseRatio),
+            n_ResponseRatio = n())
+ratio <-(max(summ_Privet$sd_ResponseRatio))/(min(summ_Privet$sd_ResponseRatio))
+print(ratio)
+
+# ratio < 3
+# For mass
+# The sample sizes are not quite even and therefore we need to use Type 3 analysis
+contrasts(Privet$Group) <- contr.sum(8)
+
+model <- lm(Mass ~ Group, data = Privet)
+# Run Type III ANOVA
+library(car)
+Anova(model, type = 3)
+
+# Tukey-Kramer test (automatically applied for unequal sample sizes)
+TukeyHSD(model01)
+
+# For Response Ratio
+# The sample sizes are not quite even and therefore we need to use Type 3 analysis
+contrasts(Privet$Group) <- contr.sum(8)
+
+model <- lm(ResponseRatio ~ Group, data = Privet)
+# Run Type III ANOVA
+library(car)
+Anova(model, type = 3)
+
+# Tukey-Kramer test (automatically applied for unequal sample sizes)
+TukeyHSD(model01)
+
+
+
+
+#### Log Response ratios ####
 # Function to compute lnRR using metafor for a given plant and control group
 compute_lnRR <- function(Biomass, plant_name = "ManukaSapling", control_group = 1) {
   # Filter for specified plant
@@ -125,14 +348,8 @@ ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
     axis.title = element_text(face = "bold")
   )
 
-# Seedlings
-Seedling <- Biomass[Biomass$Plant == "ManukaSeedling", ]
-
-Seedling<-Seedling[-81, ]
-
-Seedling$Group <- as.factor(Seedling$Group)
-
-# Function to compute lnRR using metafor for a given plant and control group
+# Seedling
+#Function to compute lnRR using metafor for a given plant and control group
 compute_lnRR <- function(Biomass, plant_name = "ManukaSeedling", control_group = 1) {
   # Filter for specified plant
   df_filtered <- Biomass %>% filter(Plant == plant_name)
@@ -189,4 +406,3 @@ ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
     text = element_text(size = 12),
     axis.title = element_text(face = "bold")
   )
-
