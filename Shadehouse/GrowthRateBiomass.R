@@ -787,6 +787,26 @@ ggplot(Height, aes(x = Group, y = AverageGR, fill = Plant)) +
 hcl.colors(8, palette = "Temps") # remove # to look at colors below
 # "#089392" "#33B08D" "#82C782" "#CBD98E" "#EACF87" "#E9A96C" "#E57F6C" "#CF597E"
 
+# One for just the seedlings
+AllSeedlings <- Height[Height$Plant != "ManukaSapling", ]
+
+# Make a boxplot with all values on it
+ggplot(AllSeedlings, aes(x = Group, y = AverageGR, fill = Plant)) +
+  geom_boxplot(position = position_dodge(width = 0.8)) +
+  theme_minimal() +
+  labs(x = "Treatment group", y = "Relative growth rate ln(mm/month)", fill = "Species") +
+  scale_fill_manual(values = c(
+    "ManukaSeedling"  = "#82C782", 
+    "Nightshade" = "#CF597E",  
+    "Privet" = "#E57F6C" , 
+    "Wattle" = "#E9A96C"),
+    labels = c("ManukaSeedling" = "L. scoparium seedling","Nightshade" = "S. mauritianum",
+               "Privet" = "L. lucidum", "Wattle" = "P. lophantha")) +
+  theme_classic()
+
+hcl.colors(8, palette = "Temps") # remove # to look at colors below
+# "#089392" "#33B08D" "#82C782" "#CBD98E" "#EACF87" "#E9A96C" "#E57F6C" "#CF597E"
+
 # Calculate averages for each group
 # calculate summary stats
 summ_Height <- Height %>%
@@ -875,12 +895,18 @@ surv_obj <- Surv(time = SaplingS$time, event = SaplingS$status)
 # Fit Kaplan-Meier curves
 fit <- survfit(surv_obj ~ Group, data = SaplingS)
 
-# Plot the curves
-ggsurvplot(fit, data = SaplingS, pval = TRUE, risk.table = TRUE, xlim = c(0, 200)) +
-  labs(
-    x = "Days",
-    y = "Overall survival probability"
-  ) 
+# Plot the curves (labels go inside ggsurvplot)
+ggsurvplot(
+  fit,
+  data = SaplingS,
+  pval = TRUE,
+  risk.table = TRUE,
+  xlim = c(0, 200),
+  xlab = "Days",
+  ylab = "Overall survival probability"
+)
+plot_obj <- ggsurvplot(fit, data = SaplingS, pval = TRUE, risk.table = TRUE, xlim = c(0, 200))
+plot_obj$plot 
 
 # logrank test
 survdiff(Surv(time, status) ~ Group, data = SaplingS)
@@ -919,14 +945,18 @@ surv_obj <- Surv(time = SeedlingS$time, event = SeedlingS$status)
 # Fit Kaplan-Meier curves
 fit <- survfit(surv_obj ~ Group, data = SeedlingS)
 
-# Plot the curves
-ggsurvplot(fit, data = SeedlingS, pval = TRUE, risk.table = TRUE, xlim = c(0, 200)) +
-  labs(
-    x = "Days",
-    y = "Overall survival probability"
-  ) 
-
-survdiff(Surv(time, status) ~ Group, data = SeedlingS)
+# Plot the curves (labels go inside ggsurvplot)
+ggsurvplot(
+  fit,
+  data = SaplingS,
+  pval = TRUE,
+  risk.table = TRUE,
+  xlim = c(0, 200),
+  xlab = "Days",
+  ylab = "Overall survival probability"
+)
+plot_obj <- ggsurvplot(fit, data = SeedlingS, pval = TRUE, risk.table = TRUE, xlim = c(0, 200))
+plot_obj$plot 
 
 ## Stratified 8-sample test (7 df)
 survdiff(Surv(time, status) ~ Group, data=SeedlingS)
@@ -944,14 +974,18 @@ surv_obj <- Surv(time = NightshadeS$time, event = NightshadeS$status)
 # Fit Kaplan-Meier curves
 fit <- survfit(surv_obj ~ Group, data = NightshadeS)
 
-# Plot the curves
-ggsurvplot(fit, data = NightshadeS, pval = TRUE, risk.table = TRUE, xlim = c(0, 200)) +
-  labs(
-    x = "Days",
-    y = "Overall survival probability"
-  ) 
-
-survdiff(Surv(time, status) ~ Group, data = NightshadeS)
+# Plot the curves (labels go inside ggsurvplot)
+ggsurvplot(
+  fit,
+  data = SaplingS,
+  pval = TRUE,
+  risk.table = TRUE,
+  xlim = c(0, 200),
+  xlab = "Days",
+  ylab = "Overall survival probability"
+)
+plot_obj <- ggsurvplot(fit, data = NightshadeS, pval = TRUE, risk.table = TRUE, xlim = c(0, 200))
+plot_obj$plot 
 
 ## Stratified 8-sample test (7 df)
 survdiff(Surv(time, status) ~ Group, data=NightshadeS)
@@ -970,14 +1004,18 @@ surv_obj <- Surv(time = PrivetS$time, event = PrivetS$status)
 # Fit Kaplan-Meier curves
 fit <- survfit(surv_obj ~ Group, data = PrivetS)
 
-# Plot the curves
-ggsurvplot(fit, data = PrivetS, pval = TRUE, risk.table = TRUE, xlim = c(0, 200)) +
-  labs(
-    x = "Days",
-    y = "Overall survival probability"
-  ) 
-
-survdiff(Surv(time, status) ~ Group, data = PrivetS)
+# Plot the curves (labels go inside ggsurvplot)
+ggsurvplot(
+  fit,
+  data = SaplingS,
+  pval = TRUE,
+  risk.table = TRUE,
+  xlim = c(0, 200),
+  xlab = "Days",
+  ylab = "Overall survival probability"
+)
+plot_obj <- ggsurvplot(fit, data = PrivetS, pval = TRUE, risk.table = TRUE, xlim = c(0, 200))
+plot_obj$plot 
 
 ## Stratified 8-sample test (7 df)
 survdiff(Surv(time, status) ~ Group, data=PrivetS)
@@ -995,14 +1033,18 @@ surv_obj <- Surv(time = WattleS$time, event = WattleS$status)
 # Fit Kaplan-Meier curves
 fit <- survfit(surv_obj ~ Group, data = WattleS)
 
-# Plot the curves
-ggsurvplot(fit, data = WattleS, pval = TRUE, risk.table = TRUE, xlim = c(0, 200)) +
-  labs(
-    x = "Days",
-    y = "Overall survival probability"
-  ) 
-
-survdiff(Surv(time, status) ~ Group, data = WattleS)
+# Plot the curves (labels go inside ggsurvplot)
+ggsurvplot(
+  fit,
+  data = SaplingS,
+  pval = TRUE,
+  risk.table = TRUE,
+  xlim = c(0, 200),
+  xlab = "Days",
+  ylab = "Overall survival probability"
+)
+plot_obj <- ggsurvplot(fit, data = WattleS, pval = TRUE, risk.table = TRUE, xlim = c(0, 200))
+plot_obj$plot 
 
 ## Stratified 8-sample test (7 df)
 survdiff(Surv(time, status) ~ Group, data=WattleS)

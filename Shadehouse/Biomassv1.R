@@ -402,6 +402,26 @@ summary(model01)
 # Tukey-Kramer test (automatically applied for unequal sample sizes)
 TukeyHSD(model01)
 
+# Make a new df without saplings because they are too big
+BiomassSeedlings <- Biomass %>% filter(Plant != "ManukaSapling")
+
+# Make a boxplot with all values on it
+ggplot(BiomassSeedlings, aes(x = Group, y = ResponseRatio, fill = Plant)) +
+  geom_boxplot(position = position_dodge(width = 0.8)) +
+  theme_minimal() +
+  labs(x = "Treatment group", y = "Dry biomass g", fill = "Species") +
+  scale_fill_manual(values = c(
+    "ManukaSapling" = "#33B08D",  
+    "ManukaSeedling"  = "#82C782", 
+    "Nightshade" = "#CF597E",  
+    "Privet" = "#E57F6C" , 
+    "Wattle" = "#E9A96C"),
+    labels = c("ManukaSapling" = "L. scoparium sapling", "ManukaSeedling" = "L. scoparium seedling","Nightshade" = "S. mauritianum",
+               "Privet" = "L. lucidum", "Wattle" = "P. lophantha")) +
+  theme_classic()
+
+
+
 
 #### Log Response ratios ####
 library(metafor)
@@ -516,7 +536,7 @@ ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
     x = "Treatment Group",
     y = "lnRR_mixed/monoculture L. scoparium seedling biomass (g)"
   ) +
-  theme_bw() +
+  theme_classic() +
   theme(
     text = element_text(size = 12),
     axis.title = element_text(face = "bold")
@@ -575,7 +595,7 @@ ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
     x = "Treatment Group",
     y = "lnRR_mixed/monoculture P. lophantha seedling biomass (g)"
   ) +
-  theme_bw() +
+  theme_classic() +
   theme(
     text = element_text(size = 12),
     axis.title = element_text(face = "bold")
@@ -634,7 +654,7 @@ ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
     x = "Treatment Group",
     y = "lnRR_mixed/monoculture S. mauritianum seedling biomass (g)"
   ) +
-  theme_bw() +
+  theme_classic() +
   theme(
     text = element_text(size = 12),
     axis.title = element_text(face = "bold")
@@ -693,7 +713,7 @@ ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
     x = "Treatment Group",
     y = "lnRR_mixed/monoculture L. lucidum seedling biomass (g)"
   ) +
-  theme_bw() +
+  theme_classic() +
   theme(
     text = element_text(size = 12),
     axis.title = element_text(face = "bold")
