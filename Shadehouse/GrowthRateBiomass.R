@@ -933,6 +933,20 @@ tukey <- TukeyHSD(model01)
 summary(tukey)
 print(tukey)
 
+# Let's see about a model with room
+# Add room
+library(readr)
+RoomPot <- read_csv("Shadehouse/RoomPot.csv")
+
+colnames(RoomPot)[1:1] <- c("Pot") ## Renaming the columns
+SaplingS <- SaplingS %>%
+  left_join(RoomPot %>% dplyr::select(Pot, Room), by = "Pot")
+
+# Fit a model 
+M1 <- lm(status ~  factor(Group) +  factor(Room), data = SaplingS)
+
+summary(M1)
+
 # Not sure how useful this is...
 
 #### Seedling survival analysis ####

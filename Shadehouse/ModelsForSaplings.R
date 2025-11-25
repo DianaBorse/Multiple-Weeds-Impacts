@@ -500,15 +500,29 @@ library(emmeans)
 emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
 pairs(emm, adjust = "tukey")
 
+summ_Woolly <- Woolly %>%
+  group_by(Group) %>% 
+  summarise(mean_Mass = mean(Mass),
+            sd_Mass = sd(Mass))
+print(summ_Woolly)
+
+summ_WoollyRoom <- Woolly %>%
+  group_by(Room) %>% 
+  summarise(mean_Mass = mean(Mass),
+            sd_Mass = sd(Mass))
+print(summ_WoollyRoom)
+
 #### Woolly Nightshade RGR ####
 WoollyH <- Height[Height$Plant == "Nightshade", ]
-
-Woolly <- Woolly %>%
-  left_join(dplyr::select(WoollyH, Pot, AverageGR), by = "Pot")
 
 Woolly <- Woolly %>% 
   filter(!is.na(AverageGR))
 
+# I need to add room to WoollyH
+WoollyH <- WoollyH %>%
+  left_join(dplyr::select(RoomPot, Pot, Room), by = "Pot")
+
+WoollyH$Group <- as.numeric(WoollyH$Group)
 
 # Load required package
 library(vegan)
@@ -516,45 +530,45 @@ library(dplyr)
 
 library(factoextra)
 
-Woolly.pca <- prcomp(Woolly[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
-summary(Woolly.pca)
-Woolly.pca
+WoollyH.pca <- prcomp(WoollyH[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
+summary(WoollyH.pca)
+WoollyH.pca
 
 
 #this generates the PC scores for each plot
-axes_Woolly.pca <- predict(Woolly.pca, newdata = Woolly)
+axes_WoollyH.pca <- predict(WoollyH.pca, newdata = WoollyH)
 #making sure it worked
-head(axes_Woolly.pca, 4)
+head(axes_WoollyH.pca, 4)
 
 #creating a new dataframe that adds the the PC scores to the end
-df_Woolly.pca <- cbind(Woolly, axes_Woolly.pca)
+df_WoollyH.pca <- cbind(WoollyH, axes_WoollyH.pca)
 
-fviz_eig(Woolly.pca,addlabels = TRUE) #scree plot
+fviz_eig(WoollyH.pca,addlabels = TRUE) #scree plot
 
-eig.val <- get_eigenvalue(Woolly.pca) #getting eighvalue from each pca
+eig.val <- get_eigenvalue(WoollyH.pca) #getting eighvalue from each pca
 eig.val
 
-pca.var <- get_pca_var(Woolly.pca)
+pca.var <- get_pca_var(WoollyH.pca)
 pca.var$contrib
 pca.var$coord
 pca.var$cos2
 
 
 # % contribution of the variables 
-fviz_pca_var(Woolly.pca, axes = c(1, 2), col.var = "contrib",
+fviz_pca_var(WoollyH.pca, axes = c(1, 2), col.var = "contrib",
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE)
 
 
 library(MASS) ## do to the GLM
 RGRGLM <- lm(AverageGR ~ PC1 + PC2,
-             data = df_Woolly.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
+             data = df_WoollyH.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
 summary(RGRGLM)
 
 #### AICc for model selection
 library(MuMIn)
 options(na.action = "na.fail") #Must run this code once to use dredge
-model.full <- lm(AverageGR ~ factor(Group) + factor(Room), data = df_Woolly.pca)
+model.full <- lm(AverageGR ~ factor(Group) + factor(Room), data = df_WoollyH.pca)
 
 # Look for Multicolliniarity
 library(car)
@@ -562,7 +576,183 @@ car::vif(model.full)
 
 # look at the effects
 # Fit a model 
-M1 <- lm(AverageGR ~  factor(Group) +  factor(Room), data = Woolly)
+M1 <- lm(AverageGR ~  factor(Group) +  factor(Room), data = WoollyH)
+
+summary(M1)
+
+# Type II/III tests (handle unbalanced designs)
+library(car)
+Anova(M1, type = 3) 
+
+# Estimated marginal means and pairwise comparisons
+library(emmeans)
+emm <- emmeans(M1, ~ Group | Room)        # treatment effects within each room
+pairs(emm, adjust = "tukey")
+
+summ_WoollyH <- WoollyH %>%
+  group_by(Group) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR))
+print(summ_WoollyH)
+
+summ_WoollyHRoom <- WoollyH %>%
+  group_by(Room) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR))
+print(summ_PrivetHRoom)
+
+#### Tree Privet Biomass ####
+# include only privet
+Privet <- Biomass[Biomass$Plant == "Privet", ]
+
+Privet$Group <- as.numeric(Privet$Group)
+
+
+colnames(Privet)[13:17] <- c("Nitrate","Ammonium", "Phosphorus", "Potassium",
+                             "C_N") ## Renaming the columns
+
+# Load required package
+library(vegan)
+library(dplyr)
+
+library(factoextra)
+
+Privet.pca <- prcomp(Privet[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
+summary(Privet.pca)
+Privet.pca
+
+
+#this generates the PC scores for each plot
+axes_Privet.pca <- predict(Privet.pca, newdata = Privet)
+#making sure it worked
+head(axes_Privet.pca, 4)
+
+#creating a new dataframe that adds the the PC scores to the end
+df_Privet.pca <- cbind(Privet, axes_Privet.pca)
+
+fviz_eig(Privet.pca,addlabels = TRUE) #scree plot
+
+eig.val <- get_eigenvalue(Privet.pca) #getting eighvalue from each pca
+eig.val
+
+pca.var <- get_pca_var(Privet.pca)
+pca.var$contrib
+pca.var$coord
+pca.var$cos2
+
+
+# % contribution of the variables 
+fviz_pca_var(Privet.pca, axes = c(1, 2), col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
+
+
+library(MASS) ## do to the GLM
+MassGLM <- lm(Mass ~ PC1 + PC2,
+              data = df_Privet.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
+summary(MassGLM)
+
+#### AICc for model selection
+library(MuMIn)
+options(na.action = "na.fail") #Must run this code once to use dredge
+model.full <- lm(Mass ~ factor(Group) + factor(Room), data = df_Privet.pca)
+summary(model.full)
+
+# Look for Multicolliniarity
+library(car)
+car::vif(model.full)
+
+# look at the effects
+# Fit a model 
+M2 <- lm(Mass ~ factor(Group) + factor(Room), data = Privet)
+
+summary(M2)
+# Type II/III tests (handle unbalanced designs)
+library(car)
+Anova(M2, type = 3) 
+
+# Estimated marginal means and pairwise comparisons
+library(emmeans)
+emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
+pairs(emm, adjust = "tukey")
+
+
+summ_Privet <- Privet %>%
+  group_by(Group) %>% 
+  summarise(mean_Mass = mean(Mass),
+            sd_Mass = sd(Mass))
+print(summ_Privet)
+
+summ_PrivetRoom <- Privet %>%
+  group_by(Room) %>% 
+  summarise(mean_Mass = mean(Mass),
+            sd_Mass = sd(Mass))
+print(summ_PrivetRoom)
+
+#### Privet RGR ####
+PrivetH <- Height[Height$Plant == "Privet", ]
+
+PrivetH <- PrivetH %>% 
+  filter(!is.na(AverageGR))
+
+# I need to add room to PrivetH
+PrivetH <- PrivetH %>%
+  left_join(dplyr::select(RoomPot, Pot, Room), by = "Pot")
+
+PrivetH$Group <- as.numeric(PrivetH$Group)
+# Load required package
+library(vegan)
+library(dplyr)
+
+library(factoextra)
+
+PrivetH.pca <- prcomp(PrivetH[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
+summary(PrivetH.pca)
+PrivetH.pca
+
+
+#this generates the PC scores for each plot
+axes_PrivetH.pca <- predict(PrivetH.pca, newdata = PrivetH)
+#making sure it worked
+head(axes_PrivetH.pca, 4)
+
+#creating a new dataframe that adds the the PC scores to the end
+df_PrivetH.pca <- cbind(PrivetH, axes_PrivetH.pca)
+
+fviz_eig(PrivetH.pca,addlabels = TRUE) #scree plot
+
+eig.val <- get_eigenvalue(PrivetH.pca) #getting eighvalue from each pca
+eig.val
+
+pca.var <- get_pca_var(PrivetH.pca)
+pca.var$contrib
+pca.var$coord
+pca.var$cos2
+
+
+# % contribution of the variables 
+fviz_pca_var(PrivetH.pca, axes = c(1, 2), col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
+
+
+library(MASS) ## do to the GLM
+RGRGLM <- lm(AverageGR ~ PC1 + PC2,
+             data = df_PrivetH.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
+summary(RGRGLM)
+
+#### AICc for model selection
+library(MuMIn)
+options(na.action = "na.fail") #Must run this code once to use dredge
+model.full <- lm(AverageGR ~ factor(Group) + factor(Room), data = df_PrivetH.pca)
+
+# Look for Multicolliniarity
+library(car)
+car::vif(model.full)
+
+# look at the effects
+# Fit a model 
+M1 <- lm(AverageGR ~  factor(Group) +  factor(Room), data = PrivetH)
 
 summary(M1)
 
@@ -574,3 +764,368 @@ Anova(M1, type = 3)
 library(emmeans)
 emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
 pairs(emm, adjust = "tukey")
+
+summ_PrivetH <- PrivetH %>%
+  group_by(Group) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR))
+print(summ_PrivetH)
+
+summ_PrivetHRoom <- PrivetH %>%
+  group_by(Room) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR))
+print(summ_PrivetHRoom)
+
+#### Wattle Biomass ####
+# include only privet
+Wattle <- Biomass[Biomass$Plant == "Wattle", ]
+
+Wattle$Group <- as.numeric(Wattle$Group)
+
+
+colnames(Wattle)[13:17] <- c("Nitrate","Ammonium", "Phosphorus", "Potassium",
+                             "C_N") ## Renaming the columns
+
+# Load required package
+library(vegan)
+library(dplyr)
+
+library(factoextra)
+
+Wattle.pca <- prcomp(Wattle[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
+summary(Wattle.pca)
+Wattle.pca
+
+
+#this generates the PC scores for each plot
+axes_Wattle.pca <- predict(Wattle.pca, newdata = Wattle)
+#making sure it worked
+head(axes_Wattle.pca, 4)
+
+#creating a new dataframe that adds the the PC scores to the end
+df_Wattle.pca <- cbind(Wattle, axes_Wattle.pca)
+
+fviz_eig(Wattle.pca,addlabels = TRUE) #scree plot
+
+eig.val <- get_eigenvalue(Wattle.pca) #getting eighvalue from each pca
+eig.val
+
+pca.var <- get_pca_var(Wattle.pca)
+pca.var$contrib
+pca.var$coord
+pca.var$cos2
+
+
+# % contribution of the variables 
+fviz_pca_var(Wattle.pca, axes = c(1, 2), col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
+
+
+library(MASS) ## do to the GLM
+MassGLM <- lm(Mass ~ PC1 + PC2,
+              data = df_Wattle.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
+summary(MassGLM)
+
+#### AICc for model selection
+library(MuMIn)
+options(na.action = "na.fail") #Must run this code once to use dredge
+model.full <- lm(Mass ~ factor(Group) + factor(Room), data = df_Wattle.pca)
+summary(model.full)
+
+# Look for Multicolliniarity
+library(car)
+car::vif(model.full)
+
+# look at the effects
+# Fit a model 
+M2 <- lm(Mass ~ factor(Group) + factor(Room), data = Wattle)
+
+summary(M2)
+# Type II/III tests (handle unbalanced designs)
+library(car)
+Anova(M2, type = 3) 
+
+# Estimated marginal means and pairwise comparisons
+library(emmeans)
+emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
+pairs(emm, adjust = "tukey")
+
+
+summ_Wattle <- Wattle %>%
+  group_by(Group) %>% 
+  summarise(mean_Mass = mean(Mass),
+            sd_Mass = sd(Mass))
+print(summ_Wattle)
+
+summ_WattleRoom <- Wattle %>%
+  group_by(Room) %>% 
+  summarise(mean_Mass = mean(Mass),
+            sd_Mass = sd(Mass))
+print(summ_WattleRoom)
+
+#### Wattle RGR ####
+WattleH <- Height[Height$Plant == "Wattle", ]
+
+WattleH <- WattleH %>% 
+  filter(!is.na(AverageGR))
+
+# I need to add room to WattleH
+WattleH <- WattleH %>%
+  left_join(dplyr::select(RoomPot, Pot, Room), by = "Pot")
+
+WattleH$Group <- as.numeric(WattleH$Group)
+# Load required package
+library(vegan)
+library(dplyr)
+
+library(factoextra)
+
+WattleH.pca <- prcomp(WattleH[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
+summary(WattleH.pca)
+WattleH.pca
+
+
+#this generates the PC scores for each plot
+axes_WattleH.pca <- predict(WattleH.pca, newdata = WattleH)
+#making sure it worked
+head(axes_WattleH.pca, 4)
+
+#creating a new dataframe that adds the the PC scores to the end
+df_WattleH.pca <- cbind(WattleH, axes_WattleH.pca)
+
+fviz_eig(WattleH.pca,addlabels = TRUE) #scree plot
+
+eig.val <- get_eigenvalue(WattleH.pca) #getting eighvalue from each pca
+eig.val
+
+pca.var <- get_pca_var(WattleH.pca)
+pca.var$contrib
+pca.var$coord
+pca.var$cos2
+
+
+# % contribution of the variables 
+fviz_pca_var(WattleH.pca, axes = c(1, 2), col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
+
+
+library(MASS) ## do to the GLM
+RGRGLM <- lm(AverageGR ~ PC1 + PC2,
+             data = df_WattleH.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
+summary(RGRGLM)
+
+#### AICc for model selection
+library(MuMIn)
+options(na.action = "na.fail") #Must run this code once to use dredge
+model.full <- lm(AverageGR ~ factor(Group) + factor(Room), data = df_WattleH.pca)
+
+# Look for Multicolliniarity
+library(car)
+car::vif(model.full)
+
+# look at the effects
+# Fit a model 
+M1 <- lm(AverageGR ~  factor(Group) +  factor(Room), data = WattleH)
+
+summary(M1)
+
+# Type II/III tests (handle unbalanced designs)
+library(car)
+Anova(M1, type = 3) 
+
+# Estimated marginal means and pairwise comparisons
+library(emmeans)
+emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
+pairs(emm, adjust = "tukey")
+
+summ_WattleH <- WattleH %>%
+  group_by(Group) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR))
+print(summ_WattleH)
+
+summ_WattleHRoom <- WattleH %>%
+  group_by(Room) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR))
+print(summ_WattleHRoom)
+
+#### Seedling Biomass ####
+# include only privet
+Seedling <- Biomass[Biomass$Plant == "ManukaSeedling", ]
+
+Seedling$Group <- as.numeric(Seedling$Group)
+
+
+colnames(Seedling)[13:17] <- c("Nitrate","Ammonium", "Phosphorus", "Potassium",
+                             "C_N") ## Renaming the columns
+Seedling<-Seedling[-81, ] 
+
+# Load required package
+library(vegan)
+library(dplyr)
+
+library(factoextra)
+
+Seedling.pca <- prcomp(Seedling[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
+summary(Seedling.pca)
+Seedling.pca
+
+
+#this generates the PC scores for each plot
+axes_Seedling.pca <- predict(Seedling.pca, newdata = Seedling)
+#making sure it worked
+head(axes_Seedling.pca, 4)
+
+#creating a new dataframe that adds the the PC scores to the end
+df_Seedling.pca <- cbind(Seedling, axes_Seedling.pca)
+
+fviz_eig(Seedling.pca,addlabels = TRUE) #scree plot
+
+eig.val <- get_eigenvalue(Seedling.pca) #getting eighvalue from each pca
+eig.val
+
+pca.var <- get_pca_var(Seedling.pca)
+pca.var$contrib
+pca.var$coord
+pca.var$cos2
+
+
+# % contribution of the variables 
+fviz_pca_var(Seedling.pca, axes = c(1, 2), col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
+
+
+library(MASS) ## do to the GLM
+MassGLM <- lm(Mass ~ PC1 + PC2,
+              data = df_Seedling.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
+summary(MassGLM)
+
+#### AICc for model selection
+library(MuMIn)
+options(na.action = "na.fail") #Must run this code once to use dredge
+model.full <- lm(Mass ~ factor(Group) + factor(Room), data = df_Seedling.pca)
+summary(model.full)
+
+# Look for Multicolliniarity
+library(car)
+car::vif(model.full)
+
+# look at the effects
+# Fit a model 
+M2 <- lm(Mass ~ factor(Group) + factor(Room), data = Seedling)
+
+summary(M2)
+# Type II/III tests (handle unbalanced designs)
+library(car)
+Anova(M2, type = 3) 
+
+# Estimated marginal means and pairwise comparisons
+library(emmeans)
+emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
+pairs(emm, adjust = "tukey")
+
+
+summ_Seedling <- Seedling %>%
+  group_by(Group) %>% 
+  summarise(mean_Mass = mean(Mass),
+            sd_Mass = sd(Mass))
+print(summ_Seedling)
+
+summ_SeedlingRoom <- Seedling %>%
+  group_by(Room) %>% 
+  summarise(mean_Mass = mean(Mass),
+            sd_Mass = sd(Mass))
+print(summ_SeedlingRoom)
+
+#### Seedling RGR ####
+SeedlingH <- Height[Height$Plant == "ManukaSeedling", ]
+
+SeedlingH <- SeedlingH %>% 
+  filter(!is.na(AverageGR))
+
+# I need to add room to SeedlingH
+SeedlingH <- SeedlingH %>%
+  left_join(dplyr::select(RoomPot, Pot, Room), by = "Pot")
+
+SeedlingH$Group <- as.numeric(SeedlingH$Group)
+# Load required package
+library(vegan)
+library(dplyr)
+
+library(factoextra)
+
+SeedlingH.pca <- prcomp(SeedlingH[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
+summary(SeedlingH.pca)
+SeedlingH.pca
+
+
+#this generates the PC scores for each plot
+axes_SeedlingH.pca <- predict(SeedlingH.pca, newdata = SeedlingH)
+#making sure it worked
+head(axes_SeedlingH.pca, 4)
+
+#creating a new dataframe that adds the the PC scores to the end
+df_SeedlingH.pca <- cbind(SeedlingH, axes_SeedlingH.pca)
+
+fviz_eig(SeedlingH.pca,addlabels = TRUE) #scree plot
+
+eig.val <- get_eigenvalue(SeedlingH.pca) #getting eighvalue from each pca
+eig.val
+
+pca.var <- get_pca_var(SeedlingH.pca)
+pca.var$contrib
+pca.var$coord
+pca.var$cos2
+
+
+# % contribution of the variables 
+fviz_pca_var(SeedlingH.pca, axes = c(1, 2), col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
+
+
+library(MASS) ## do to the GLM
+RGRGLM <- lm(AverageGR ~ PC1 + PC2,
+             data = df_SeedlingH.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
+summary(RGRGLM)
+
+#### AICc for model selection
+library(MuMIn)
+options(na.action = "na.fail") #Must run this code once to use dredge
+model.full <- lm(AverageGR ~ factor(Group) + factor(Room), data = df_SeedlingH.pca)
+
+# Look for Multicolliniarity
+library(car)
+car::vif(model.full)
+
+# look at the effects
+# Fit a model 
+M1 <- lm(AverageGR ~  factor(Group) +  factor(Room), data = SeedlingH)
+
+summary(M1)
+
+# Type II/III tests (handle unbalanced designs)
+library(car)
+Anova(M1, type = 3) 
+
+# Estimated marginal means and pairwise comparisons
+library(emmeans)
+emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
+pairs(emm, adjust = "tukey")
+
+summ_SeedlingH <- SeedlingH %>%
+  group_by(Group) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR))
+print(summ_SeedlingH)
+
+summ_SeedlingHRoom <- SeedlingH %>%
+  group_by(Room) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR))
+print(summ_SeedlingHRoom)
