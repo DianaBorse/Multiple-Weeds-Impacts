@@ -194,7 +194,7 @@ Anova(M2, type = 3)
 # Estimated marginal means and pairwise comparisons
 library(emmeans)
 emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "tukey")
+pairs(emm, adjust = "mvt")
 
 #### RGR ####
 library(readr)
@@ -345,8 +345,8 @@ Anova(M1, type = 3)
 
 # Estimated marginal means and pairwise comparisons
 library(emmeans)
-emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "tukey")
+emm <- emmeans(M1, ~ Group | Room)        # treatment effects within each room
+pairs(emm, adjust = "mvt")
 
 #### Survival ####
 # make a column that surviving y/n
@@ -421,8 +421,8 @@ Anova(M1, type = 3)
 
 # Estimated marginal means and pairwise comparisons
 library(emmeans)
-emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "tukey")
+emm <- emmeans(M1, ~ Group | Room)        # treatment effects within each room
+pairs(emm, adjust = "mvt")
 
 #### Woolly Nightshade Biomass ####
 
@@ -498,7 +498,7 @@ Anova(M2, type = 3)
 # Estimated marginal means and pairwise comparisons
 library(emmeans)
 emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "tukey")
+pairs(emm, adjust = "mvt")
 
 summ_Woolly <- Woolly %>%
   group_by(Group) %>% 
@@ -515,7 +515,7 @@ print(summ_WoollyRoom)
 #### Woolly Nightshade RGR ####
 WoollyH <- Height[Height$Plant == "Nightshade", ]
 
-Woolly <- Woolly %>% 
+WoollyH <- WoollyH %>% 
   filter(!is.na(AverageGR))
 
 # I need to add room to WoollyH
@@ -587,7 +587,7 @@ Anova(M1, type = 3)
 # Estimated marginal means and pairwise comparisons
 library(emmeans)
 emm <- emmeans(M1, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "tukey")
+pairs(emm, adjust = "mvt")
 
 summ_WoollyH <- WoollyH %>%
   group_by(Group) %>% 
@@ -599,7 +599,7 @@ summ_WoollyHRoom <- WoollyH %>%
   group_by(Room) %>% 
   summarise(mean_AverageGR = mean(AverageGR),
             sd_AverageGR = sd(AverageGR))
-print(summ_PrivetHRoom)
+print(summ_WoollyHRoom)
 
 #### Tree Privet Biomass ####
 # include only privet
@@ -674,7 +674,7 @@ Anova(M2, type = 3)
 # Estimated marginal means and pairwise comparisons
 library(emmeans)
 emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "tukey")
+pairs(emm, adjust = "mvt")
 
 
 summ_Privet <- Privet %>%
@@ -762,8 +762,8 @@ Anova(M1, type = 3)
 
 # Estimated marginal means and pairwise comparisons
 library(emmeans)
-emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "tukey")
+emm <- emmeans(M1, ~ Group | Room)        # treatment effects within each room
+pairs(emm, adjust = "mvt")
 
 summ_PrivetH <- PrivetH %>%
   group_by(Group) %>% 
@@ -850,7 +850,7 @@ Anova(M2, type = 3)
 # Estimated marginal means and pairwise comparisons
 library(emmeans)
 emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "tukey")
+pairs(emm, adjust = "mvt")
 
 
 summ_Wattle <- Wattle %>%
@@ -938,8 +938,8 @@ Anova(M1, type = 3)
 
 # Estimated marginal means and pairwise comparisons
 library(emmeans)
-emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "tukey")
+emm <- emmeans(M1, ~ Group | Room)        # treatment effects within each room
+pairs(emm, adjust = "mvt")
 
 summ_WattleH <- WattleH %>%
   group_by(Group) %>% 
@@ -1129,3 +1129,39 @@ summ_SeedlingHRoom <- SeedlingH %>%
   summarise(mean_AverageGR = mean(AverageGR),
             sd_AverageGR = sd(AverageGR))
 print(summ_SeedlingHRoom)
+
+#### look at Nodules ####
+# look at the effects
+# Fit a model 
+M1 <- lm(Nodule_finish ~  factor(Group) +  factor(Room), data = Biomass)
+
+summary(M1)
+
+# Type II/III tests (handle unbalanced designs)
+library(car)
+Anova(M1, type = 3) 
+
+Biomass <- Biomass %>%
+  mutate(Nodule_change = Nodule_finish - Nodule_start)
+
+# Fit a model 
+M2 <- lm(Nodule_change ~  factor(Group) +  factor(Room), data = Biomass)
+
+summary(M2)
+
+# Type II/III tests (handle unbalanced designs)
+library(car)
+Anova(M2, type = 3) 
+
+# get some numbers
+summ_Nodules <- Biomass %>%
+  group_by(Group) %>% 
+  summarise(mean_Nodule_change = mean(Nodule_change),
+            sd_Nodule_change = sd(Nodule_change))
+print(summ_Nodules)
+
+summ_NodulesR <- Biomass %>%
+  group_by(Room) %>% 
+  summarise(mean_Nodule_change = mean(Nodule_change),
+            sd_Nodule_change = sd(Nodule_change))
+print(summ_NodulesR)

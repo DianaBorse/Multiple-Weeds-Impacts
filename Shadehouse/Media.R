@@ -44,6 +44,7 @@ summ_Media <- Media %>%
 
 print(summ_Media)
 
+
 #### Analyzing the differences for each test between groups ####
 
 ggplot(Media, aes(x = Group, y = C_NRatio_T2, group = Group))+
