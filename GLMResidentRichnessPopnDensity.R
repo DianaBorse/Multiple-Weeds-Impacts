@@ -234,16 +234,27 @@ summary(RichnessGLM)
 
 
 #### AIC for model selection ####
+df_Env_Species.pca$Place <- as.factor(df_Env_Species.pca$Place)
+contrasts(df_Env_Species.pca$Place) <- contr.poly(20) 
 
 library(MuMIn)
 options(na.action = "na.fail") #Must run this code once to use dredge
 model.full <- lm(Richness ~ RichnessResidentNatives + RichnessResidentWeeds + Height + DBH + Slope + Canopy + Vascular + Disturbance + WN +
-                   Housing + PopDensityHist + PopDensityCurr + DwellingsCurr + Place, data = df_Env_Species.pca)
+                   Housing + PopDensityHist + PopDensityCurr + DwellingsCurr + factor(Place), data = df_Env_Species.pca)
+
+library(lme4)
+model.full <- glmer(Richness ~ RichnessResidentNatives + RichnessResidentWeeds + Height + DBH + 
+                      Slope + Canopy + Vascular + Disturbance + WN +
+                      Housing + PopDensityHist + PopDensityCurr + DwellingsCurr +
+                      (1 | Place), 
+                    data = df_Env_Species.pca,
+                    family = poisson)
+
 
 # Richness GLM
 RichnessGLM2 <- glm.nb(Richness ~ Height + DBH + Slope + Canopy + Vascular + NonVascular+
                          LitterCover + Bare + Debris + Erosion + Disturbance + Pests + WN +
-                         Litter + Housing + PopDensityHist + PopDensityCurr + DwellingsCurr + Place + NativeDiversity + WeedDiversity, data = df_Env_Species.pca)
+                         Litter + Housing + PopDensityHist + PopDensityCurr + DwellingsCurr + factor(Place) + NativeDiversity + WeedDiversity, data = df_Env_Species.pca)
 
 summary(RichnessGLM2)
 
@@ -285,6 +296,23 @@ vif(model.full)
 data <- df_Env_Species.pca[ , c("Height", "DBH", "Slope", "Canopy", "Vascular", "WN", "DwellingsCurr",
                                 "Disturbance", "Housing", "PopnHist", "PopnCurr", "Place", "RichnessResidentNatives", "RichnessResidentWeeds")]
 cor(data)
+
+
+library(lme4)
+library(MuMIn)
+
+# Example: Poisson GLMM
+model.full <- glmer(Richness ~ RichnessResidentNatives + RichnessResidentWeeds + Height + DBH +
+                      Slope + Canopy + Vascular + Disturbance + WN +
+                      Housing + PopDensityHist + PopDensityCurr +
+                      (1 | Place),
+                    data = df_Env_Species.pca,
+                    family = poisson,
+                    na.action = na.fail)   # critical for dredge
+dd <- dredge(model.full, rank = "AICc", extra = c("R^2", adjRsq = function(x) summary(x)$adj.r.squared))
+head(dd)          # top models
+summary(dd)       # overview
+
 
 
 # Run all iterations of the model
