@@ -49,6 +49,10 @@ SurveyData$Site <- as.numeric(as.factor(SurveyData$Site))
 # Assigning W and N unique numeric values (weed is now 2, native is now 1)
 SurveyData$W_N <- as.numeric(as.factor(SurveyData$W_N))
 
+library(writexl)
+
+write_xlsx(SurveyData, "C:/Users/bella/Documents/SurveyData.xlsx")
+
 # Now combine this into unique numerical plot names
 library(tidyr)
 SurveyData_Combined <- SurveyData %>%
@@ -139,6 +143,10 @@ colnames(RichnessWeed)[2] <- c("Richness") ## Renaming the columns# rename the c
 PlotData$Site <- as.numeric(as.factor(PlotData$Site))
 # Assigning W and N unique numeric values (weed is now 2, native is now 1)
 PlotData$Weed_Native <- as.numeric(as.factor(PlotData$Weed_Native))
+
+library(writexl)
+
+write_xlsx(PlotData, "C:/Users/bella/Documents/PlotData.xlsx")
 
 # Create another Column for WeedvsNative central species
 PlotData$WN <- PlotData$Weed_Native
