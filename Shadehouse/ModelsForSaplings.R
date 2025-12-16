@@ -172,6 +172,29 @@ MassGLM <- lm(Mass ~ PC1 + PC2,
                       data = df_Sapling.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
 summary(MassGLM)
 
+# try a mixed effects model
+as.integer(df_Sapling.pca$Mass)
+library(lme4)
+library(MuMIn)
+
+model.full <- lmer(Mass ~ factor(Group) + (1 | Room),
+                    data = df_Sapling.pca,
+                    na.action = na.fail)   # critical for dredge
+summary(model.full)
+ranef(model.full)
+
+df_Sapling.pca$pred_fixed <- predict(model.full, re.form = NA)
+df_Sapling.pca$pred_random <- predict(model.full)
+library(ggplot2)
+
+ggplot(df_Sapling.pca, aes(x = Group, y = Mass, color = Room)) +
+  geom_point(alpha = 0.6) +
+  geom_line(aes(y = pred_random, group = Room), linetype = "solid") +   # random effects
+  geom_line(aes(y = pred_fixed, group = 1), color = "black", size = 1.2, linetype = "dashed") +
+  theme_minimal() +
+  labs(title = "Fixed vs Random Effect Predictions",
+       y = "Mass", x = "Group")
+
 #### AICc for model selection
 library(MuMIn)
 options(na.action = "na.fail") #Must run this code once to use dredge
@@ -184,7 +207,7 @@ car::vif(model.full)
 
 # look at the effects
 # Fit a model 
-M2 <- lm(Mass ~ factor(Group) + factor(Room), data = Sapling)
+M2 <- lmer(Mass ~ factor(Group) + (1 | Room), data = Sapling)
 
 summary(M2)
 # Type II/III tests (handle unbalanced designs)
@@ -282,68 +305,22 @@ Sapling <- Sapling %>%
 Sapling <- Sapling %>% 
   filter(!is.na(AverageGR))
 
-
 # Load required package
 library(vegan)
 library(dplyr)
 
-library(factoextra)
-
-Sapling.pca <- prcomp(Sapling[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
-summary(Sapling.pca)
-Sapling.pca
-
-
-#this generates the PC scores for each plot
-axes_Sapling.pca <- predict(Sapling.pca, newdata = Sapling)
-#making sure it worked
-head(axes_Sapling.pca, 4)
-
-#creating a new dataframe that adds the the PC scores to the end
-df_Sapling.pca <- cbind(Sapling, axes_Sapling.pca)
-
-fviz_eig(Sapling.pca,addlabels = TRUE) #scree plot
-
-eig.val <- get_eigenvalue(Sapling.pca) #getting eighvalue from each pca
-eig.val
-
-pca.var <- get_pca_var(Sapling.pca)
-pca.var$contrib
-pca.var$coord
-pca.var$cos2
-
-
-# % contribution of the variables 
-fviz_pca_var(Sapling.pca, axes = c(1, 2), col.var = "contrib",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE)
-
-
-library(MASS) ## do to the GLM
-RGRGLM <- lm(AverageGR ~ PC1 + PC2,
-                      data = df_Sapling.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
-summary(RGRGLM)
-
-#### AICc for model selection
-library(MuMIn)
-options(na.action = "na.fail") #Must run this code once to use dredge
-model.full <- lm(AverageGR ~ factor(Group) + factor(Room), data = df_Sapling.pca)
-
-# Look for Multicolliniarity
-library(car)
-car::vif(model.full)
-
 # look at the effects
 # Fit a model 
-M1 <- lm(AverageGR ~  factor(Group) +  factor(Room), data = Sapling)
+M1 <- lmer(AverageGR ~  factor(Group) +  (1 | Room), data = Sapling)
 
 summary(M1)
 
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M1, type = 3) 
+emmeans(M1, specs=pairwise~Group)
 
-# Estimated marginal means and pairwise comparisons
+# Estimated marginal means Group# Estimated marginal means and pairwise comparisons
 library(emmeans)
 emm <- emmeans(M1, ~ Group | Room)        # treatment effects within each room
 pairs(emm, adjust = "mvt")
@@ -363,55 +340,9 @@ Sapling <- Sapling %>%
 library(vegan)
 library(dplyr)
 
-library(factoextra)
-
-Sapling.pca <- prcomp(Sapling[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
-summary(Sapling.pca)
-Sapling.pca
-
-
-#this generates the PC scores for each plot
-axes_Sapling.pca <- predict(Sapling.pca, newdata = Sapling)
-#making sure it worked
-head(axes_Sapling.pca, 4)
-
-#creating a new dataframe that adds the the PC scores to the end
-df_Sapling.pca <- cbind(Sapling, axes_Sapling.pca)
-
-fviz_eig(Sapling.pca,addlabels = TRUE) #scree plot
-
-eig.val <- get_eigenvalue(Sapling.pca) #getting eighvalue from each pca
-eig.val
-
-pca.var <- get_pca_var(Sapling.pca)
-pca.var$contrib
-pca.var$coord
-pca.var$cos2
-
-
-# % contribution of the variables 
-fviz_pca_var(Sapling.pca, axes = c(1, 2), col.var = "contrib",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE)
-
-
-library(MASS) ## do to the GLM
-RGRGLM <- lm(Survive ~ PC1 + PC2,
-             data = df_Sapling.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
-summary(RGRGLM)
-
-#### AICc for model selection
-library(MuMIn)
-options(na.action = "na.fail") #Must run this code once to use dredge
-model.full <- glm(Survive ~ factor(Group) + factor(Room), family = binomial, data = df_Sapling.pca)
-
-# Look for Multicolliniarity
-library(car)
-car::vif(model.full)
-
 # look at the effects
 # Fit a model 
-M1 <- glm(Survive ~  factor(Group) +  factor(Room), family = binomial, data = Sapling)
+M1 <- lmer(Survive ~  factor(Group) +  (1 | Room), data = Sapling)
 
 summary(M1)
 
@@ -439,67 +370,18 @@ colnames(Woolly)[13:17] <- c("Nitrate","Ammonium", "Phosphorus", "Potassium",
 library(vegan)
 library(dplyr)
 
-library(factoextra)
-
-Woolly.pca <- prcomp(Woolly[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
-summary(Woolly.pca)
-Woolly.pca
-
-
-#this generates the PC scores for each plot
-axes_Woolly.pca <- predict(Woolly.pca, newdata = Woolly)
-#making sure it worked
-head(axes_Woolly.pca, 4)
-
-#creating a new dataframe that adds the the PC scores to the end
-df_Woolly.pca <- cbind(Woolly, axes_Woolly.pca)
-
-fviz_eig(Woolly.pca,addlabels = TRUE) #scree plot
-
-eig.val <- get_eigenvalue(Woolly.pca) #getting eighvalue from each pca
-eig.val
-
-pca.var <- get_pca_var(Woolly.pca)
-pca.var$contrib
-pca.var$coord
-pca.var$cos2
-
-
-# % contribution of the variables 
-fviz_pca_var(Woolly.pca, axes = c(1, 2), col.var = "contrib",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE)
-
-
-library(MASS) ## do to the GLM
-MassGLM <- lm(Mass ~ PC1 + PC2,
-              data = df_Woolly.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
-summary(MassGLM)
-
-#### AICc for model selection
-library(MuMIn)
-options(na.action = "na.fail") #Must run this code once to use dredge
-model.full <- lm(Mass ~ factor(Group) + factor(Room), data = df_Woolly.pca)
-summary(model.full)
-
-# Look for Multicolliniarity
-library(car)
-car::vif(model.full)
-
 # look at the effects
 # Fit a model 
-M2 <- lm(Mass ~ factor(Group) + factor(Room), data = Woolly)
+M1 <- lmer(Mass ~  factor(Group) +  (1 | Room), data = Woolly)
 
-summary(M2)
+summary(M1)
+
 # Type II/III tests (handle unbalanced designs)
 library(car)
-Anova(M2, type = 3) 
+Anova(M1, type = 3) 
+emmeans(M1, specs=pairwise~Group)
 
 # Estimated marginal means and pairwise comparisons
-library(emmeans)
-emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "mvt")
-
 summ_Woolly <- Woolly %>%
   group_by(Group) %>% 
   summarise(mean_Mass = mean(Mass),
@@ -528,66 +410,16 @@ WoollyH$Group <- as.numeric(WoollyH$Group)
 library(vegan)
 library(dplyr)
 
-library(factoextra)
-
-WoollyH.pca <- prcomp(WoollyH[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
-summary(WoollyH.pca)
-WoollyH.pca
-
-
-#this generates the PC scores for each plot
-axes_WoollyH.pca <- predict(WoollyH.pca, newdata = WoollyH)
-#making sure it worked
-head(axes_WoollyH.pca, 4)
-
-#creating a new dataframe that adds the the PC scores to the end
-df_WoollyH.pca <- cbind(WoollyH, axes_WoollyH.pca)
-
-fviz_eig(WoollyH.pca,addlabels = TRUE) #scree plot
-
-eig.val <- get_eigenvalue(WoollyH.pca) #getting eighvalue from each pca
-eig.val
-
-pca.var <- get_pca_var(WoollyH.pca)
-pca.var$contrib
-pca.var$coord
-pca.var$cos2
-
-
-# % contribution of the variables 
-fviz_pca_var(WoollyH.pca, axes = c(1, 2), col.var = "contrib",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE)
-
-
-library(MASS) ## do to the GLM
-RGRGLM <- lm(AverageGR ~ PC1 + PC2,
-             data = df_WoollyH.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
-summary(RGRGLM)
-
-#### AICc for model selection
-library(MuMIn)
-options(na.action = "na.fail") #Must run this code once to use dredge
-model.full <- lm(AverageGR ~ factor(Group) + factor(Room), data = df_WoollyH.pca)
-
-# Look for Multicolliniarity
-library(car)
-car::vif(model.full)
-
 # look at the effects
 # Fit a model 
-M1 <- lm(AverageGR ~  factor(Group) +  factor(Room), data = WoollyH)
+M1 <- lmer(AverageGR ~  factor(Group) +  (1 | Room), data = WoollyH)
 
 summary(M1)
 
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M1, type = 3) 
-
-# Estimated marginal means and pairwise comparisons
-library(emmeans)
-emm <- emmeans(M1, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "mvt")
+emmeans(M1, specs=pairwise~Group)
 
 summ_WoollyH <- WoollyH %>%
   group_by(Group) %>% 

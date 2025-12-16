@@ -107,8 +107,7 @@ print(ratio)
 # below 3, can do an ANOVA
 library("nlme")
 library("multcomp")
-model01 <- aov(TotalNitrogen_T2~Group, data = Media)
-autoplot(model01)
+model01 <- lm(TotalNitrogen_T2~Group, data = Media)
 anova(model01)
 summary(model01)
 
@@ -137,6 +136,10 @@ print(ratio)
 # Need to try a transformation
 Media <- Media %>%
   mutate(logTotalCarbon_T2 = log(TotalCarbon_T2))
+
+# Need to try another transformation
+Media <- Media %>%
+  mutate(sqrTotalCarbon_T2 = sqrt(TotalCarbon_T2))
 # Check for Homogeneous variance
 summ_Media <- Media %>%
   group_by(Group) %>% 
@@ -144,6 +147,15 @@ summ_Media <- Media %>%
             sd_logTotalCarbon_T2 = sd(logTotalCarbon_T2),
             n_logTotalCarbon_T2 = n())
 ratio <-(max(summ_Media$sd_logTotalCarbon_T2))/(min(summ_Media$sd_logTotalCarbon_T2))
+print(ratio)
+
+# Check for Homogeneous variance
+summ_Media <- Media %>%
+  group_by(Group) %>% 
+  summarise(mean_sqrTotalCarbon_T2 = mean(sqrTotalCarbon_T2),
+            sd_sqrTotalCarbon_T2 = sd(sqrTotalCarbon_T2),
+            n_sqrTotalCarbon_T2 = n())
+ratio <-(max(summ_Media$sd_sqrTotalCarbon_T2))/(min(summ_Media$sd_sqrTotalCarbon_T2))
 print(ratio)
 
 # Did not help, kruskal wallis then
@@ -428,3 +440,267 @@ print(ratio)
 # Still > 3, need to do kruskal-wallis
 kruskal.test(pH_T2 ~ Group, data = Media)
 # no difference
+
+#### Pairwise Comparisons ####
+# wattle comparisons
+MediaWattle <- Media %>%
+  mutate(Group = case_when(
+    Group  %in% c(2, 4, 5, 7) ~ "wattle",
+    Group %in% c(1, 3, 6, 8) ~ "no wattle",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
+
+ggplot(MediaWattle, aes(x = Group, y = TotalNitrogen_T2, group = Group))+
+  geom_boxplot() +
+  theme_bw() 
+ggplot(MediaWattle) +
+  geom_histogram(aes(TotalNitrogen_T2), binwidth = 1)+
+  facet_wrap(~Group)
+ggplot(MediaWattle)+
+  geom_qq(aes(sample = TotalNitrogen_T2, color = Group)) +
+  theme_classic()
+
+wilcox.test(Nitrate_T2 ~ Group, data = MediaWattle, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(Ammonium_T2 ~ Group, data = MediaWattle, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(C_NRatio_T2 ~ Group, data = MediaWattle, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(Phosphorus_T2 ~ Group, data = MediaWattle, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(Potassium_T2 ~ Group, data = MediaWattle, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+t.test(TotalNitrogen_T2 ~ Group, data = MediaWattle, var.equal = FALSE)
+
+# privet tests
+MediaPrivet <- Media %>%
+  mutate(Group = case_when(
+    Group  %in% c(2, 3, 5, 8) ~ "privet",
+    Group %in% c(1, 4, 6, 7) ~ "no privet",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
+
+t.test(TotalNitrogen_T2 ~ Group, data = MediaPrivet, var.equal = FALSE)
+wilcox.test(Nitrate_T2 ~ Group, data = MediaPrivet, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(Ammonium_T2 ~ Group, data = MediaPrivet, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(C_NRatio_T2 ~ Group, data = MediaPrivet, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(Phosphorus_T2 ~ Group, data = MediaPrivet, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(Potassium_T2 ~ Group, data = MediaPrivet, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+
+summary_Privet <- MediaPrivet %>%
+  group_by(Group) %>%
+  summarise(mean_Phosphorus_T2 = mean(Phosphorus_T2),
+            median_Phosphorus_T2 = median(Phosphorus_T2),
+            IQR_Phosphorus_T2 = IQR(Phosphorus_T2),
+            sd_Phosphorus_T2 = sd(Phosphorus_T2),
+            var_Phosphorus_T2 = var(Phosphorus_T2),
+            se_Phosphorus_T2 = sd(Phosphorus_T2)/sqrt(n()),
+            n_Phosphorus_T2 = n())
+
+print(summary_Privet)
+
+# Woolly tests
+MediaWoolly <- Media %>%
+  mutate(Group = case_when(
+    Group  %in% c(2, 3, 4, 6) ~ "woolly",
+    Group %in% c(1, 5, 7, 8) ~ "no woolly",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
+
+t.test(TotalNitrogen_T2 ~ Group, data = MediaWoolly, var.equal = FALSE)
+wilcox.test(Nitrate_T2 ~ Group, data = MediaWoolly, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(Ammonium_T2 ~ Group, data = MediaWoolly, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(C_NRatio_T2 ~ Group, data = MediaWoolly, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(Phosphorus_T2 ~ Group, data = MediaWoolly, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(Potassium_T2 ~ Group, data = MediaWoolly, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+
+
+# mixture of weeds vs monoculture
+# Woolly tests
+MediaMono <- Media %>%
+  mutate(Group = case_when(
+    Group  %in% c(2, 3, 4, 5) ~ "mixture",
+    Group %in% c(6, 7, 8) ~ "monoculture",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
+
+# remove NA
+MediaMono <- MediaMono %>%
+  filter(!is.na(Group))
+
+t.test(TotalNitrogen_T2 ~ Group, data = MediaMono, var.equal = FALSE)
+wilcox.test(Nitrate_T2 ~ Group, data = MediaMono, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(Ammonium_T2 ~ Group, data = MediaMono, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(C_NRatio_T2 ~ Group, data = MediaMono, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(Phosphorus_T2 ~ Group, data = MediaMono, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(Potassium_T2 ~ Group, data = MediaMono, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+
+summary_Mono <- MediaMono %>%
+  group_by(Group) %>%
+  summarise(mean_Nitrate_T2 = mean(Nitrate_T2),
+            median_Nitrate_T2 = median(Nitrate_T2),
+            IQR_Nitrate_T2 = IQR(Nitrate_T2),
+            sd_Nitrate_T2 = sd(Nitrate_T2),
+            var_Nitrate_T2 = var(Nitrate_T2),
+            se_Nitrate_T2 = sd(Nitrate_T2)/sqrt(n()),
+            n_Nitrate_T2 = n())
+
+print(summary_Mono)
+
+
+
+
+
+#### PCA ####
+# Load required package
+library(vegan)
+library(dplyr)
+
+library(factoextra)
+
+media.pca <- prcomp(Media[,c("logC_NRatio_T2", "TotalNitrogen_T2", "logPotassium_T2", "logNitrate_T2", "Ammonium_T2", "Phosphorus_T2")], center = TRUE,scale. = TRUE,tol = 0.1)
+summary(media.pca)
+media.pca
+
+#this generates the PC scores for each plot
+axes_media.pca <- predict(media.pca, newdata = Media)
+#making sure it worked
+head(axes_media.pca, 4)
+
+#creating a new dataframe that adds the the PC scores to the end
+df_media.pca <- cbind(Media, axes_media.pca)
+
+fviz_eig(media.pca,addlabels = TRUE) #scree plot
+
+eig.val <- get_eigenvalue(media.pca) #getting eighvalue from each pca
+eig.val
+
+pca.var <- get_pca_var(media.pca)
+pca.var$contrib
+pca.var$coord
+pca.var$cos2
+
+
+# % contribution of the variables 
+fviz_pca_var(media.pca, axes = c(1, 2), col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
+
+# try NMDS
+
+#remove non-numeric columns
+Media2<-Media[,-2]
+Media2<-Media2[,-4]
+Media2<-Media2[,-3]
+Media2<-Media2[,-2]
+Media2<-Media2[,-36]
+
+# Get down to only columns of interest
+Media2<-Media2[,-36]
+Media2<-Media2[,-35]
+Media2<-Media2[,-34]
+Media2<-Media2[,-33]
+Media2<-Media2[,-32]
+Media2<-Media2[,-31]
+Media2<-Media2[,-30]
+Media2<-Media2[,-29]
+Media2<-Media2[,-28]
+Media2<-Media2[,-26]
+Media2<-Media2[,-24]
+Media2<-Media2[,-23]
+Media2<-Media2[,-22]
+Media2<-Media2[,-21]
+Media2<-Media2[,-20]
+Media2<-Media2[,-19]
+Media2<-Media2[,-18]
+Media2<-Media2[,-17]
+Media2<-Media2[,-16]
+Media2<-Media2[,-14]
+Media2<-Media2[,-13]
+Media2<-Media2[,-12]
+Media2<-Media2[,-10]
+Media2<-Media2[,-8]
+Media2<-Media2[,-6]
+Media2<-Media2[,-5]
+Media2<-Media2[,-4]
+Media2<-Media2[,-3]
+Media2<-Media2[,-2]
+
+Media2 <- as.data.frame(Media2)
+
+row.names(Media2) <- Media2$SampleNumber 
+# Remove the first column from the data frame 
+Media2 <- Media2[, -1]
+
+library(vegan)
+doubs.dist<-vegdist(Media2)
+doubs.dist
+
+# Check for Na, NaN,Inf values
+any(is.na(doubs.dist))
+any(is.infinite(doubs.dist))
+
+
+#Classification
+Media2<-hclust(doubs.dist,method='average')
+plot(Media2,hang=-1) #The hang=-1 tidies it up so all the end nodes finish at the same level
+grp<-cutree(Media2,k=30) #K=4 is saying to identify the dominant 4 groups.
+grp
+rect.hclust(Media2, k=30)
+
+doubs.pca<-princomp(doubs.dist,cor=TRUE)
+summary(doubs.pca) 
+biplot(doubs.pca)
+
+# Create PCA biplot with sites as points
+
+# Load necessary libraries
+library(ggplot2)
+library(ggfortify)
+
+autoplot(
+  doubs.pca,
+  data = doubs.dist,
+  loadings = TRUE,             # Display loadings vectors
+  loadings.label = TRUE,       # Display loadings labels
+  loadings.colour = '#AA4499',     # Loadings vector color
+  loadings.label.size = 3,     # Loadings label size
+  loadings.label.colour = "#AA4499", # Loadings label color
+  shape = 1) +                   # Use points for sites
+  theme_minimal()              # Apply a minimal theme
+
+#Moving on now to MDS
+#DO MDS with vegan package
+z <- metaMDS(comm = doubs.dist,
+             autotransform = FALSE,
+             distance = "bray",
+             engine = "monoMDS",
+             k = 2,
+             weakties = TRUE,
+             model = "global",
+             maxit = 300,
+             try = 40,
+             trymax = 50)
+
+z
+# Stress Plot = Sheppard Plot
+plot(z$diss, z$dist)
+
+stressplot(object = z,
+           p.col = "#88CCEE",
+           l.col = "#882255",
+           lwd = 1)
+
+#always report the stress for MDS, never report the Rsquared you get from that plot above
+plot(z)
+
+plot(z[["points"]][,2]~z[["points"]][,1],main="Survey Data", xlab="NMDSaxis 1" , ylab= "NMDS axis 2", cex = 0.5 +as.numeric(Survey_wide$nit))
+
+# Using ggplot2 to make a plot with site names
+plot(z, type = "t")
+
+# Looking at the stress/goodness of fit
+gof <- goodness(object = z)
+plot(z, display = "sites", type = "none")
+points(z, display = "sites", cex = 2*gof/mean(gof))
+
+
+# Make the points into a data frame for ggplot
+z$points %>% head()
+z.points <- data.frame(z$points)
+
