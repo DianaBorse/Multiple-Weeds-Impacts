@@ -135,75 +135,27 @@ colnames(Sapling)[13:17] <- c("Nitrate","Ammonium", "Phosphorus", "Potassium",
 library(vegan)
 library(dplyr)
 
-library(factoextra)
-
-Sapling.pca <- prcomp(Sapling[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
-summary(Sapling.pca)
-Sapling.pca
-
-
-#this generates the PC scores for each plot
-axes_Sapling.pca <- predict(Sapling.pca, newdata = Sapling)
-#making sure it worked
-head(axes_Sapling.pca, 4)
-
-#creating a new dataframe that adds the the PC scores to the end
-df_Sapling.pca <- cbind(Sapling, axes_Sapling.pca)
-
-fviz_eig(Sapling.pca,addlabels = TRUE) #scree plot
-
-eig.val <- get_eigenvalue(Sapling.pca) #getting eighvalue from each pca
-eig.val
-
-pca.var <- get_pca_var(Sapling.pca)
-pca.var$contrib
-pca.var$coord
-pca.var$cos2
-
-
-# % contribution of the variables 
-fviz_pca_var(Sapling.pca, axes = c(1, 2), col.var = "contrib",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE)
-
-
-library(MASS) ## do to the GLM
-MassGLM <- lm(Mass ~ PC1 + PC2,
-                      data = df_Sapling.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
-summary(MassGLM)
-
 # try a mixed effects model
-as.integer(df_Sapling.pca$Mass)
 library(lme4)
 library(MuMIn)
 
 model.full <- lmer(Mass ~ factor(Group) + (1 | Room),
-                    data = df_Sapling.pca,
+                    data = Sapling,
                     na.action = na.fail)   # critical for dredge
 summary(model.full)
 ranef(model.full)
 
-df_Sapling.pca$pred_fixed <- predict(model.full, re.form = NA)
-df_Sapling.pca$pred_random <- predict(model.full)
+Sapling$pred_fixed <- predict(model.full, re.form = NA)
+Sapling$pred_random <- predict(model.full)
 library(ggplot2)
 
-ggplot(df_Sapling.pca, aes(x = Group, y = Mass, color = Room)) +
+ggplot(Sapling, aes(x = Group, y = Mass, color = Room)) +
   geom_point(alpha = 0.6) +
   geom_line(aes(y = pred_random, group = Room), linetype = "solid") +   # random effects
   geom_line(aes(y = pred_fixed, group = 1), color = "black", size = 1.2, linetype = "dashed") +
   theme_minimal() +
   labs(title = "Fixed vs Random Effect Predictions",
        y = "Mass", x = "Group")
-
-#### AICc for model selection
-library(MuMIn)
-options(na.action = "na.fail") #Must run this code once to use dredge
-model.full <- lm(Mass ~ factor(Group) + factor(Room), data = df_Sapling.pca)
-summary(model.full)
-
-# Look for Multicolliniarity
-library(car)
-car::vif(model.full)
 
 # look at the effects
 # Fit a model 
@@ -213,11 +165,7 @@ summary(M2)
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M2, type = 3) 
-
-# Estimated marginal means and pairwise comparisons
-library(emmeans)
-emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "mvt")
+emmeans(M2, specs=pairwise~Group)
 
 #### RGR ####
 library(readr)
@@ -319,11 +267,6 @@ summary(M1)
 library(car)
 Anova(M1, type = 3) 
 emmeans(M1, specs=pairwise~Group)
-
-# Estimated marginal means Group# Estimated marginal means and pairwise comparisons
-library(emmeans)
-emm <- emmeans(M1, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "mvt")
 
 #### Survival ####
 # make a column that surviving y/n
@@ -447,67 +390,16 @@ colnames(Privet)[13:17] <- c("Nitrate","Ammonium", "Phosphorus", "Potassium",
 library(vegan)
 library(dplyr)
 
-library(factoextra)
-
-Privet.pca <- prcomp(Privet[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
-summary(Privet.pca)
-Privet.pca
-
-
-#this generates the PC scores for each plot
-axes_Privet.pca <- predict(Privet.pca, newdata = Privet)
-#making sure it worked
-head(axes_Privet.pca, 4)
-
-#creating a new dataframe that adds the the PC scores to the end
-df_Privet.pca <- cbind(Privet, axes_Privet.pca)
-
-fviz_eig(Privet.pca,addlabels = TRUE) #scree plot
-
-eig.val <- get_eigenvalue(Privet.pca) #getting eighvalue from each pca
-eig.val
-
-pca.var <- get_pca_var(Privet.pca)
-pca.var$contrib
-pca.var$coord
-pca.var$cos2
-
-
-# % contribution of the variables 
-fviz_pca_var(Privet.pca, axes = c(1, 2), col.var = "contrib",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE)
-
-
-library(MASS) ## do to the GLM
-MassGLM <- lm(Mass ~ PC1 + PC2,
-              data = df_Privet.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
-summary(MassGLM)
-
-#### AICc for model selection
-library(MuMIn)
-options(na.action = "na.fail") #Must run this code once to use dredge
-model.full <- lm(Mass ~ factor(Group) + factor(Room), data = df_Privet.pca)
-summary(model.full)
-
-# Look for Multicolliniarity
-library(car)
-car::vif(model.full)
-
 # look at the effects
 # Fit a model 
-M2 <- lm(Mass ~ factor(Group) + factor(Room), data = Privet)
+M1 <- lmer(Mass ~  factor(Group) +  (1 | Room), data = Privet)
 
-summary(M2)
+summary(M1)
+
 # Type II/III tests (handle unbalanced designs)
 library(car)
-Anova(M2, type = 3) 
-
-# Estimated marginal means and pairwise comparisons
-library(emmeans)
-emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "mvt")
-
+Anova(M1, type = 3) 
+emmeans(M1, specs=pairwise~Group)
 
 summ_Privet <- Privet %>%
   group_by(Group) %>% 
@@ -536,67 +428,16 @@ PrivetH$Group <- as.numeric(PrivetH$Group)
 library(vegan)
 library(dplyr)
 
-library(factoextra)
-
-PrivetH.pca <- prcomp(PrivetH[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
-summary(PrivetH.pca)
-PrivetH.pca
-
-
-#this generates the PC scores for each plot
-axes_PrivetH.pca <- predict(PrivetH.pca, newdata = PrivetH)
-#making sure it worked
-head(axes_PrivetH.pca, 4)
-
-#creating a new dataframe that adds the the PC scores to the end
-df_PrivetH.pca <- cbind(PrivetH, axes_PrivetH.pca)
-
-fviz_eig(PrivetH.pca,addlabels = TRUE) #scree plot
-
-eig.val <- get_eigenvalue(PrivetH.pca) #getting eighvalue from each pca
-eig.val
-
-pca.var <- get_pca_var(PrivetH.pca)
-pca.var$contrib
-pca.var$coord
-pca.var$cos2
-
-
-# % contribution of the variables 
-fviz_pca_var(PrivetH.pca, axes = c(1, 2), col.var = "contrib",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE)
-
-
-library(MASS) ## do to the GLM
-RGRGLM <- lm(AverageGR ~ PC1 + PC2,
-             data = df_PrivetH.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
-summary(RGRGLM)
-
-#### AICc for model selection
-library(MuMIn)
-options(na.action = "na.fail") #Must run this code once to use dredge
-model.full <- lm(AverageGR ~ factor(Group) + factor(Room), data = df_PrivetH.pca)
-
-# Look for Multicolliniarity
-library(car)
-car::vif(model.full)
-
 # look at the effects
 # Fit a model 
-M1 <- lm(AverageGR ~  factor(Group) +  factor(Room), data = PrivetH)
+M1 <- lmer(AverageGR ~  factor(Group) +  (1 | Room), data = PrivetH)
 
 summary(M1)
 
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M1, type = 3) 
-
-# Estimated marginal means and pairwise comparisons
-library(emmeans)
-emm <- emmeans(M1, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "mvt")
-
+emmeans(M1, specs=pairwise~Group)
 summ_PrivetH <- PrivetH %>%
   group_by(Group) %>% 
   summarise(mean_AverageGR = mean(AverageGR),
@@ -623,67 +464,16 @@ colnames(Wattle)[13:17] <- c("Nitrate","Ammonium", "Phosphorus", "Potassium",
 library(vegan)
 library(dplyr)
 
-library(factoextra)
-
-Wattle.pca <- prcomp(Wattle[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
-summary(Wattle.pca)
-Wattle.pca
-
-
-#this generates the PC scores for each plot
-axes_Wattle.pca <- predict(Wattle.pca, newdata = Wattle)
-#making sure it worked
-head(axes_Wattle.pca, 4)
-
-#creating a new dataframe that adds the the PC scores to the end
-df_Wattle.pca <- cbind(Wattle, axes_Wattle.pca)
-
-fviz_eig(Wattle.pca,addlabels = TRUE) #scree plot
-
-eig.val <- get_eigenvalue(Wattle.pca) #getting eighvalue from each pca
-eig.val
-
-pca.var <- get_pca_var(Wattle.pca)
-pca.var$contrib
-pca.var$coord
-pca.var$cos2
-
-
-# % contribution of the variables 
-fviz_pca_var(Wattle.pca, axes = c(1, 2), col.var = "contrib",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE)
-
-
-library(MASS) ## do to the GLM
-MassGLM <- lm(Mass ~ PC1 + PC2,
-              data = df_Wattle.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
-summary(MassGLM)
-
-#### AICc for model selection
-library(MuMIn)
-options(na.action = "na.fail") #Must run this code once to use dredge
-model.full <- lm(Mass ~ factor(Group) + factor(Room), data = df_Wattle.pca)
-summary(model.full)
-
-# Look for Multicolliniarity
-library(car)
-car::vif(model.full)
-
 # look at the effects
 # Fit a model 
-M2 <- lm(Mass ~ factor(Group) + factor(Room), data = Wattle)
+M1 <- lmer(Mass ~  factor(Group) +  (1 | Room), data = Wattle)
 
-summary(M2)
+summary(M1)
+
 # Type II/III tests (handle unbalanced designs)
 library(car)
-Anova(M2, type = 3) 
-
-# Estimated marginal means and pairwise comparisons
-library(emmeans)
-emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "mvt")
-
+Anova(M1, type = 3) 
+emmeans(M1, specs=pairwise~Group)
 
 summ_Wattle <- Wattle %>%
   group_by(Group) %>% 
@@ -712,66 +502,16 @@ WattleH$Group <- as.numeric(WattleH$Group)
 library(vegan)
 library(dplyr)
 
-library(factoextra)
-
-WattleH.pca <- prcomp(WattleH[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
-summary(WattleH.pca)
-WattleH.pca
-
-
-#this generates the PC scores for each plot
-axes_WattleH.pca <- predict(WattleH.pca, newdata = WattleH)
-#making sure it worked
-head(axes_WattleH.pca, 4)
-
-#creating a new dataframe that adds the the PC scores to the end
-df_WattleH.pca <- cbind(WattleH, axes_WattleH.pca)
-
-fviz_eig(WattleH.pca,addlabels = TRUE) #scree plot
-
-eig.val <- get_eigenvalue(WattleH.pca) #getting eighvalue from each pca
-eig.val
-
-pca.var <- get_pca_var(WattleH.pca)
-pca.var$contrib
-pca.var$coord
-pca.var$cos2
-
-
-# % contribution of the variables 
-fviz_pca_var(WattleH.pca, axes = c(1, 2), col.var = "contrib",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE)
-
-
-library(MASS) ## do to the GLM
-RGRGLM <- lm(AverageGR ~ PC1 + PC2,
-             data = df_WattleH.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
-summary(RGRGLM)
-
-#### AICc for model selection
-library(MuMIn)
-options(na.action = "na.fail") #Must run this code once to use dredge
-model.full <- lm(AverageGR ~ factor(Group) + factor(Room), data = df_WattleH.pca)
-
-# Look for Multicolliniarity
-library(car)
-car::vif(model.full)
-
 # look at the effects
 # Fit a model 
-M1 <- lm(AverageGR ~  factor(Group) +  factor(Room), data = WattleH)
+M1 <- lmer(AverageGR ~  factor(Group) +  (1 | Room), data = WattleH)
 
 summary(M1)
 
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M1, type = 3) 
-
-# Estimated marginal means and pairwise comparisons
-library(emmeans)
-emm <- emmeans(M1, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "mvt")
+emmeans(M1, specs=pairwise~Group)
 
 summ_WattleH <- WattleH %>%
   group_by(Group) %>% 
