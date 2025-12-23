@@ -18,34 +18,92 @@ tidyverse_update()
 library(readr)
 Myc <- read_csv("Shadehouse/MycorrhizaeDataClean.csv")
 
+# Add room
+library(readr)
+RoomPot <- read_csv("Shadehouse/RoomPot.csv")
+
+colnames(RoomPot)[1:1] <- c("Pot") ## Renaming the columns
+colnames(Myc)[3:3] <- c("Pot") ## Renaming the columns
+Myc <- Myc %>%
+  left_join(RoomPot %>% dplyr::select(Pot, Room), by = "Pot")
+
 # Now we need to make a distinct name for each subsample of each pot
+colnames(Myc)[3:3] <- c("Sample") ## Renaming the columns
+
 library(tidyr)
 Myc2 <- Myc %>%
   unite(Sample, Subsample, Sample, sep = "-")
 
+# Let's change the treatment group names to be more meaningful
+#Myc2$Exp1Group[Myc2$Exp1Group == "0"] <- "baseline"
+#Myc2$Exp1Group[Myc2$Exp1Group == "1"] <- "m"
+#Myc2$Exp1Group[Myc2$Exp1Group == "2"] <- "nwp"
+#Myc2$Exp1Group[Myc2$Exp1Group == "3"] <- "mnp"
+#Myc2$Exp1Group[Myc2$Exp1Group == "4"] <- "mnw"
+#Myc2$Exp1Group[Myc2$Exp1Group == "5"] <- "mwp"
+#Myc2$Exp1Group[Myc2$Exp1Group == "6"] <- "n"
+#Myc2$Exp1Group[Myc2$Exp1Group == "7"] <- "w"
+#Myc2$Exp1Group[Myc2$Exp1Group == "8"] <- "p"
 
-Myc_summary <- Myc2 %>%
+Myc_summary1 <- Myc2 %>%
   group_by(Sample) %>%
   summarise(
     perc_c = 100 * sum(Intersection[None == "no"], na.rm = TRUE) /
       sum(Intersection, na.rm = TRUE))
 
+Myc_summary2 <- Myc2 %>%
+  group_by(Sample) %>%
+  summarise(
+    perc_A = 100 * sum(Intersection[Arbuscules == "1"], na.rm = TRUE) /
+      sum(Intersection, na.rm = TRUE))
+
 # Add Exp1 group to this data frame
-Myc3 <- Myc_summary %>%
+Myc3 <- Myc_summary1 %>%
   left_join(Myc2 %>% dplyr::select(Sample, Exp1Group), by = "Sample")
+
+# add room back
+Myc3 <- Myc3 %>%
+  left_join(
+    Myc2 %>% 
+      distinct(Sample, Room),   # keep one row per Sample–Room pair
+    by = "Sample"
+  )
+
+# Add Exp1 group to this data frame
+Myc4 <- Myc_summary2 %>%
+  left_join(Myc2 %>% dplyr::select(Sample, Exp1Group), by = "Sample")
+
+# add room back
+Myc4 <- Myc4 %>%
+  left_join(
+    Myc2 %>% 
+      distinct(Sample, Room),   # keep one row per Sample–Room pair
+    by = "Sample"
+  )
 
 # Remove if treatment group = NA
 Myc3 <- Myc3 %>%
   filter(!is.na(Exp1Group))
 
-# Let's make a boxplot
+# Remove if treatment group = NA
+Myc4 <- Myc4 %>%
+  filter(!is.na(Exp1Group))
+
+#### visualisations ####
+# Let's make a boxplot for presence of any myc structures
 library(ggplot2)
+
+Myc3$Exp1Group <- factor(Myc3$Exp1Group, levels = c("0", "1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                         labels = c("Baseline", "m", "nwp", "mnp", "mnw", "mwp", "n", "w", "p")) # labels 
+
 MycPlot <- ggplot(data = Myc3, 
-                  aes(x = factor(Exp1Group), y = perc_c)) +
-  geom_boxplot(fill = "lightblue3", notch = TRUE, varwidth = TRUE) +
+                  aes(x = factor(Exp1Group), y = perc_c, fill = Exp1Group)) +
+  geom_boxplot(notch = TRUE, varwidth = TRUE) +
   geom_jitter(color = "black", size = 0.4, alpha = 0.6, width = 0.2) +
   ylab("Percent mycorrhizal colonisation") +
   xlab("Treatment Group") +
+  scale_fill_manual(values = c( "Baseline" = "#1b9e77", "m" = "#82C782", "nwp" = "#CF597E", 
+  "mnp" = "lavender", "mnw" = "lavender", "mwp" = "lavender", "n" = "#E9A96C", "w" = "#E9A96C", "p" = "#E9A96C" )) +
   theme(axis.text.x = element_text(size = 10, color = 'black'),
         axis.text.y = element_text(size = 15, hjust = 1, colour = 'black'), 
         axis.title = element_text(size = 17, face = "bold"),
@@ -57,8 +115,39 @@ MycPlot <- ggplot(data = Myc3,
         axis.line = element_line(colour = "black"))
 MycPlot
 
-# Let's try some analysis
-# Check for Homogeneous variance
+# Let's make a boxplot for presence of arbuscules
+Myc4$Exp1Group <- factor(Myc4$Exp1Group, levels = c("0", "1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                         labels = c("Baseline", "m", "nwp", "mnp", "mnw", "mwp", "n", "w", "p")) # labels 
+
+library(ggplot2)
+MycPlot <- ggplot(data = Myc4, 
+                  aes(x = factor(Exp1Group), y = perc_A, fill = Exp1Group)) +
+  geom_boxplot(notch = TRUE, varwidth = TRUE) +
+  geom_jitter(color = "black", size = 0.4, alpha = 0.6, width = 0.2) +
+  ylab("Percent arbuscular colonisation") +
+  xlab("Treatment Group") +
+  scale_fill_manual(values = c( "Baseline" = "#1b9e77", "m" = "#82C782", "nwp" = "#CF597E", 
+                                "mnp" = "lavender", "mnw" = "lavender", "mwp" = "lavender", "n" = "#E9A96C", "w" = "#E9A96C", "p" = "#E9A96C" )) +
+  theme(axis.text.x = element_text(size = 10, color = 'black'),
+        axis.text.y = element_text(size = 15, hjust = 1, colour = 'black'), 
+        axis.title = element_text(size = 17, face = "bold"),
+        legend.title = element_blank(),
+        legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"))
+MycPlot
+
+#### analysis ####
+# model
+# try a mixed effects model
+library(lme4)
+# Fit a model 
+M1 <- lmer(perc_c ~ factor(Exp1Group) + (1 | Room), data = Myc3)
+
+summary(M1)
+# Check for Homogeneous variance for any myc structure presence
 summ_Myc3 <- Myc3 %>%
   group_by(Exp1Group) %>% 
   summarise(mean_perc_c = mean(perc_c),
@@ -67,19 +156,43 @@ summ_Myc3 <- Myc3 %>%
 ratio <-(max(summ_Myc3$sd_perc_c))/(min(summ_Myc3$sd_perc_c))
 print(ratio)
 
-# Looks a lot better
-# Set up for ANOVA
-model01 <- aov(perc_c~Exp1Group, data = Myc3)
-autoplot(model01)
-anova(model01)
-summary(model01)
-
 # The sample sizes are not quite even and therefore we need to use Type 3 analysis
 Myc3$Exp1Group <- as.factor(Myc3$Exp1Group)
 
 contrasts(Myc3$Exp1Group) <- contr.sum(9)
 
 model <- lm(perc_c ~ factor(Exp1Group), data = Myc3)
+
+# Run Type III ANOVA
+library(car)
+Anova(model, type = 3)
+
+# Tukey-Kramer test (automatically applied for unequal sample sizes)
+library(emmeans)
+emm <- emmeans(model, ~ Exp1Group)        # treatment effects within each room
+pairs(emm, adjust = "tukey")
+
+# Arbuscule only model
+# Fit a model 
+M2 <- lmer(perc_A ~ factor(Exp1Group) + (1 | Room), data = Myc4)
+
+summary(M2)
+
+# Check for Homogeneous variance for arbuscule only presence
+summ_Myc4 <- Myc4 %>%
+  group_by(Exp1Group) %>% 
+  summarise(mean_perc_A = mean(perc_A),
+            sd_perc_A = sd(perc_A),
+            n_perc_A = n())
+ratio <-(max(summ_Myc4$sd_perc_A))/(min(summ_Myc4$sd_perc_A))
+print(ratio)
+
+# The sample sizes are not quite even and therefore we need to use Type 3 analysis
+Myc4$Exp1Group <- as.factor(Myc4$Exp1Group)
+
+contrasts(Myc4$Exp1Group) <- contr.sum(9)
+
+model <- lm(perc_A ~ factor(Exp1Group), data = Myc4)
 
 # Run Type III ANOVA
 library(car)
