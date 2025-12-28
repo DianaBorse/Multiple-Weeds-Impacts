@@ -705,35 +705,69 @@ print(summ_SeedlingHRoom)
 #### look at Nodules ####
 # look at the effects
 # Fit a model 
-M1 <- lm(Nodule_finish ~  factor(Group) +  factor(Room), data = Biomass)
+Biomass <- Biomass %>%
+  mutate(Nodule_change = Nodule_finish - Nodule_start)
+
+# remove treatment groups that do not have nodules
+Nodules <- Biomass %>% filter(Group %in% c("2", "4", "5", "7"))
+
+M1 <- lmer(Nodule_change ~  factor(Group) +  (1 | Room), data = Nodules)
 
 summary(M1)
 
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M1, type = 3) 
+emm <- emmeans(M1, ~ Group)        # treatment effects within each room
+pairs(emm, adjust = "tukey")
 
-Biomass <- Biomass %>%
-  mutate(Nodule_change = Nodule_finish - Nodule_start)
-
-# Fit a model 
-M2 <- lm(Nodule_change ~  factor(Group) +  factor(Room), data = Biomass)
-
-summary(M2)
-
-# Type II/III tests (handle unbalanced designs)
-library(car)
-Anova(M2, type = 3) 
-
-# get some numbers
-summ_Nodules <- Biomass %>%
+summ_Nodules <- Nodules %>%
   group_by(Group) %>% 
-  summarise(mean_Nodule_change = mean(Nodule_change),
-            sd_Nodule_change = sd(Nodule_change))
+  summarise(mean_Nodules = mean(Nodule_change),
+            sd_Nodules = sd(Nodule_change))
 print(summ_Nodules)
+ratio <-(max(summ_Nodules$sd_Nodules))/(min(summ_Nodules$sd_Nodules))
+print(ratio)
 
-summ_NodulesR <- Biomass %>%
+# try a transformation
+Nodules <- Nodules %>%
+  mutate(sqrtNodule_change = sqrt(Nodule_change))
+
+summ_Nodules <- Nodules %>%
+  group_by(Group) %>% 
+  summarise(mean_Nodules = mean(logNodule_change),
+            sd_Nodules = sd(logNodule_change))
+print(summ_Nodules)
+ratio <-(max(summ_Nodules$sd_Nodules))/(min(summ_Nodules$sd_Nodules))
+print(ratio)
+
+
+summ_NodulesRoom <- Nodules %>%
   group_by(Room) %>% 
-  summarise(mean_Nodule_change = mean(Nodule_change),
-            sd_Nodule_change = sd(Nodule_change))
-print(summ_NodulesR)
+  summarise(mean_Nodules = mean(Nodule_change),
+            sd_Nodules = sd(Nodule_change))
+print(summ_NodulesRoom)
+
+Nodules$Group <- factor(Nodules$Group, levels = c("2", "4", "5", "7"), # order  
+                         labels = c("nwp", "mnw", "mwp", "w")) # labels 
+
+NodulePlot <- ggplot(data = Nodules, 
+                  aes(x = factor(Group), y = Nodule_change, fill = Group)) +
+  geom_boxplot(notch = TRUE, varwidth = TRUE) +
+  geom_jitter(color = "black", size = 0.4, alpha = 0.6, width = 0.2) +
+  ylab("Change in number of nodules") +
+  xlab("Treatment Group") +
+  scale_fill_manual(values = c( "nwp" = "#CF597E", 
+                                "mnw" = "lavender", "mwp" = "lavender", "w" = "#E9A96C" )) +
+  theme(axis.text.x = element_text(size = 10, color = 'black'),
+        axis.text.y = element_text(size = 15, hjust = 1, colour = 'black'), 
+        axis.title = element_text(size = 17, face = "bold"),
+        legend.title = element_blank(),
+        legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"))
+NodulePlot
+
+# That is not very easy to see

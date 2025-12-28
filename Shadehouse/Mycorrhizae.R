@@ -172,6 +172,9 @@ library(emmeans)
 emm <- emmeans(model, ~ Exp1Group)        # treatment effects within each room
 pairs(emm, adjust = "tukey")
 
+# calculate some summary statistics
+print(summ_Myc3)
+
 # Arbuscule only model
 # Fit a model 
 M2 <- lmer(perc_A ~ factor(Exp1Group) + (1 | Room), data = Myc4)
@@ -202,3 +205,6 @@ Anova(model, type = 3)
 library(emmeans)
 emm <- emmeans(model, ~ Exp1Group)        # treatment effects within each room
 pairs(emm, adjust = "tukey")
+
+# calculate summary stats
+print(summ_Myc4)

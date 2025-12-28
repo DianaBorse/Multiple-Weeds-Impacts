@@ -95,8 +95,6 @@ Height <- Height %>%
 Height <- Height %>% 
   filter(!is.na(Group))
 
-view(Height)
-
 #### Let's look at Sapling height ####
 SaplingH <- Height[Height$Plant == "ManukaSapling", ]
 
@@ -149,8 +147,6 @@ print(ratio)
 # Normal, do and ANOVA
 model01 <- aov(AverageGR~Group, data = SeedlingH)
 
-autoplot(model01)
-
 anova(model01)
 
 summary(model01)
@@ -191,11 +187,7 @@ print(ratio)
 # Normal enough, <3
 # Set up for ANOVA
 model01 <- aov(AverageGR~Group, data = NightshadeH)
-
-autoplot(model01)
-
 anova(model01)
-
 summary(model01)
 
 # Perform planned Tukey test
@@ -247,11 +239,7 @@ print(ratio)
 # Normal enough, <3
 # Set up for ANOVA
 model01 <- aov(AverageGR~Group, data = PrivetH)
-
-autoplot(model01)
-
 anova(model01)
-
 summary(model01)
 
 # Perform unplanned Tukey test
@@ -303,11 +291,7 @@ print(ratio)
 # Normal enough, <3
 # Set up for ANOVA
 model01 <- aov(AverageGR~Group, data = WattleH)
-
-autoplot(model01)
-
 anova(model01)
-
 summary(model01)
 
 # Perform unplanned Tukey test
@@ -420,17 +404,21 @@ SeedlingPlot <- ggplot(data = SeedlingH,
 SeedlingPlot 
 
 # Make a boxplot with all values on it
-ggplot(Height, aes(x = Group, y = AverageGR, fill = Plant)) +
+SeedlingsH <- Height[Height$Plant != "ManukaSapling", ]
+# Fix up treatment group names
+SeedlingsH$Group <- factor(SeedlingsH$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                         labels = c("m", "nwp", "mnp", "mnw", "mwp", "n", "w", "p")) # labels 
+
+ggplot(SeedlingsH, aes(x = Group, y = AverageGR, fill = Plant)) +
   geom_boxplot(position = position_dodge(width = 0.8)) +
   theme_minimal() +
   labs(x = "Treatment group", y = "Relative growth rate ln(mm/month)", fill = "Species") +
   scale_fill_manual(values = c(
-    "ManukaSapling" = "#33B08D",  
     "ManukaSeedling"  = "#82C782", 
     "Nightshade" = "#CF597E",  
     "Privet" = "#E57F6C" , 
     "Wattle" = "#E9A96C"),
-    labels = c("ManukaSapling" = "L. scoparium sapling", "ManukaSeedling" = "L. scoparium seedling","Nightshade" = "S. mauritianum",
+    labels = c("ManukaSeedling" = "L. scoparium seedling","Nightshade" = "S. mauritianum",
                "Privet" = "L. lucidum", "Wattle" = "P. lophantha")) +
   theme_classic()
 
