@@ -892,6 +892,12 @@ library(tidycmprsk)
 # Create survival object
 surv_obj <- Surv(time = SaplingS$time, event = SaplingS$status)
 
+# Fix up treatment group names
+library(dplyr) 
+
+SaplingS <- SaplingS %>% mutate(Group = recode(Group, "1" = "m", 
+"2" = "nwp", "3" = "mnp", "4" = "mnw","5" = "mwp", "6" = "n", "7" = "w", "8" = "p"))
+
 # Fit Kaplan-Meier curves
 fit <- survfit(surv_obj ~ Group, data = SaplingS)
 
@@ -943,10 +949,15 @@ SaplingS <- SaplingS %>%
   left_join(RoomPot %>% dplyr::select(Pot, Room), by = "Pot")
 
 # Fit a model 
-M1 <- lm(status ~  factor(Group) +  factor(Room), data = SaplingS)
+library(lme4)
+M2 <- lmer(status ~ factor(Group) + (1 | Room), data = SaplingS)
 
-summary(M1)
-
+summary(M2)
+# Type II/III tests (handle unbalanced designs)
+library(car)
+Anova(M2, type = 3) 
+library(emmeans)
+emmeans(M2, specs=pairwise~Group)
 # Not sure how useful this is...
 
 #### Seedling survival analysis ####

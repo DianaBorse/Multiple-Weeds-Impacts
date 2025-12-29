@@ -420,6 +420,10 @@ ggplot(SeedlingsH, aes(x = Group, y = AverageGR, fill = Plant)) +
     "Wattle" = "#E9A96C"),
     labels = c("ManukaSeedling" = "L. scoparium seedling","Nightshade" = "S. mauritianum",
                "Privet" = "L. lucidum", "Wattle" = "P. lophantha")) +
+  geom_vline(xintercept = 1.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
+  geom_vline(xintercept = 2.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
+  geom_vline(xintercept = 5.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
+  geom_vline(xintercept = 8.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
   theme_classic()
 
 hcl.colors(8, palette = "Temps") # remove # to look at colors below
