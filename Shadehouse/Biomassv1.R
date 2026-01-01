@@ -587,6 +587,10 @@ compute_lnRR <- function(Biomass, plant_name = "Wattle", control_group = 7) {
 lnrr_output <- compute_lnRR(Biomass, plant_name = "Wattle", control_group = 7)
 print(lnrr_output)
 
+# Fix up the treatment groups
+lnrr_output$Group <- factor(lnrr_output$Group, levels = c("2", "4", "5", "7"), # order  
+labels = c("nwp", "mnw", "mwp", "w")) # labels 
+
 # Plot lnRR with 95% CI
 ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
   geom_point(shape = 16, size = 3) +
@@ -595,6 +599,7 @@ ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
     x = "Treatment Group",
     y = "lnRR_mixed/monoculture P. lophantha seedling biomass (g)"
   ) +
+  geom_hline(yintercept = 0, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
   theme_classic() +
   theme(
     text = element_text(size = 12),
@@ -718,3 +723,4 @@ ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
     text = element_text(size = 12),
     axis.title = element_text(face = "bold")
   )
+
