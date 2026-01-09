@@ -595,3 +595,68 @@ hcl.colors(14, palette = "Plasma")
 hcl.colors(14, palette = "Zissou 1")
 #[1] "#001889" "#44038A" "#6C008C" "#8A008D" "#A3098A" "#B82783" "#CA4178" "#D85A68" "#E37450" "#EA8E2B" "#EDA900" "#EBC400" "#E4E100" "#DAFF47"
 #[1] "#3B99B1" "#37A6A9" "#51B09F" "#73B897" "#95BE95" "#B0C590" "#CECA87" "#EAC225" "#E9B01D" "#E89D15" "#E78A05" "#E87300" "#ED5600" "#F5191C"
+
+# Map for fieldwork sites
+library(readr)
+PlotData <- read_csv("Fieldwork/PlotData_Clean_WN_removed_PopnDensity.csv")
+
+# coordinates are not formatted correctly, I need to divide them by 100
+PlotData$East_Coordinates <- PlotData$East_Coordinates / 100
+PlotData$South_Coordinates <- PlotData$South_Coordinates / 100
+PlotData$South_Coordinates <- PlotData$South_Coordinates * -1
+
+# All of the points are shifted north and west of where they should be
+# the handheld GPS should have been in WGS 84 which means it would be crs 4326
+# the easiest thing to do will likely be to make a new df with manually entered
+# coordinates from maps
+
+# make it a shape file
+Plot <- PlotData |>
+  st_as_sf(coords = c("East_Coordinates", "South_Coordinates"),
+           crs = 4326)
+
+st_bbox(Plot)
+
+# inset map of properties on topomap
+leaflet() %>%
+  addProviderTiles("Esri.WorldTopoMap") %>%
+  setView(lng = 174.7633, lat = -36.8485, zoom = 12) %>%
+  addCircleMarkers(
+    data = Plot,
+    radius = 2,
+    color = "orange",
+    fillOpacity = 0.8,
+    stroke = FALSE
+  ) %>%
+  addMiniMap(
+    tiles = providers$Esri.WorldTopoMap,
+    toggleDisplay = TRUE
+  )
+
+
+st_coordinates(Plot)[1:5, ]
+summary(PlotData$East_Coordinates)
+summary(PlotData$South_Coordinates)
+
+library(sf)
+
+# 1. Drop geometry completely
+Plot_clean <- st_drop_geometry(Plot)
+
+# 2. Ensure coordinates are numeric and have correct signs
+Plot_clean$East_Coordinates  <- as.numeric(PlotData$East_Coordinates)
+Plot_clean$South_Coordinates <- as.numeric(PlotData$South_Coordinates)
+
+# 3. Rebuild geometry from scratch
+Plot_clean <- st_as_sf(
+  Plot_clean,
+  coords = c("East_Coordinates", "South_Coordinates"),  # lon, lat
+  crs = 4326
+)
+
+# 4. Check
+st_bbox(Plot_clean)
+
+leaflet(Plot_clean) %>%
+  addProviderTiles("Esri.WorldTopoMap") %>%
+  addCircleMarkers()
