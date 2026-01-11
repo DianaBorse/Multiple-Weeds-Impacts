@@ -610,6 +610,15 @@ PlotData$South_Coordinates <- PlotData$South_Coordinates * -1
 # the easiest thing to do will likely be to make a new df with manually entered
 # coordinates from maps
 
+# coordinates from maps
+library(readr)
+Sites <- read_csv("Fieldwork/Sites.csv")
+
+# make it a shape file
+Sites_sf <- Sites |>
+  st_as_sf(coords = c("x", "y"),
+           crs = 4326)
+
 # make it a shape file
 Plot <- PlotData |>
   st_as_sf(coords = c("East_Coordinates", "South_Coordinates"),
@@ -617,46 +626,25 @@ Plot <- PlotData |>
 
 st_bbox(Plot)
 
+icons <- awesomeIcons(
+  icon = 'ios-close',
+  iconColor = 'white',
+  library = 'ion',
+  markerColor = 'darkblue')
+
 # inset map of properties on topomap
 leaflet() %>%
   addProviderTiles("Esri.WorldTopoMap") %>%
-  setView(lng = 174.7633, lat = -36.8485, zoom = 12) %>%
-  addCircleMarkers(
-    data = Plot,
-    radius = 2,
-    color = "orange",
-    fillOpacity = 0.8,
-    stroke = FALSE
+  setView(lng = 174.7633, lat = -36.8485, zoom = 9.5) %>%
+  addAwesomeMarkers(
+    data = Sites_sf,
+    icon = icons
+#    radius = 5,
+#    color = "maroon",
+#    fillOpacity = 0.8,
+#    stroke = FALSE
   ) %>%
   addMiniMap(
     tiles = providers$Esri.WorldTopoMap,
     toggleDisplay = TRUE
   )
-
-
-st_coordinates(Plot)[1:5, ]
-summary(PlotData$East_Coordinates)
-summary(PlotData$South_Coordinates)
-
-library(sf)
-
-# 1. Drop geometry completely
-Plot_clean <- st_drop_geometry(Plot)
-
-# 2. Ensure coordinates are numeric and have correct signs
-Plot_clean$East_Coordinates  <- as.numeric(PlotData$East_Coordinates)
-Plot_clean$South_Coordinates <- as.numeric(PlotData$South_Coordinates)
-
-# 3. Rebuild geometry from scratch
-Plot_clean <- st_as_sf(
-  Plot_clean,
-  coords = c("East_Coordinates", "South_Coordinates"),  # lon, lat
-  crs = 4326
-)
-
-# 4. Check
-st_bbox(Plot_clean)
-
-leaflet(Plot_clean) %>%
-  addProviderTiles("Esri.WorldTopoMap") %>%
-  addCircleMarkers()
