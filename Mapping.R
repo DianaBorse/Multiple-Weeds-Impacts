@@ -40,6 +40,17 @@ Bufferdata <- Bufferdata %>% filter(EndOutcome != "NA")
 Bufferdata<-Bufferdata[-817, ] 
 Bufferdata<-Bufferdata[-36, ] 
 
+
+# for calculating distance to nearest sea
+#library(tidyr)
+#DistanceSEABuffer <- Bufferdata %>%
+#  unite(y, x, y, sep = " ")
+
+#library(writexl)
+
+#write_xlsx(DistanceSEABuffer, "C:/Users/bella/Documents/DistanceSEABuffer3.xlsx")
+
+
 # make it a shape file
 Buffer <- Bufferdata |>
   st_as_sf(coords = c("x", "y"),
