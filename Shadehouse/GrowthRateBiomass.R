@@ -894,9 +894,8 @@ surv_obj <- Surv(time = SaplingS$time, event = SaplingS$status)
 
 # Fix up treatment group names
 library(dplyr) 
-
-SaplingS <- SaplingS %>% mutate(Group = recode(Group, "1" = "m", 
-"2" = "nwp", "3" = "mnp", "4" = "mnw","5" = "mwp", "6" = "n", "7" = "w", "8" = "p"))
+SaplingS$Group <- factor(SaplingS$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                           labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
 
 # Fit Kaplan-Meier curves
 fit <- survfit(surv_obj ~ Group, data = SaplingS)
@@ -963,6 +962,8 @@ emmeans(M2, specs=pairwise~Group)
 #### Seedling survival analysis ####
 
 SeedlingS <- Height[Height$Plant == "ManukaSeedling", ]
+SeedlingS$Group <- factor(SeedlingS$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                         labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
 
 # Create survival object
 surv_obj <- Surv(time = SeedlingS$time, event = SeedlingS$status)
@@ -992,6 +993,9 @@ round(summary(check)$sctest, 3)
 
 #### Nightshade Survival ####
 NightshadeS <- Height[Height$Plant == "Nightshade", ]
+NightshadeS$Group <- factor(NightshadeS$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                         labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
+
 
 # Create survival object
 surv_obj <- Surv(time = NightshadeS$time, event = NightshadeS$status)
@@ -1022,6 +1026,8 @@ round(summary(check)$sctest, 3)
 #### Privet Survival ####
 
 PrivetS <- Height[Height$Plant == "Privet", ]
+PrivetS$Group <- factor(PrivetS$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                         labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
 
 # Create survival object
 surv_obj <- Surv(time = PrivetS$time, event = PrivetS$status)
@@ -1051,6 +1057,8 @@ round(summary(check)$sctest, 3)
 
 #### Wattle Analysis ####
 WattleS <- Height[Height$Plant == "Wattle", ]
+WattleS$Group <- factor(WattleS$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                         labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
 
 # Create survival object
 surv_obj <- Surv(time = WattleS$time, event = WattleS$status)

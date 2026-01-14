@@ -316,6 +316,11 @@ dunnTest(AverageGR ~ Group, data = WattleH, method = "bonferroni")
 
 
 #### Nice Box plots ####
+# Fix treatment group names
+# Fix up the treatment groups
+WattleH$Group <- factor(WattleH$Group, levels = c("2", "4", "5", "7"), # order  
+                            labels = c("nbp", "nb", "bp", "b")) # labels 
+
 
 library(ggplot2)
 WattlePlot <- ggplot(data = WattleH, 
@@ -335,6 +340,11 @@ WattlePlot <- ggplot(data = WattleH,
         axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
 WattlePlot
 
+
+# Fix up the treatment groups
+NightshadeH$Group <- factor(NightshadeH$Group, levels = c("2", "3", "4", "6"), # order  
+                            labels = c("nbp", "np", "nb", "n")) # labels
+
 NightshadePlot <- ggplot(data = NightshadeH, 
                          aes(y = AverageGR, ##Change this to variable name
                              x = Group)) + ##Change this to variable name
@@ -351,6 +361,11 @@ NightshadePlot <- ggplot(data = NightshadeH,
         panel.background = element_blank(),    #If you want to remove background
         axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
 NightshadePlot
+
+# Fix up the treatment groups
+PrivetH$Group <- factor(PrivetH$Group, levels = c("2", "3", "5", "8"), # order  
+                            labels = c("nbp", "np", "bp", "p")) # labels 
+
 
 PrivetPlot <- ggplot(data = PrivetH, 
                      aes(y = AverageGR, ##Change this to variable name
@@ -369,6 +384,11 @@ PrivetPlot <- ggplot(data = PrivetH,
         axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
 PrivetPlot 
 
+# Fix up the treatment groups
+SaplingH$Group <- factor(SaplingH$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                            labels = c( "m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
+
+
 SaplingPlot <- ggplot(data = SaplingH, 
                       aes(y = AverageGR, ##Change this to variable name
                           x = Group)) + ##Change this to variable name
@@ -385,6 +405,11 @@ SaplingPlot <- ggplot(data = SaplingH,
         panel.background = element_blank(),    #If you want to remove background
         axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
 SaplingPlot 
+
+# Fix up the treatment groups
+SeedlingH$Group <- factor(SeedlingH$Group, levels = c("1", "3", "4", "5"), # order  
+                         labels = c( "m", "np", "nb", "bp")) # labels 
+
 
 SeedlingPlot <- ggplot(data = SeedlingH, 
                        aes(y = AverageGR, ##Change this to variable name
@@ -407,7 +432,7 @@ SeedlingPlot
 SeedlingsH <- Height[Height$Plant != "ManukaSapling", ]
 # Fix up treatment group names
 SeedlingsH$Group <- factor(SeedlingsH$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
-                         labels = c("m", "nwp", "mnp", "mnw", "mwp", "n", "w", "p")) # labels 
+                         labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
 
 ggplot(SeedlingsH, aes(x = Group, y = AverageGR, fill = Plant)) +
   geom_boxplot(position = position_dodge(width = 0.8)) +

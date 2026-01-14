@@ -64,12 +64,19 @@ Sapling$ResponseRatio <- Sapling$Mass / group1_mean
 library(dplyr)
 library(ggplot2)
 
-Sapling %>%
-  filter(Group %in% 2:8) %>%
+# filter to remove baseline for plot
+SaplingPlot <- Sapling[Sapling$Group != "1", ]
+
+# Fix up the treatment groups
+SaplingPlot$Group <- factor(SaplingPlot$Group, levels = c("2", "3", "4", "5", "6", "7", "8"), # order  
+                         labels = c( "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
+
+SaplingPlot %>%
+#  filter(Group %in% 2:8) %>%
   ggplot(aes(x = Group, y = ResponseRatio)) +
   geom_boxplot(fill = "#33B08D", varwidth = TRUE) +
   geom_jitter(color = "black", size = 0.4, alpha = 0.9) +
-  ylab("Sapling Biomass mixture / control (g)") +
+  ylab("Mānuka Sapling Biomass mixture / control (g)") +
   xlab("Treatment Group") +
   theme_classic()
 
@@ -108,12 +115,18 @@ group1_mean <- mean(Seedling$Mass[Seedling$Group == 1], na.rm = TRUE)
 
 Seedling$ResponseRatio <- Seedling$Mass / group1_mean
 
-Seedling %>%
-  filter(Group %in% 2:8) %>%
+# filter to remove baseline for plot
+SeedlingPlot <- Seedling[Seedling$Group != "1", ]
+
+# Fix up the treatment groups
+SeedlingPlot$Group <- factor(SeedlingPlot$Group, levels = c("3", "4", "5"), # order  
+                          labels = c( "np", "nb", "bp")) # labels
+
+SeedlingPlot %>%
   ggplot(aes(x = Group, y = ResponseRatio)) +
   geom_boxplot(fill = "#82C782", varwidth = TRUE) +
   geom_jitter(color = "black", size = 0.4, alpha = 0.9) +
-  ylab("Seedling Biomass mixture / control (g)") +
+  ylab("Mānuka Seedling Biomass mixture / control (g)") +
   xlab("Treatment Group") +
   theme_classic()
 
@@ -179,8 +192,14 @@ group7_mean <- mean(Wattle$Mass[Wattle$Group == 7], na.rm = TRUE)
 
 Wattle$ResponseRatio <- Wattle$Mass / group7_mean
 
-Wattle %>%
-  filter(Group %in% 2:6) %>%
+# filter to remove baseline for plot
+WattlePlot <- Wattle[Wattle$Group != "7", ]
+
+# Fix up the treatment groups
+WattlePlot$Group <- factor(WattlePlot$Group, levels = c("2", "4", "5", "7"), # order  
+                        labels = c("nbp", "nb", "bp", "b")) # labels 
+
+WattlePlot %>%
   ggplot(aes(x = Group, y = ResponseRatio)) +
   geom_boxplot(fill = "#E9A96C", varwidth = TRUE) +
   geom_jitter(color = "black", size = 0.4, alpha = 0.9) +
@@ -266,8 +285,14 @@ group6_mean <- mean(Woolly$Mass[Woolly$Group == 6], na.rm = TRUE)
 
 Woolly$ResponseRatio <- Woolly$Mass / group6_mean
 
-Woolly %>%
-  filter(Group %in% 2:5) %>%
+# filter to remove baseline for plot
+WoollyPlot <- Woolly[Woolly$Group != "6", ]
+
+# Fix up the treatment groups
+WoollyPlot$Group <- factor(WoollyPlot$Group, levels = c("2", "3", "4", "6"), # order  
+                            labels = c("nbp", "np", "nb", "n")) # labels
+
+WoollyPlot %>%
   ggplot(aes(x = Group, y = ResponseRatio)) +
   geom_boxplot(fill = "#CF597E", varwidth = TRUE) +
   geom_jitter(color = "black", size = 0.4, alpha = 0.9) +
@@ -341,7 +366,14 @@ group8_mean <- mean(Privet$Mass[Privet$Group == 8], na.rm = TRUE)
 
 Privet$ResponseRatio <- Privet$Mass / group8_mean
 
-Privet %>%
+# filter to remove baseline for plot
+PrivetPlot <- Privet[Privet$Group != "8", ]
+
+# Fix up the treatment groups
+PrivetPlot$Group <- factor(PrivetPlot$Group, levels = c("2", "3", "5", "8"), # order  
+                           labels = c("nbp", "np", "bp", "p")) # labels 
+
+PrivetPlot %>%
 #  filter(Group %in% 2:5) %>%
   ggplot(aes(x = Group, y = ResponseRatio)) +
   geom_boxplot(fill = "#E57F6C", varwidth = TRUE) +
@@ -469,13 +501,18 @@ compute_lnRR <- function(Biomass, plant_name = "ManukaSapling", control_group = 
 lnrr_output <- compute_lnRR(Biomass, plant_name = "ManukaSapling", control_group = 1)
 print(lnrr_output)
 
+# Fix up the treatment groups
+lnrr_output$Group <- factor(lnrr_output$Group, levels = c("2", "3", "4", "5", "6", "7", "8"), # order  
+                            labels = c("nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
+
+
 # Plot lnRR with 95% CI
 ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
   geom_point(shape = 16, size = 3) +
   geom_errorbar(aes(ymin = yi - 1.96 * sqrt(vi), ymax = yi + 1.96 * sqrt(vi)), width = 0.2) +
   labs(
     x = "Treatment Group",
-    y = "lnRR_mixed/monoculture L. scoparium biomass (g)"
+    y = "lnRR_mixed/monoculture mānuka sapling biomass (g)"
   ) +
   theme_classic() +
   theme(
@@ -484,6 +521,9 @@ ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
   )
 
 # Seedling
+# remove row where treatment group is 2 and there is a mānuka seedling
+
+Biomass<-Biomass[-420, ] 
 #Function to compute lnRR using metafor for a given plant and control group
 compute_lnRR <- function(Biomass, plant_name = "ManukaSeedling", control_group = 1) {
   # Filter for specified plant
@@ -528,13 +568,17 @@ compute_lnRR <- function(Biomass, plant_name = "ManukaSeedling", control_group =
 lnrr_output <- compute_lnRR(Biomass, plant_name = "ManukaSeedling", control_group = 1)
 print(lnrr_output)
 
+# Fix up the treatment groups
+lnrr_output$Group <- factor(lnrr_output$Group, levels = c("3", "4", "5"), # order  
+                            labels = c("np", "nb", "bp")) # labels 
+
 # Plot lnRR with 95% CI
 ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
   geom_point(shape = 16, size = 3) +
   geom_errorbar(aes(ymin = yi - 1.96 * sqrt(vi), ymax = yi + 1.96 * sqrt(vi)), width = 0.2) +
   labs(
     x = "Treatment Group",
-    y = "lnRR_mixed/monoculture L. scoparium seedling biomass (g)"
+    y = "lnRR_mixed/monoculture mānuka seedling biomass (g)"
   ) +
   theme_classic() +
   theme(
@@ -589,7 +633,7 @@ print(lnrr_output)
 
 # Fix up the treatment groups
 lnrr_output$Group <- factor(lnrr_output$Group, levels = c("2", "4", "5", "7"), # order  
-labels = c("nwp", "mnw", "mwp", "w")) # labels 
+labels = c("nbp", "nb", "bp", "b")) # labels 
 
 # Plot lnRR with 95% CI
 ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
@@ -597,7 +641,7 @@ ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
   geom_errorbar(aes(ymin = yi - 1.96 * sqrt(vi), ymax = yi + 1.96 * sqrt(vi)), width = 0.2) +
   labs(
     x = "Treatment Group",
-    y = "lnRR_mixed/monoculture P. lophantha seedling biomass (g)"
+    y = "lnRR_mixed/monoculture brush wattle seedling biomass (g)"
   ) +
   geom_hline(yintercept = 0, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
   theme_classic() +
@@ -651,13 +695,17 @@ compute_lnRR <- function(Biomass, plant_name = "Nightshade", control_group = 6) 
 lnrr_output <- compute_lnRR(Biomass, plant_name = "Nightshade", control_group = 6)
 print(lnrr_output)
 
+# Fix up the treatment groups
+lnrr_output$Group <- factor(lnrr_output$Group, levels = c("2", "3", "4", "6"), # order  
+                            labels = c("nbp", "np", "nb", "n")) # labels 
+
 # Plot lnRR with 95% CI
 ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
   geom_point(shape = 16, size = 3) +
   geom_errorbar(aes(ymin = yi - 1.96 * sqrt(vi), ymax = yi + 1.96 * sqrt(vi)), width = 0.2) +
   labs(
     x = "Treatment Group",
-    y = "lnRR_mixed/monoculture S. mauritianum seedling biomass (g)"
+    y = "lnRR_mixed/monoculture woolly nightshade seedling biomass (g)"
   ) +
   theme_classic() +
   theme(
@@ -710,13 +758,17 @@ compute_lnRR <- function(Biomass, plant_name = "Privet", control_group = 8) {
 lnrr_output <- compute_lnRR(Biomass, plant_name = "Privet", control_group = 8)
 print(lnrr_output)
 
+# Fix up the treatment groups
+lnrr_output$Group <- factor(lnrr_output$Group, levels = c("2", "3", "5", "8"), # order  
+                            labels = c("nbp", "np", "bp", "p")) # labels 
+
 # Plot lnRR with 95% CI
 ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
   geom_point(shape = 16, size = 3) +
   geom_errorbar(aes(ymin = yi - 1.96 * sqrt(vi), ymax = yi + 1.96 * sqrt(vi)), width = 0.2) +
   labs(
     x = "Treatment Group",
-    y = "lnRR_mixed/monoculture L. lucidum seedling biomass (g)"
+    y = "lnRR_mixed/monoculture tree privet seedling biomass (g)"
   ) +
   theme_classic() +
   theme(
