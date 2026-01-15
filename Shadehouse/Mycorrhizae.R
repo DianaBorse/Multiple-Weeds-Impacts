@@ -93,8 +93,8 @@ Myc4 <- Myc4 %>%
 # Let's make a boxplot for presence of any myc structures
 library(ggplot2)
 
-Myc3$Exp1Group <- factor(Myc3$Exp1Group, levels = c("0", "1", "2", "3", "4", "5", "6", "7", "8"), # order  
-                         labels = c("Baseline", "m", "nwp", "mnp", "mnw", "mwp", "n", "w", "p")) # labels 
+#Myc3$Exp1Group <- factor(Myc3$Exp1Group, levels = c("0", "1", "2", "3", "4", "5", "6", "7", "8"), # order  
+#                         labels = c("Baseline", "m", "nwp", "mnp", "mnw", "mwp", "n", "w", "p")) # labels 
 
 MycPlot <- ggplot(data = Myc3, 
                   aes(x = factor(Exp1Group), y = perc_c, fill = Exp1Group)) +
@@ -116,8 +116,8 @@ MycPlot <- ggplot(data = Myc3,
 MycPlot
 
 # Let's make a boxplot for presence of arbuscules
-Myc4$Exp1Group <- factor(Myc4$Exp1Group, levels = c("0", "1", "2", "3", "4", "5", "6", "7", "8"), # order  
-                         labels = c("Baseline", "m", "nwp", "mnp", "mnw", "mwp", "n", "w", "p")) # labels 
+#Myc4$Exp1Group <- factor(Myc4$Exp1Group, levels = c("0", "1", "2", "3", "4", "5", "6", "7", "8"), # order  
+#                         labels = c("Baseline", "m", "nwp", "mnp", "mnw", "mwp", "n", "w", "p")) # labels 
 
 library(ggplot2)
 MycPlot <- ggplot(data = Myc4, 
@@ -141,6 +141,9 @@ MycPlot
 
 #### analysis ####
 # model
+# change group names
+Myc3$Exp1Group <- factor(Myc3$Exp1Group, levels = c("0", "1", "2","3","4", "5", "6", "7", "8"), # order  
+                         labels = c("baseline", "m", "nbp", "nb", "np", "bp", "n", "b", "p")) # labels 
 # try a mixed effects model
 library(lme4)
 # Fit a model 
@@ -152,6 +155,7 @@ summ_Myc3 <- Myc3 %>%
   group_by(Exp1Group) %>% 
   summarise(mean_perc_c = mean(perc_c),
             sd_perc_c = sd(perc_c),
+            se_perc_c = sd(perc_c)/sqrt(n()),
             n_perc_c = n())
 ratio <-(max(summ_Myc3$sd_perc_c))/(min(summ_Myc3$sd_perc_c))
 print(ratio)
@@ -170,12 +174,22 @@ Anova(model, type = 3)
 # Tukey-Kramer test (automatically applied for unequal sample sizes)
 library(emmeans)
 emm <- emmeans(model, ~ Exp1Group)        # treatment effects within each room
-pairs(emm, adjust = "tukey")
+MycModel <- pairs(emm, adjust = "tukey")
+
+MycModel <- as.data.frame(MycModel)
+
+library(writexl)
+
+write_xlsx(MycModel, "C:/Users/bella/Documents/MycModel.xlsx")
 
 # calculate some summary statistics
 print(summ_Myc3)
 
 # Arbuscule only model
+# change group names
+Myc4$Exp1Group <- factor(Myc4$Exp1Group, levels = c("0", "1", "2","3","4", "5", "6", "7", "8"), # order  
+                        labels = c("baseline", "m", "nbp", "nb", "np", "bp", "n", "b", "p")) # labels 
+
 # Fit a model 
 M2 <- lmer(perc_A ~ factor(Exp1Group) + (1 | Room), data = Myc4)
 
@@ -186,6 +200,7 @@ summ_Myc4 <- Myc4 %>%
   group_by(Exp1Group) %>% 
   summarise(mean_perc_A = mean(perc_A),
             sd_perc_A = sd(perc_A),
+            se_perc_A = sd(perc_A)/sqrt(n()),
             n_perc_A = n())
 ratio <-(max(summ_Myc4$sd_perc_A))/(min(summ_Myc4$sd_perc_A))
 print(ratio)
@@ -204,7 +219,13 @@ Anova(model, type = 3)
 # Tukey-Kramer test (automatically applied for unequal sample sizes)
 library(emmeans)
 emm <- emmeans(model, ~ Exp1Group)        # treatment effects within each room
-pairs(emm, adjust = "tukey")
+ArbusculeModel <- pairs(emm, adjust = "tukey")
+
+ArbusculeModel <- as.data.frame(ArbusculeModel)
+
+library(writexl)
+
+#write_xlsx(ArbusculeModel, "C:/Users/bella/Documents/ArbusculeModel.xlsx")
 
 # calculate summary stats
 print(summ_Myc4)

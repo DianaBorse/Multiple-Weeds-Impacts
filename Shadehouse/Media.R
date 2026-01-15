@@ -542,165 +542,168 @@ summary_Mono <- MediaMono %>%
 
 print(summary_Mono)
 
+#### Change in media paired comparisons ####
+
+# make a new column that is the T 2 value minus the T 1 value
+# Nitrate
+Media <- Media %>%
+  mutate(ChangeNitrate = (Nitrate_T2 - Nitrate_T1))
+# Ammonium
+Media <- Media %>%
+  mutate(ChangeAmmonium = (Ammonium_T2 - Ammonium_T1))
+# C_N Ratio
+Media <- Media %>%
+  mutate(ChangeC_NRatio = (C_NRatio_T2 - C_NRatio_T1))
+# Phosphorus
+Media <- Media %>%
+  mutate(ChangePhosphorus = (Phosphorus_T2 - Phosphorus_T1))
+# Potassium
+Media <- Media %>%
+  mutate(ChangePotassium = (Potassium_T2 - Potassium_T1))
+# total Nitrogen
+Media <- Media %>%
+  mutate(ChangeTotalNitrogen = (TotalNitrogen_T2 - TotalNitrogen_T1))
+
+# Show summary stats #
+summ_MediaChange <- Media %>%
+  group_by(Group) %>% 
+  summarise(mean_ChangeC_NRatio = mean(ChangeC_NRatio),
+            sd_ChangeC_NRatio = sd(ChangeC_NRatio), mean_ChangeTotalNitrogen = mean(ChangeTotalNitrogen),
+            sd_ChangeTotalNitrogen = sd(ChangeTotalNitrogen), 
+            mean_ChangePotassium = mean(ChangePotassium),
+            sd_ChangePotassium = sd(ChangePotassium), mean_ChangePhosphorus = mean(ChangePhosphorus),
+            sd_ChangePhosphorus = sd(ChangePhosphorus), mean_ChangeAmmonium = mean(ChangeAmmonium),
+            sd_ChangeAmmonium = sd(ChangeAmmonium), mean_ChangeNitrate = mean(ChangeNitrate),
+            sd_ChangeNitrate = sd(ChangeNitrate))
+
+print(summ_MediaChange)
 
 
+# wattle comparisons
+MediaWattle <- Media %>%
+  mutate(Group = case_when(
+    Group  %in% c(2, 4, 5, 7) ~ "wattle",
+    Group %in% c(1, 3, 6, 8) ~ "no wattle",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
 
+ggplot(MediaWattle, aes(x = Group, y = ChangeTotalNitrogen, group = Group))+
+  geom_boxplot() +
+  theme_bw() 
+ggplot(MediaWattle) +
+  geom_histogram(aes(ChangeTotalNitrogen), binwidth = 1)+
+  facet_wrap(~Group)
+ggplot(MediaWattle)+
+  geom_qq(aes(sample = ChangeTotalNitrogen, color = Group)) +
+  theme_classic()
 
-#### PCA ####
-# Load required package
-library(vegan)
-library(dplyr)
+wilcox.test(ChangeNitrate ~ Group, data = MediaWattle, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(ChangeAmmonium ~ Group, data = MediaWattle, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(ChangeC_NRatio ~ Group, data = MediaWattle, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(ChangePhosphorus ~ Group, data = MediaWattle, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(ChangePotassium ~ Group, data = MediaWattle, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+t.test(ChangeTotalNitrogen ~ Group, data = MediaWattle, var.equal = FALSE)
 
-library(factoextra)
+# privet
+MediaPrivet <- Media %>%
+  mutate(Group = case_when(
+    Group  %in% c(2, 3, 5, 8) ~ "privet",
+    Group %in% c(1, 4, 6, 7) ~ "no privet",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
 
-media.pca <- prcomp(Media[,c("logC_NRatio_T2", "TotalNitrogen_T2", "logPotassium_T2", "logNitrate_T2", "Ammonium_T2", "Phosphorus_T2")], center = TRUE,scale. = TRUE,tol = 0.1)
-summary(media.pca)
-media.pca
+ggplot(MediaPrivet, aes(x = Group, y = ChangeTotalNitrogen, group = Group))+
+  geom_boxplot() +
+  theme_bw() 
+ggplot(MediaPrivet) +
+  geom_histogram(aes(ChangeTotalNitrogen), binwidth = 1)+
+  facet_wrap(~Group)
+ggplot(MediaPrivet)+
+  geom_qq(aes(sample = ChangeTotalNitrogen, color = Group)) +
+  theme_classic()
 
-#this generates the PC scores for each plot
-axes_media.pca <- predict(media.pca, newdata = Media)
-#making sure it worked
-head(axes_media.pca, 4)
+wilcox.test(ChangeNitrate ~ Group, data = MediaPrivet, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(ChangeAmmonium ~ Group, data = MediaPrivet, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(ChangeC_NRatio ~ Group, data = MediaPrivet, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(ChangePhosphorus ~ Group, data = MediaPrivet, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(ChangePotassium ~ Group, data = MediaPrivet, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+t.test(ChangeTotalNitrogen ~ Group, data = MediaPrivet, var.equal = FALSE)
 
-#creating a new dataframe that adds the the PC scores to the end
-df_media.pca <- cbind(Media, axes_media.pca)
+summary_Privet <- MediaPrivet %>%
+  group_by(Group) %>%
+  summarise(mean_ChangePhosphorus = mean(ChangePhosphorus),
+            median_ChangePhosphorus = median(ChangePhosphorus),
+            IQR_ChangePhosphorus = IQR(ChangePhosphorus),
+            sd_ChangePhosphorus = sd(ChangePhosphorus),
+            var_ChangePhosphorus = var(ChangePhosphorus),
+            se_ChangePhosphorus = sd(ChangePhosphorus)/sqrt(n()),
+            n_ChangePhosphorus = n())
 
-fviz_eig(media.pca,addlabels = TRUE) #scree plot
+print(summary_Privet)
 
-eig.val <- get_eigenvalue(media.pca) #getting eighvalue from each pca
-eig.val
+# Woolly
+MediaWoolly <- Media %>%
+  mutate(Group = case_when(
+    Group  %in% c(2, 3, 4, 6) ~ "woolly",
+    Group %in% c(1, 5, 7, 8) ~ "no woolly",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
 
-pca.var <- get_pca_var(media.pca)
-pca.var$contrib
-pca.var$coord
-pca.var$cos2
+ggplot(MediaWoolly, aes(x = Group, y = ChangeTotalNitrogen, group = Group))+
+  geom_boxplot() +
+  theme_bw() 
+ggplot(MediaWoolly) +
+  geom_histogram(aes(ChangeTotalNitrogen), binwidth = 1)+
+  facet_wrap(~Group)
+ggplot(MediaWoolly)+
+  geom_qq(aes(sample = ChangeTotalNitrogen, color = Group)) +
+  theme_classic()
 
+wilcox.test(ChangeNitrate ~ Group, data = MediaWoolly, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(ChangeAmmonium ~ Group, data = MediaWoolly, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(ChangeC_NRatio ~ Group, data = MediaWoolly, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(ChangePhosphorus ~ Group, data = MediaWoolly, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(ChangePotassium ~ Group, data = MediaWoolly, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+t.test(ChangeTotalNitrogen ~ Group, data = MediaWoolly, var.equal = FALSE)
 
-# % contribution of the variables 
-fviz_pca_var(media.pca, axes = c(1, 2), col.var = "contrib",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE)
+# mixture of weeds vs monoculture
+# Woolly tests
+MediaMono <- Media %>%
+  mutate(Group = case_when(
+    Group  %in% c(2, 3, 4, 5) ~ "mixture",
+    Group %in% c(6, 7, 8) ~ "monoculture",
+    TRUE ~ NA_character_  # Optional: handles other values
+  ))
 
-# try NMDS
+# remove NA
+MediaMono <- MediaMono %>%
+  filter(!is.na(Group))
 
-#remove non-numeric columns
-Media2<-Media[,-2]
-Media2<-Media2[,-4]
-Media2<-Media2[,-3]
-Media2<-Media2[,-2]
-Media2<-Media2[,-36]
+ggplot(MediaMono, aes(x = Group, y = ChangeTotalNitrogen, group = Group))+
+  geom_boxplot() +
+  theme_bw() 
+ggplot(MediaMono) +
+  geom_histogram(aes(ChangeTotalNitrogen), binwidth = 1)+
+  facet_wrap(~Group)
+ggplot(MediaMono)+
+  geom_qq(aes(sample = ChangeTotalNitrogen, color = Group)) +
+  theme_classic()
 
-# Get down to only columns of interest
-Media2<-Media2[,-36]
-Media2<-Media2[,-35]
-Media2<-Media2[,-34]
-Media2<-Media2[,-33]
-Media2<-Media2[,-32]
-Media2<-Media2[,-31]
-Media2<-Media2[,-30]
-Media2<-Media2[,-29]
-Media2<-Media2[,-28]
-Media2<-Media2[,-26]
-Media2<-Media2[,-24]
-Media2<-Media2[,-23]
-Media2<-Media2[,-22]
-Media2<-Media2[,-21]
-Media2<-Media2[,-20]
-Media2<-Media2[,-19]
-Media2<-Media2[,-18]
-Media2<-Media2[,-17]
-Media2<-Media2[,-16]
-Media2<-Media2[,-14]
-Media2<-Media2[,-13]
-Media2<-Media2[,-12]
-Media2<-Media2[,-10]
-Media2<-Media2[,-8]
-Media2<-Media2[,-6]
-Media2<-Media2[,-5]
-Media2<-Media2[,-4]
-Media2<-Media2[,-3]
-Media2<-Media2[,-2]
+wilcox.test(ChangeNitrate ~ Group, data = MediaMono, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(ChangeAmmonium ~ Group, data = MediaMono, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(ChangeC_NRatio ~ Group, data = MediaMono, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(ChangePhosphorus ~ Group, data = MediaMono, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(ChangePotassium ~ Group, data = MediaMono, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+t.test(ChangeTotalNitrogen ~ Group, data = MediaMono, var.equal = FALSE)
 
-Media2 <- as.data.frame(Media2)
+summary_Mono <- MediaMono %>%
+  group_by(Group) %>%
+  summarise(mean_ChangeNitrate = mean(ChangeNitrate),
+            median_ChangeNitrate = median(ChangeNitrate),
+            IQR_ChangeNitrate = IQR(ChangeNitrate),
+            sd_ChangeNitrate = sd(ChangeNitrate),
+            var_ChangeNitrate = var(ChangeNitrate),
+            se_ChangeNitrate = sd(ChangeNitrate)/sqrt(n()),
+            n_ChangeNitrate = n())
 
-row.names(Media2) <- Media2$SampleNumber 
-# Remove the first column from the data frame 
-Media2 <- Media2[, -1]
-
-library(vegan)
-doubs.dist<-vegdist(Media2)
-doubs.dist
-
-# Check for Na, NaN,Inf values
-any(is.na(doubs.dist))
-any(is.infinite(doubs.dist))
-
-
-#Classification
-Media2<-hclust(doubs.dist,method='average')
-plot(Media2,hang=-1) #The hang=-1 tidies it up so all the end nodes finish at the same level
-grp<-cutree(Media2,k=30) #K=4 is saying to identify the dominant 4 groups.
-grp
-rect.hclust(Media2, k=30)
-
-doubs.pca<-princomp(doubs.dist,cor=TRUE)
-summary(doubs.pca) 
-biplot(doubs.pca)
-
-# Create PCA biplot with sites as points
-
-# Load necessary libraries
-library(ggplot2)
-library(ggfortify)
-
-autoplot(
-  doubs.pca,
-  data = doubs.dist,
-  loadings = TRUE,             # Display loadings vectors
-  loadings.label = TRUE,       # Display loadings labels
-  loadings.colour = '#AA4499',     # Loadings vector color
-  loadings.label.size = 3,     # Loadings label size
-  loadings.label.colour = "#AA4499", # Loadings label color
-  shape = 1) +                   # Use points for sites
-  theme_minimal()              # Apply a minimal theme
-
-#Moving on now to MDS
-#DO MDS with vegan package
-z <- metaMDS(comm = doubs.dist,
-             autotransform = FALSE,
-             distance = "bray",
-             engine = "monoMDS",
-             k = 2,
-             weakties = TRUE,
-             model = "global",
-             maxit = 300,
-             try = 40,
-             trymax = 50)
-
-z
-# Stress Plot = Sheppard Plot
-plot(z$diss, z$dist)
-
-stressplot(object = z,
-           p.col = "#88CCEE",
-           l.col = "#882255",
-           lwd = 1)
-
-#always report the stress for MDS, never report the Rsquared you get from that plot above
-plot(z)
-
-plot(z[["points"]][,2]~z[["points"]][,1],main="Survey Data", xlab="NMDSaxis 1" , ylab= "NMDS axis 2", cex = 0.5 +as.numeric(Survey_wide$nit))
-
-# Using ggplot2 to make a plot with site names
-plot(z, type = "t")
-
-# Looking at the stress/goodness of fit
-gof <- goodness(object = z)
-plot(z, display = "sites", type = "none")
-points(z, display = "sites", cex = 2*gof/mean(gof))
-
-
-# Make the points into a data frame for ggplot
-z$points %>% head()
-z.points <- data.frame(z$points)
-
+print(summary_Mono)
