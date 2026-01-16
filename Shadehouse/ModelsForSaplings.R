@@ -157,6 +157,10 @@ ggplot(Sapling, aes(x = Group, y = Mass, color = Room)) +
   labs(title = "Fixed vs Random Effect Predictions",
        y = "Mass", x = "Group")
 
+# change group names
+Sapling$Group <- factor(Sapling$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                                         labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
+
 # look at the effects
 # Fit a model 
 M2 <- lmer(Mass ~ factor(Group) + (1 | Room), data = Sapling)
@@ -165,7 +169,14 @@ summary(M2)
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M2, type = 3) 
-emmeans(M2, specs=pairwise~Group)
+emm <- emmeans(M2, ~ Group)   
+SaplingBiomassComparison <- pairs(emm, adjust = "tukey")
+
+SaplingBiomassComparison <- as.data.frame(SaplingBiomassComparison)
+
+library(writexl)
+
+write_xlsx(SaplingBiomassComparison, "C:/Users/bella/Documents/SaplingBiomassComparison.xlsx")
 
 #### RGR ####
 library(readr)
@@ -257,6 +268,11 @@ Sapling <- Sapling %>%
 library(vegan)
 library(dplyr)
 
+# change group names
+SaplingH$Group <- factor(SaplingH$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                        labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
+
+
 # look at the effects
 # Fit a model 
 M1 <- lmer(AverageGR ~  factor(Group) +  (1 | Room), data = Sapling)
@@ -265,8 +281,15 @@ summary(M1)
 
 # Type II/III tests (handle unbalanced designs)
 library(car)
-Anova(M1, type = 3) 
-emmeans(M1, specs=pairwise~Group)
+Anova(M1, type = 3)
+emm <- emmeans(M1, ~ Group)    
+SaplingRGRComparison <- pairs(emm, adjust = "tukey")
+
+SaplingRGRComparison <- as.data.frame(SaplingRGRComparison)
+
+library(writexl)
+
+write_xlsx(SaplingRGRComparison, "C:/Users/bella/Documents/SaplingRGRComparison.xlsx")
 
 #### Survival ####
 # make a column that surviving y/n
@@ -313,6 +336,11 @@ colnames(Woolly)[13:17] <- c("Nitrate","Ammonium", "Phosphorus", "Potassium",
 library(vegan)
 library(dplyr)
 
+# change group names
+Woolly$Group <- factor(Woolly$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                        labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
+
+
 # look at the effects
 # Fit a model 
 M1 <- lmer(Mass ~  factor(Group) +  (1 | Room), data = Woolly)
@@ -322,7 +350,14 @@ summary(M1)
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M1, type = 3) 
-emmeans(M1, specs=pairwise~Group)
+emm <- emmeans(M1, ~ Group)  
+WoollyBiomassComparison <- pairs(emm, adjust = "tukey")
+
+WoollyBiomassComparison <- as.data.frame(WoollyBiomassComparison)
+
+library(writexl)
+
+write_xlsx(WoollyBiomassComparison, "C:/Users/bella/Documents/WoollyBiomassComparison.xlsx")
 
 # Estimated marginal means and pairwise comparisons
 summ_Woolly <- Woolly %>%
@@ -353,6 +388,10 @@ WoollyH$Group <- as.numeric(WoollyH$Group)
 library(vegan)
 library(dplyr)
 
+# change group names
+WoollyH$Group <- factor(WoollyH$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                       labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
+
 # look at the effects
 # Fit a model 
 M1 <- lmer(AverageGR ~  factor(Group) +  (1 | Room), data = WoollyH)
@@ -362,7 +401,14 @@ summary(M1)
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M1, type = 3) 
-emmeans(M1, specs=pairwise~Group)
+emm <- emmeans(M1, ~ Group)  
+WoollyRGRComparison <- pairs(emm, adjust = "tukey")
+
+WoollyRGRComparison <- as.data.frame(WoollyRGRComparison)
+
+library(writexl)
+
+write_xlsx(WoollyRGRComparison, "C:/Users/bella/Documents/WoollyRGRComparison.xlsx")
 
 summ_WoollyH <- WoollyH %>%
   group_by(Group) %>% 
@@ -390,6 +436,10 @@ colnames(Privet)[13:17] <- c("Nitrate","Ammonium", "Phosphorus", "Potassium",
 library(vegan)
 library(dplyr)
 
+# change group names
+Privet$Group <- factor(Privet$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                        labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
+
 # look at the effects
 # Fit a model 
 M1 <- lmer(Mass ~  factor(Group) +  (1 | Room), data = Privet)
@@ -399,7 +449,14 @@ summary(M1)
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M1, type = 3) 
-emmeans(M1, specs=pairwise~Group)
+emm <- emmeans(M1, ~ Group)  
+PrivetBiomassComparison <- pairs(emm, adjust = "tukey")
+
+PrivetBiomassComparison <- as.data.frame(PrivetBiomassComparison)
+
+library(writexl)
+
+write_xlsx(PrivetBiomassComparison, "C:/Users/bella/Documents/PrivetBiomassComparison.xlsx")
 
 summ_Privet <- Privet %>%
   group_by(Group) %>% 
@@ -428,6 +485,8 @@ PrivetH$Group <- as.numeric(PrivetH$Group)
 library(vegan)
 library(dplyr)
 
+v
+
 # look at the effects
 # Fit a model 
 M1 <- lmer(AverageGR ~  factor(Group) +  (1 | Room), data = PrivetH)
@@ -437,7 +496,16 @@ summary(M1)
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M1, type = 3) 
-emmeans(M1, specs=pairwise~Group)
+emm <- emmeans(M1, ~ Group)  
+PrivetRGRComparison <- pairs(emm, adjust = "tukey")
+
+PrivetRGRComparison <- as.data.frame(PrivetRGRComparison)
+
+library(writexl)
+
+write_xlsx(PrivetRGRComparison, "C:/Users/bella/Documents/PrivetRGRComparison.xlsx")
+
+
 summ_PrivetH <- PrivetH %>%
   group_by(Group) %>% 
   summarise(mean_AverageGR = mean(AverageGR),
@@ -464,6 +532,10 @@ colnames(Wattle)[13:17] <- c("Nitrate","Ammonium", "Phosphorus", "Potassium",
 library(vegan)
 library(dplyr)
 
+# change group names
+Wattle$Group <- factor(Wattle$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                        labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
+
 # look at the effects
 # Fit a model 
 M1 <- lmer(Mass ~  factor(Group) +  (1 | Room), data = Wattle)
@@ -473,12 +545,20 @@ summary(M1)
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M1, type = 3) 
-emmeans(M1, specs=pairwise~Group)
+emm <- emmeans(M1, ~ Group)  
+WattleBiomassComparison <- pairs(emm, adjust = "tukey")
+
+WattleBiomassComparison <- as.data.frame(WattleBiomassComparison)
+
+library(writexl)
+
+write_xlsx(WattleBiomassComparison, "C:/Users/bella/Documents/WattleBiomassComparison.xlsx")
 
 summ_Wattle <- Wattle %>%
   group_by(Group) %>% 
   summarise(mean_Mass = mean(Mass),
-            sd_Mass = sd(Mass))
+            sd_Mass = sd(Mass),
+            se_Mass = sd(Mass)/sqrt(n()))
 print(summ_Wattle)
 
 summ_WattleRoom <- Wattle %>%
@@ -502,6 +582,10 @@ WattleH$Group <- as.numeric(WattleH$Group)
 library(vegan)
 library(dplyr)
 
+# change group names
+WattleH$Group <- factor(WattleH$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                       labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
+
 # look at the effects
 # Fit a model 
 M1 <- lmer(AverageGR ~  factor(Group) +  (1 | Room), data = WattleH)
@@ -511,7 +595,14 @@ summary(M1)
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M1, type = 3) 
-emmeans(M1, specs=pairwise~Group)
+emm <- emmeans(M1, ~ Group) 
+WattleRGRComparison <- pairs(emm, adjust = "tukey")
+
+WattleRGRComparison <- as.data.frame(WattleRGRComparison)
+
+library(writexl)
+
+write_xlsx(WattleRGRComparison, "C:/Users/bella/Documents/WattleRGRComparison.xlsx")
 
 summ_WattleH <- WattleH %>%
   group_by(Group) %>% 
@@ -526,7 +617,7 @@ summ_WattleHRoom <- WattleH %>%
 print(summ_WattleHRoom)
 
 #### Seedling Biomass ####
-# include only privet
+# include only seedlings
 Seedling <- Biomass[Biomass$Plant == "ManukaSeedling", ]
 
 Seedling$Group <- as.numeric(Seedling$Group)
@@ -540,66 +631,30 @@ Seedling<-Seedling[-81, ]
 library(vegan)
 library(dplyr)
 
-library(factoextra)
-
-Seedling.pca <- prcomp(Seedling[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
-summary(Seedling.pca)
-Seedling.pca
-
-
-#this generates the PC scores for each plot
-axes_Seedling.pca <- predict(Seedling.pca, newdata = Seedling)
-#making sure it worked
-head(axes_Seedling.pca, 4)
-
-#creating a new dataframe that adds the the PC scores to the end
-df_Seedling.pca <- cbind(Seedling, axes_Seedling.pca)
-
-fviz_eig(Seedling.pca,addlabels = TRUE) #scree plot
-
-eig.val <- get_eigenvalue(Seedling.pca) #getting eighvalue from each pca
-eig.val
-
-pca.var <- get_pca_var(Seedling.pca)
-pca.var$contrib
-pca.var$coord
-pca.var$cos2
-
-
-# % contribution of the variables 
-fviz_pca_var(Seedling.pca, axes = c(1, 2), col.var = "contrib",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE)
-
-
-library(MASS) ## do to the GLM
-MassGLM <- lm(Mass ~ PC1 + PC2,
-              data = df_Seedling.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
-summary(MassGLM)
-
-#### AICc for model selection
-library(MuMIn)
-options(na.action = "na.fail") #Must run this code once to use dredge
-model.full <- lm(Mass ~ factor(Group) + factor(Room), data = df_Seedling.pca)
-summary(model.full)
-
-# Look for Multicolliniarity
-library(car)
-car::vif(model.full)
+# change group names
+Seedling$Group <- factor(Seedling$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                        labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
 
 # look at the effects
 # Fit a model 
-M2 <- lm(Mass ~ factor(Group) + factor(Room), data = Seedling)
+M1 <- lmer(Mass ~  factor(Group) +  (1 | Room), data = Seedling)
 
-summary(M2)
+summary(M1)
+
 # Type II/III tests (handle unbalanced designs)
 library(car)
-Anova(M2, type = 3) 
+Anova(M1, type = 3) 
 
 # Estimated marginal means and pairwise comparisons
 library(emmeans)
-emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "tukey")
+emm <- emmeans(M1, ~ Group)  
+SeedlingBiomassComparison <- pairs(emm, adjust = "tukey")
+
+SeedlingBiomassComparison <- as.data.frame(SeedlingBiomassComparison)
+
+library(writexl)
+
+write_xlsx(SeedlingBiomassComparison, "C:/Users/bella/Documents/SeedlingBiomassComparison.xlsx")
 
 
 summ_Seedling <- Seedling %>%
@@ -629,55 +684,14 @@ SeedlingH$Group <- as.numeric(SeedlingH$Group)
 library(vegan)
 library(dplyr)
 
-library(factoextra)
-
-SeedlingH.pca <- prcomp(SeedlingH[,c("Group", "Room")], center = TRUE,scale. = TRUE,tol = 0.1)
-summary(SeedlingH.pca)
-SeedlingH.pca
-
-
-#this generates the PC scores for each plot
-axes_SeedlingH.pca <- predict(SeedlingH.pca, newdata = SeedlingH)
-#making sure it worked
-head(axes_SeedlingH.pca, 4)
-
-#creating a new dataframe that adds the the PC scores to the end
-df_SeedlingH.pca <- cbind(SeedlingH, axes_SeedlingH.pca)
-
-fviz_eig(SeedlingH.pca,addlabels = TRUE) #scree plot
-
-eig.val <- get_eigenvalue(SeedlingH.pca) #getting eighvalue from each pca
-eig.val
-
-pca.var <- get_pca_var(SeedlingH.pca)
-pca.var$contrib
-pca.var$coord
-pca.var$cos2
-
-
-# % contribution of the variables 
-fviz_pca_var(SeedlingH.pca, axes = c(1, 2), col.var = "contrib",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE)
-
-
-library(MASS) ## do to the GLM
-RGRGLM <- lm(AverageGR ~ PC1 + PC2,
-             data = df_SeedlingH.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
-summary(RGRGLM)
-
-#### AICc for model selection
-library(MuMIn)
-options(na.action = "na.fail") #Must run this code once to use dredge
-model.full <- lm(AverageGR ~ factor(Group) + factor(Room), data = df_SeedlingH.pca)
-
-# Look for Multicolliniarity
-library(car)
-car::vif(model.full)
+# change group names
+SeedlingH$Group <- factor(SeedlingH$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                         labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
 
 # look at the effects
 # Fit a model 
-M1 <- lm(AverageGR ~  factor(Group) +  factor(Room), data = SeedlingH)
+# Fit a model 
+M1 <- lmer(AverageGR ~  factor(Group) +  (1 | Room), data = SeedlingH)
 
 summary(M1)
 
@@ -687,8 +701,14 @@ Anova(M1, type = 3)
 
 # Estimated marginal means and pairwise comparisons
 library(emmeans)
-emm <- emmeans(M2, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "tukey")
+emm <- emmeans(M1, ~ Group)  
+SeedlingRGRComparison <- pairs(emm, adjust = "tukey")
+
+SeedlingRGRComparison <- as.data.frame(SeedlingRGRComparison)
+
+library(writexl)
+
+write_xlsx(SeedlingRGRComparison, "C:/Users/bella/Documents/SeedlingRGRComparison.xlsx")
 
 summ_SeedlingH <- SeedlingH %>%
   group_by(Group) %>% 
@@ -719,15 +739,28 @@ summary(M1)
 library(car)
 Anova(M1, type = 3) 
 emm <- emmeans(M1, ~ Group)        # treatment effects within each room
-pairs(emm, adjust = "tukey")
+NodulesOutput <- pairs(emm, adjust = "tukey")
+
+NodulesOutput <- as.data.frame(NodulesOutput)
+
+library(writexl)
+
+write_xlsx(NodulesOutput, "C:/Users/bella/Documents/NodulesOutput.xlsx")
 
 summ_Nodules <- Nodules %>%
   group_by(Group) %>% 
   summarise(mean_Nodules = mean(Nodule_change),
-            sd_Nodules = sd(Nodule_change))
+            sd_Nodules = sd(Nodule_change), 
+            se_Nodule_change = sd(Nodule_change)/sqrt(n()))
 print(summ_Nodules)
 ratio <-(max(summ_Nodules$sd_Nodules))/(min(summ_Nodules$sd_Nodules))
 print(ratio)
+
+summ_Nodules <- as.data.frame(summ_Nodules)
+
+library(writexl)
+
+write_xlsx(summ_Nodules, "C:/Users/bella/Documents/summ_Nodules.xlsx")
 
 # try a transformation
 Nodules <- Nodules %>%

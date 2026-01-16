@@ -568,16 +568,20 @@ Media <- Media %>%
 summ_MediaChange <- Media %>%
   group_by(Group) %>% 
   summarise(mean_ChangeC_NRatio = mean(ChangeC_NRatio),
-            sd_ChangeC_NRatio = sd(ChangeC_NRatio), mean_ChangeTotalNitrogen = mean(ChangeTotalNitrogen),
-            sd_ChangeTotalNitrogen = sd(ChangeTotalNitrogen), 
-            mean_ChangePotassium = mean(ChangePotassium),
-            sd_ChangePotassium = sd(ChangePotassium), mean_ChangePhosphorus = mean(ChangePhosphorus),
-            sd_ChangePhosphorus = sd(ChangePhosphorus), mean_ChangeAmmonium = mean(ChangeAmmonium),
-            sd_ChangeAmmonium = sd(ChangeAmmonium), mean_ChangeNitrate = mean(ChangeNitrate),
-            sd_ChangeNitrate = sd(ChangeNitrate))
+            sd_ChangeC_NRatio = sd(ChangeC_NRatio), se_ChangeC_NRatio = sd(ChangeC_NRatio)/sqrt(n()), mean_ChangeTotalNitrogen = mean(ChangeTotalNitrogen),
+            sd_ChangeTotalNitrogen = sd(ChangeTotalNitrogen), se_ChangeTotalNitrogen = sd(ChangeTotalNitrogen)/sqrt(n()),
+            mean_ChangePotassium = mean(ChangePotassium), sd_ChangePotassium = sd(ChangePotassium),
+            se_ChangePotassium = sd(ChangePotassium)/sqrt(n()), mean_ChangePhosphorus = mean(ChangePhosphorus),
+            sd_ChangePhosphorus = sd(ChangePhosphorus), se_ChangePhosphorus = sd(ChangePhosphorus)/sqrt(n()), mean_ChangeAmmonium = mean(ChangeAmmonium),
+            sd_ChangeAmmonium = sd(ChangeAmmonium), se_ChangeAmmonium = sd(ChangeAmmonium)/sqrt(n()), mean_ChangeNitrate = mean(ChangeNitrate),
+            sd_ChangeNitrate = sd(ChangeNitrate), se_ChangeNitrate = sd(ChangeNitrate)/sqrt(n()))
 
 print(summ_MediaChange)
 
+
+library(writexl)
+
+write_xlsx(summ_MediaChange, "C:/Users/bella/Documents/summ_MediaChange.xlsx")
 
 # wattle comparisons
 MediaWattle <- Media %>%

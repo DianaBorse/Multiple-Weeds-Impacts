@@ -143,7 +143,7 @@ MycPlot
 # model
 # change group names
 Myc3$Exp1Group <- factor(Myc3$Exp1Group, levels = c("0", "1", "2","3","4", "5", "6", "7", "8"), # order  
-                         labels = c("baseline", "m", "nbp", "nb", "np", "bp", "n", "b", "p")) # labels 
+                         labels = c("baseline", "m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
 # try a mixed effects model
 library(lme4)
 # Fit a model 
@@ -188,7 +188,7 @@ print(summ_Myc3)
 # Arbuscule only model
 # change group names
 Myc4$Exp1Group <- factor(Myc4$Exp1Group, levels = c("0", "1", "2","3","4", "5", "6", "7", "8"), # order  
-                        labels = c("baseline", "m", "nbp", "nb", "np", "bp", "n", "b", "p")) # labels 
+                        labels = c("baseline", "m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
 
 # Fit a model 
 M2 <- lmer(perc_A ~ factor(Exp1Group) + (1 | Room), data = Myc4)
@@ -225,7 +225,7 @@ ArbusculeModel <- as.data.frame(ArbusculeModel)
 
 library(writexl)
 
-#write_xlsx(ArbusculeModel, "C:/Users/bella/Documents/ArbusculeModel.xlsx")
+write_xlsx(ArbusculeModel, "C:/Users/bella/Documents/ArbusculeModel.xlsx")
 
 # calculate summary stats
 print(summ_Myc4)
