@@ -119,6 +119,33 @@ colnames(RoomPot)[1:1] <- c("Pot") ## Renaming the columns
 Biomass <- Biomass %>%
   left_join(RoomPot %>% dplyr::select(Pot, Room), by = "Pot")
 
+# which plant has the highest biomass
+# reduce to just seedlings
+Weeds <- Biomass[Biomass$Plant != "ManukaSapling", ]
+# Fit a model 
+library(lme4)
+M2 <- lmer(Mass ~ factor(Plant) + (1 | Room), data = Weeds)
+
+summary(M2)
+# Type II/III tests (handle unbalanced designs)
+library(car)
+Anova(M2, type = 3) 
+library(emmeans)
+emm <- emmeans(M2, ~ Plant)   
+pairs(emm, adjust = "tukey")
+
+# calculate means
+summ_weeds <- Weeds %>%
+  group_by(Plant) %>%
+  summarise(mean_Mass = mean(Mass),
+            median_Mass = median(Mass),
+            IQR_Mass = IQR(Mass),
+            sd_Mass = sd(Mass),
+            var_Mass = var(Mass),
+            se_Mass = sd(Mass)/sqrt(189))
+print(summ_weeds)
+
+# everything had significantly higher biomass than seedlings
 
 #### Sapling Model ####
 
@@ -254,6 +281,38 @@ library(dplyr)
 
 Height <- Height %>% 
   filter(!is.na(AverageGR))
+
+# which plant has the highest biomass
+# reduce to just seedlings
+# Fit a model 
+library(lme4)
+M2 <- lm(AverageGR ~ factor(Plant), data = Height)
+
+summary(M2)
+# Type II/III tests (handle unbalanced designs)
+library(car)
+Anova(M2, type = 3) 
+library(emmeans)
+emm <- emmeans(M2, ~ Plant)   
+RGRComparisons <- pairs(emm, adjust = "tukey")
+
+RGRComparisons <- as.data.frame(RGRComparisons)
+
+library(writexl)
+
+write_xlsx(RGRComparisons, "C:/Users/bella/Documents/RGRComparisons.xlsx")
+
+# calculate means
+summ_height <- Height %>%
+  group_by(Plant) %>%
+  summarise(mean_AverageGR = mean(AverageGR),
+            median_AverageGR = median(AverageGR),
+            IQR_AverageGR = IQR(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            var_AverageGR = var(AverageGR),
+            se_AverageGR = sd(AverageGR)/sqrt(189))
+print(summ_height)
+
 
 #### Let's look at Sapling height ####
 SaplingH <- Height[Height$Plant == "ManukaSapling", ]
