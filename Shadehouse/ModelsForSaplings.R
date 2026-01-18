@@ -203,7 +203,7 @@ SaplingBiomassComparison <- as.data.frame(SaplingBiomassComparison)
 
 library(writexl)
 
-write_xlsx(SaplingBiomassComparison, "C:/Users/bella/Documents/SaplingBiomassComparison.xlsx")
+#write_xlsx(SaplingBiomassComparison, "C:/Users/bella/Documents/SaplingBiomassComparison.xlsx")
 
 #### RGR ####
 library(readr)
@@ -300,7 +300,7 @@ RGRComparisons <- as.data.frame(RGRComparisons)
 
 library(writexl)
 
-write_xlsx(RGRComparisons, "C:/Users/bella/Documents/RGRComparisons.xlsx")
+#write_xlsx(RGRComparisons, "C:/Users/bella/Documents/RGRComparisons.xlsx")
 
 # calculate means
 summ_height <- Height %>%
@@ -328,8 +328,8 @@ library(vegan)
 library(dplyr)
 
 # change group names
-SaplingH$Group <- factor(SaplingH$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
-                        labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
+#Sapling$Group <- factor(Sapling$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+ #                       labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
 
 
 # look at the effects
@@ -348,7 +348,7 @@ SaplingRGRComparison <- as.data.frame(SaplingRGRComparison)
 
 library(writexl)
 
-write_xlsx(SaplingRGRComparison, "C:/Users/bella/Documents/SaplingRGRComparison.xlsx")
+#write_xlsx(SaplingRGRComparison, "C:/Users/bella/Documents/SaplingRGRComparison.xlsx")
 
 #### Survival ####
 # make a column that surviving y/n
@@ -377,8 +377,8 @@ Anova(M1, type = 3)
 
 # Estimated marginal means and pairwise comparisons
 library(emmeans)
-emm <- emmeans(M1, ~ Group | Room)        # treatment effects within each room
-pairs(emm, adjust = "mvt")
+emm <- emmeans(M1, ~ Group)        # treatment effects within each room
+pairs(emm, adjust = "tukey")
 
 #### Woolly Nightshade Biomass ####
 

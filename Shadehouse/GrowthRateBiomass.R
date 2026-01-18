@@ -923,22 +923,7 @@ check <- coxph(Surv(time, status) ~ factor(Group), SaplingS)
 round(summary(check)$sctest, 3)
 
 # Can I do an ANOVA for survival? 
-# See if time differs by group, need to account for different group sample sizes
-# The sample sizes are not quite even and therefore we need to use Type 3 analysis
-contrasts(SaplingS$Group) <- contr.sum(8)
 
-model <- lm(time ~ Group, data = SaplingS)
-
-# Run Type III ANOVA
-Anova(model, type = 3)
-
-# tukey-kramer test
-model01 <- aov(time~Group, data = SaplingS)
-tukey <- TukeyHSD(model01)
-summary(tukey)
-print(tukey)
-
-# Let's see about a model with room
 # Add room
 library(readr)
 RoomPot <- read_csv("Shadehouse/RoomPot.csv")
@@ -946,18 +931,26 @@ RoomPot <- read_csv("Shadehouse/RoomPot.csv")
 colnames(RoomPot)[1:1] <- c("Pot") ## Renaming the columns
 SaplingS <- SaplingS %>%
   left_join(RoomPot %>% dplyr::select(Pot, Room), by = "Pot")
+# See if time differs by group, need to account for different group sample sizes
+# The sample sizes are not quite even and therefore we need to use Type 3 analysis
+contrasts(SaplingS$Group) <- contr.sum(8)
 
-# Fit a model 
-library(lme4)
-M2 <- lmer(status ~ factor(Group) + (1 | Room), data = SaplingS)
+model <- lmer(time ~ factor(Group) + (1 | Room), data = SaplingS)
 
-summary(M2)
+summary(model)
 # Type II/III tests (handle unbalanced designs)
 library(car)
-Anova(M2, type = 3) 
+Anova(model, type = 3) 
 library(emmeans)
-emmeans(M2, specs=pairwise~Group)
-# Not sure how useful this is...
+emm <- emmeans(model, ~ Group)   
+SaplingSurvival <- pairs(emm, adjust = "tukey")
+
+
+SaplingSurvival <- as.data.frame(SaplingSurvival)
+
+library(writexl)
+
+write_xlsx(SaplingSurvival, "C:/Users/bella/Documents/SaplingSurvival.xlsx")
 
 #### Seedling survival analysis ####
 
