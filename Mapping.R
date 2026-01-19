@@ -107,11 +107,13 @@ leaflet() %>%
 library(sf)
 library(leaflet)
 library(leaflet.extras2)
+library(htmlwidgets)
 
-# inset map of properties on topomap
+# map of properties
+
 leaflet() %>%
   addProviderTiles("Esri.WorldTopoMap") %>%
-  setView(lng = 174.7633, lat = -36.8485, zoom = 12) %>%
+  setView(lng = 174.7233, lat = -36.8160, zoom = 13.5) %>%
   addCircleMarkers(
     data = Buffer,
     radius = 2,
@@ -122,7 +124,13 @@ leaflet() %>%
   addMiniMap(
     tiles = providers$Esri.WorldTopoMap,
     toggleDisplay = TRUE
-  )
+  ) %>%
+  onRender("
+    function(el, x) {
+      this.zoomControl.remove();
+    }
+  ")
+
 
 #### Species Distribution Maps ####
 # Reduce to only one column to represent each species
@@ -180,7 +188,12 @@ leaflet() %>%
     color = "grey",
     fillOpacity = 0.5,
     stroke = FALSE
-  )
+  ) %>% 
+  onRender("
+    function(el, x) {
+      this.zoomControl.remove();
+    }
+  ")
 
 # Ginger
 library(dplyr)
@@ -218,7 +231,12 @@ leaflet() %>%
     color = "grey",
     fillOpacity = 0.5,
     stroke = FALSE
-  )
+  ) %>% 
+  onRender("
+    function(el, x) {
+      this.zoomControl.remove();
+    }
+  ")
 
 # Climbing Aparagus
 library(dplyr)
@@ -256,7 +274,12 @@ leaflet() %>%
     color = "grey",
     fillOpacity = 0.5,
     stroke = FALSE
-  )
+  ) %>% 
+  onRender("
+    function(el, x) {
+      this.zoomControl.remove();
+    }
+  ")
 
 # Bushy Aparagus
 library(dplyr)
@@ -294,7 +317,12 @@ leaflet() %>%
     color = "grey",
     fillOpacity = 0.5,
     stroke = FALSE
-  )
+  ) %>% 
+  onRender("
+    function(el, x) {
+      this.zoomControl.remove();
+    }
+  ")
 
 # Woolly Nightshade
 library(dplyr)
@@ -332,7 +360,12 @@ leaflet() %>%
     color = "grey",
     fillOpacity = 0.5,
     stroke = FALSE
-  )
+  ) %>% 
+  onRender("
+    function(el, x) {
+      this.zoomControl.remove();
+    }
+  ")
 
 # skip rhamnus, never showed up
 # Coastal Banksia
@@ -371,7 +404,12 @@ leaflet() %>%
     color = "grey",
     fillOpacity = 0.5,
     stroke = FALSE
-  )
+  ) %>% 
+  onRender("
+    function(el, x) {
+      this.zoomControl.remove();
+    }
+  ")
 
 # Jasmine
 library(dplyr)
@@ -409,7 +447,12 @@ leaflet() %>%
     color = "grey",
     fillOpacity = 0.5,
     stroke = FALSE
-  )
+  ) %>% 
+  onRender("
+    function(el, x) {
+      this.zoomControl.remove();
+    }
+  ")
 
 # MorningGlory
 library(dplyr)
@@ -447,7 +490,12 @@ leaflet() %>%
     color = "grey",
     fillOpacity = 0.5,
     stroke = FALSE
-  )
+  ) %>% 
+  onRender("
+    function(el, x) {
+      this.zoomControl.remove();
+    }
+  ")
 
 # English Ivy
 library(dplyr)
@@ -485,7 +533,12 @@ leaflet() %>%
     color = "grey",
     fillOpacity = 0.5,
     stroke = FALSE
-  )
+  ) %>% 
+  onRender("
+    function(el, x) {
+      this.zoomControl.remove();
+    }
+  ")
 
 # Periwinkle
 library(dplyr)
@@ -514,7 +567,7 @@ leaflet() %>%
     data = Periwinkle,
     radius = 4,
     color = "#3B99B1",
-    fillOpacity = 0.8,
+    fillOpacity = 1.0,
     stroke = FALSE
   ) |>
   addCircleMarkers(
@@ -523,7 +576,12 @@ leaflet() %>%
     color = "grey",
     fillOpacity = 0.5,
     stroke = FALSE
-  )
+  ) %>% 
+  onRender("
+    function(el, x) {
+      this.zoomControl.remove();
+    }
+  ")
 
 # Madeira Vine
 library(dplyr)
@@ -561,7 +619,12 @@ leaflet() %>%
     color = "grey",
     fillOpacity = 0.5,
     stroke = FALSE
-  )
+  ) %>% 
+  onRender("
+    function(el, x) {
+      this.zoomControl.remove();
+    }
+  ")
 
 # Honeysuckle
 library(dplyr)
@@ -599,7 +662,12 @@ leaflet() %>%
     color = "grey",
     fillOpacity = 0.5,
     stroke = FALSE
-  )
+  ) %>% 
+  onRender("
+    function(el, x) {
+      this.zoomControl.remove();
+    }
+  ")
 
 
 hcl.colors(14, palette = "Plasma")
@@ -658,4 +726,9 @@ leaflet() %>%
   addMiniMap(
     tiles = providers$Esri.WorldTopoMap,
     toggleDisplay = TRUE
-  )
+  ) %>% 
+onRender("
+    function(el, x) {
+      this.zoomControl.remove();
+   }
+ ")
