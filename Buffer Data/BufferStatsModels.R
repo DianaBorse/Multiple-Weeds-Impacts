@@ -102,7 +102,7 @@ SEABuffer <- read_csv("Buffer Data/DistanceSEABuffer.csv")
 
 # Next I need to give each site a unique numerical ID because the co-occurrence 
 # matrix requires this
-SEABuffer$x...4 <- as.numeric(as.factor(SEABuffer$x...4))
+SEABuffer$y_xy...4 <- as.numeric(as.factor(SEABuffer$y_xy...4))
 
 # Rename the x column to a more logical name: site
 colnames(SEABuffer)[4] <- c("site") ## Renaming the columns
@@ -115,7 +115,7 @@ SEABuffer <- subset(SEABuffer, select = -c(OldestGrowthStageHoneysuckle, Area_m2
                                              Area_m2Jasmine, HeightMetresJasmine, OldestGrowthStageCoastalBanksia, Area_m2CoastalBanksia, HeightMetresCoastalBanksia, OldestGrowthStageRhamnus, 
                                              Area_m2Rhamnus, HeightMetresRhamnus, OldestGrowthStageWoolly, Area_m2Woolly, HeightMetresWoolly,
                                              Area_m2BushyAsparagus, HeightMetresBushyAsparagus, OldestGrowthStageClimbingAsparagus, Area_m2ClimbingAsparagus, HeightMetresClimbingAsparagus,
-                                             OldestGrowthStageGinger, Area_m2Ginger, Height_metresGinger, OldestGrowthStageMothPlant, Area_m2MothPlant, HeightMetresMothPlant, CreationDate, EndOutcome, x...57, y, y_xy))
+                                             OldestGrowthStageGinger, Area_m2Ginger, Height_metresGinger, OldestGrowthStageMothPlant, Area_m2MothPlant, HeightMetresMothPlant, CreationDate, EndOutcome, y_xy...56, y, x))
 
 colnames(SEABuffer)[4:16] <- c("A.sericifera", "H.gardnerianum", "A.scandens", "A.densiflorus", "S.mauritianum", "R.alaternus", 
                                 "B.integrifolia", "J.polyanthum", "I.tricolor", "H.helix", "V.major", "A.cordifolia", "L.japonica") ## Renaming the columns
@@ -153,7 +153,7 @@ ggplot(SEABuffer, aes(DistanceSEA, Richness)) +
   xlab("Distance to nearest SEA in m") +
   theme_classic()
 
-
+#### commmon species ####
 # Let's look at what species were most common closest to SEAs
 library(dplyr)
 library(tidyr)
@@ -171,7 +171,7 @@ Weeds <- SEABuffer %>%
 # What were the most common weeds overall
 top_counts <- Weeds |>
   dplyr::count(variable, sort = TRUE) |>
-  dplyr::slice_head(n = 5)
+  dplyr::slice_head(n = 15)
 
 print(top_counts)
 
@@ -189,7 +189,25 @@ top_counts <- CloseWeeds |>
 
 print(top_counts)
 
+# How many properties is this?
+CloseWeeds %>% 
+  summarise(n_unique_sites = n_distinct(site))
+
 # Figure out the farthest weeds
+library(dplyr)
+
+FarWeeds <- Weeds %>%
+ filter(DistanceSEA > 50)
+
+top_counts <- FarWeeds |>
+  dplyr::count(variable, sort = TRUE) |>
+  dplyr::slice_head(n = 5)
+
+print(top_counts)
+
+# How many properties is this?
+FarWeeds %>% 
+  summarise(n_unique_sites = n_distinct(site))
 
 # let's see what species are co-occurring when the richness is 1
 lowrichness <- subset(Weeds, Richness == 1)
@@ -200,9 +218,26 @@ print(top_5_values)
 
 top_counts <- lowrichness |>
   dplyr::count(variable, sort = TRUE) |>
-  dplyr::slice_head(n = 5)
+  dplyr::slice_head(n = 15)
 
 print(top_counts)
+
+# How many properties is this?
+lowrichness %>% 
+  summarise(n_unique_sites = n_distinct(site))
+
+# 2 or more weeds 
+cooccurring <- subset(Weeds, Richness != 1)
+
+top_counts <- cooccurring |>
+  dplyr::count(variable, sort = TRUE) |>
+  dplyr::slice_head(n = 13)
+
+print(top_counts)
+
+# How many properties is this?
+cooccurring %>% 
+  summarise(n_unique_sites = n_distinct(site))
 
 # Let's look at the higher richness
 highrichness <- Weeds %>%
@@ -213,3 +248,193 @@ top_counts <- highrichness |>
   dplyr::slice_head(n = 5)
 
 print(top_counts)
+
+# How many properties is this?
+highrichness %>% 
+  summarise(n_unique_sites = n_distinct(site))
+
+# let's see what species are co-occurring when the richness is 2
+pairrichness <- subset(Weeds, Richness == 2)
+
+top_counts <- pairrichness |>
+  dplyr::count(variable, sort = TRUE) |>
+  dplyr::slice_head(n = 5)
+
+print(top_counts)
+
+# How many properties is this?
+pairrichness %>% 
+  summarise(n_unique_sites = n_distinct(site))
+
+#### more co-occurrence matrices ####
+
+#### for weeds closer to SEA ####
+CloseWeeds2 <- subset(SEABuffer, DistanceSEA == 0)
+
+CloseWeeds2 <- subset(CloseWeeds2, select = -c(site, ID)) 
+
+# names of species into the row names
+CloseWeeds2 <- CloseWeeds2[, c(14, setdiff(1:ncol(CloseWeeds2), 14))]
+
+row.names(CloseWeeds2) <- CloseWeeds2$site 
+# Remove the first column from the data frame 
+CloseWeeds2 <- CloseWeeds2[, -1]
+
+# make the columns numeric
+CloseWeeds2$A.sericifera <- as.numeric(CloseWeeds2$A.sericifera)
+CloseWeeds2$H.gardnerianum <- as.numeric(CloseWeeds2$H.gardnerianum)
+CloseWeeds2$A.scandens <- as.numeric(CloseWeeds2$A.scandens)
+CloseWeeds2$A.densiflorus <- as.numeric(CloseWeeds2$A.densiflorus)
+CloseWeeds2$S.mauritianum <- as.numeric(CloseWeeds2$S.mauritianum)
+CloseWeeds2$R.alaternus <- as.numeric(CloseWeeds2$R.alaternus)
+CloseWeeds2$B.integrifolia <- as.numeric(CloseWeeds2$B.integrifolia)
+CloseWeeds2$J.polyanthum <- as.numeric(CloseWeeds2$J.polyanthum)
+CloseWeeds2$I.tricolor <- as.numeric(CloseWeeds2$I.tricolor)
+CloseWeeds2$H.helix <- as.numeric(CloseWeeds2$H.helix)
+CloseWeeds2$A.cordifolia <- as.numeric(CloseWeeds2$A.cordifolia)
+CloseWeeds2$L.japonica <- as.numeric(CloseWeeds2$L.japonica)
+
+# transpose
+CloseWeeds2T <- t(CloseWeeds2)
+CloseWeeds2T = as.data.frame(CloseWeeds2T)
+dim(CloseWeeds2T)
+
+CloseWeeds2T[is.na(CloseWeeds2T)] <- 0 
+CloseWeeds2T[CloseWeeds2T != 0] <- 1
+CloseWeeds2T <- CloseWeeds2T[rowSums(CloseWeeds2T) > 1, ]
+
+library(cooccur)
+
+cooccur.Survey <- cooccur(CloseWeeds2T,
+                          type = "spp_site",
+                          thresh = FALSE,
+                          spp_name = TRUE)
+class(cooccur.Survey)
+
+summary(cooccur.Survey)
+cooccur(mat = CloseWeeds2T, type = "spp_site", thresh = FALSE, spp_names = TRUE)
+
+Prob_table <- prob.table(cooccur.Survey)
+str(CloseWeeds2T) 
+summary(CloseWeeds2T)
+# plot the co-occurrence matrix, need to make the plot into an object so that the legend can be removed
+
+plot <- plot(cooccur.Survey, legend = NULL, plotrand = "FALSE") # add "plotrand = TRUE" to include completely random species
+
+# Remove legend 
+plot + theme(legend.position = "none") + ggtitle(NULL) + 
+  scale_fill_manual(values = c("#C75DAA","#E5E5E5", "#90CBCD")) #Change axis title text font etc
+
+#### for weeds further from SEA ####
+FarWeeds2 <- subset(SEABuffer, DistanceSEA > 50)
+
+FarWeeds2 <- subset(FarWeeds2, select = -c(site, ID, Richness)) 
+
+# names of species into the row names
+FarWeeds2 <- FarWeeds2[, c(14, setdiff(1:ncol(FarWeeds2), 14))]
+
+row.names(FarWeeds2) <- FarWeeds2$site 
+# Remove the first column from the data frame 
+FarWeeds2 <- FarWeeds2[, -1]
+
+# make the columns numeric
+FarWeeds2$A.sericifera <- as.numeric(FarWeeds2$A.sericifera)
+FarWeeds2$H.gardnerianum <- as.numeric(FarWeeds2$H.gardnerianum)
+FarWeeds2$A.scandens <- as.numeric(FarWeeds2$A.scandens)
+FarWeeds2$A.densiflorus <- as.numeric(FarWeeds2$A.densiflorus)
+FarWeeds2$S.mauritianum <- as.numeric(FarWeeds2$S.mauritianum)
+FarWeeds2$R.alaternus <- as.numeric(FarWeeds2$R.alaternus)
+FarWeeds2$B.integrifolia <- as.numeric(FarWeeds2$B.integrifolia)
+FarWeeds2$J.polyanthum <- as.numeric(FarWeeds2$J.polyanthum)
+FarWeeds2$I.tricolor <- as.numeric(FarWeeds2$I.tricolor)
+FarWeeds2$H.helix <- as.numeric(FarWeeds2$H.helix)
+FarWeeds2$A.cordifolia <- as.numeric(FarWeeds2$A.cordifolia)
+FarWeeds2$V.major <- as.numeric(FarWeeds2$V.major)
+
+# transpose
+FarWeeds2T <- t(FarWeeds2)
+FarWeeds2T = as.data.frame(FarWeeds2T)
+dim(FarWeeds2T)
+
+FarWeeds2T[is.na(FarWeeds2T)] <- 0 
+FarWeeds2T[FarWeeds2T != 0] <- 1
+FarWeeds2T <- FarWeeds2T[rowSums(FarWeeds2T) > 1, ]
+
+library(cooccur)
+
+cooccur.Survey <- cooccur(FarWeeds2T,
+                          type = "spp_site",
+                          thresh = FALSE,
+                          spp_name = TRUE)
+class(cooccur.Survey)
+
+summary(cooccur.Survey)
+cooccur(mat = FarWeeds2T, type = "spp_site", thresh = FALSE, spp_names = TRUE)
+
+Prob_table <- prob.table(cooccur.Survey)
+str(FarWeeds2T) 
+summary(FarWeeds2T)
+# plot the co-occurrence matrix, need to make the plot into an object so that the legend can be removed
+
+plot <- plot(cooccur.Survey, legend = NULL, plotrand = "FALSE") # add "plotrand = TRUE" to include completely random species
+
+# Remove legend 
+plot + theme(legend.position = "none") + ggtitle(NULL) + 
+  scale_fill_manual(values = c("#C75DAA","#E5E5E5", "#90CBCD")) #Change axis title text font etc
+
+#### 2 co-occurring species ####
+Pairs <- subset(SEABuffer, Richness == 2)
+
+Pairs <- subset(Pairs, select = -c(ID, Richness, DistanceSEA)) 
+
+# names of species into the row names
+Pairs <- Pairs[, c(14, setdiff(1:ncol(Pairs), 14))]
+
+row.names(Pairs) <- Pairs$site 
+# Remove the first column from the data frame 
+Pairs <- Pairs[, -1]
+
+# make the columns numeric
+Pairs$A.sericifera <- as.numeric(Pairs$A.sericifera)
+Pairs$H.gardnerianum <- as.numeric(Pairs$H.gardnerianum)
+Pairs$A.scandens <- as.numeric(Pairs$A.scandens)
+Pairs$A.densiflorus <- as.numeric(Pairs$A.densiflorus)
+Pairs$S.mauritianum <- as.numeric(Pairs$S.mauritianum)
+Pairs$R.alaternus <- as.numeric(Pairs$R.alaternus)
+Pairs$B.integrifolia <- as.numeric(Pairs$B.integrifolia)
+Pairs$J.polyanthum <- as.numeric(Pairs$J.polyanthum)
+Pairs$I.tricolor <- as.numeric(Pairs$I.tricolor)
+Pairs$H.helix <- as.numeric(Pairs$H.helix)
+Pairs$A.cordifolia <- as.numeric(Pairs$A.cordifolia)
+Pairs$V.major <- as.numeric(Pairs$V.major)
+
+# transpose
+PairsT <- t(Pairs)
+PairsT = as.data.frame(PairsT)
+dim(PairsT)
+
+PairsT[is.na(PairsT)] <- 0 
+PairsT[PairsT != 0] <- 1
+PairsT <- PairsT[rowSums(PairsT) > 1, ]
+
+library(cooccur)
+
+cooccur.Survey <- cooccur(PairsT,
+                          type = "spp_site",
+                          thresh = FALSE,
+                          spp_name = TRUE)
+class(cooccur.Survey)
+
+summary(cooccur.Survey)
+cooccur(mat = PairsT, type = "spp_site", thresh = FALSE, spp_names = TRUE)
+
+Prob_table <- prob.table(cooccur.Survey)
+str(PairsT) 
+summary(PairsT)
+# plot the co-occurrence matrix, need to make the plot into an object so that the legend can be removed
+
+plot <- plot(cooccur.Survey, legend = NULL, plotrand = "FALSE") # add "plotrand = TRUE" to include completely random species
+
+# Remove legend 
+plot + theme(legend.position = "none") + ggtitle(NULL) + 
+  scale_fill_manual(values = c("#C75DAA","#E5E5E5", "#90CBCD")) #Change axis title text font etc

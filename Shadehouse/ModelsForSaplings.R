@@ -437,6 +437,8 @@ WoollyH <- Height[Height$Plant == "Nightshade", ]
 WoollyH <- WoollyH %>% 
   filter(!is.na(AverageGR))
 
+hist(WoollyH$AverageGR)
+
 # I need to add room to WoollyH
 WoollyH <- WoollyH %>%
   left_join(dplyr::select(RoomPot, Pot, Room), by = "Pot")
@@ -535,6 +537,8 @@ PrivetH <- Height[Height$Plant == "Privet", ]
 PrivetH <- PrivetH %>% 
   filter(!is.na(AverageGR))
 
+hist(PrivetH$AverageGR)
+
 # I need to add room to PrivetH
 PrivetH <- PrivetH %>%
   left_join(dplyr::select(RoomPot, Pot, Room), by = "Pot")
@@ -543,8 +547,6 @@ PrivetH$Group <- as.numeric(PrivetH$Group)
 # Load required package
 library(vegan)
 library(dplyr)
-
-v
 
 # look at the effects
 # Fit a model 
@@ -582,6 +584,15 @@ print(summ_PrivetHRoom)
 Wattle <- Biomass[Biomass$Plant == "Wattle", ]
 
 Wattle$Group <- as.numeric(Wattle$Group)
+
+hist(Wattle$Mass)
+
+# try including only the wattle that survived. Still does not work. Need to do
+# a kruskal-wallis for each room
+Wattle <- Wattle %>%
+  left_join(WattleH %>% dplyr::select(Pot, Survive), by = "Pot")
+
+Wattle <- Wattle %>% filter(Survive == 1)
 
 
 colnames(Wattle)[13:17] <- c("Nitrate","Ammonium", "Phosphorus", "Potassium",
@@ -625,6 +636,35 @@ summ_WattleRoom <- Wattle %>%
   summarise(mean_Mass = mean(Mass),
             sd_Mass = sd(Mass))
 print(summ_WattleRoom)
+
+# Kruskal-wallis for each room
+Room546Wattle <- Wattle %>% filter(Room == 546)
+
+kruskal.test(Mass ~ Group, data = Room546Wattle)
+
+# Kruskal-wallis for each room
+Room547Wattle <- Wattle %>% filter(Room == 547)
+
+kruskal.test(Mass ~ Group, data = Room547Wattle)
+
+# Kruskal-wallis for each room
+Room544Wattle <- Wattle %>% filter(Room == 544)
+
+kruskal.test(Mass ~ Group, data = Room544Wattle)
+
+hist(Room544Wattle$Mass)
+hist(Room546Wattle$Mass)
+hist(Room547Wattle$Mass)
+
+ggplot(Room544Wattle, aes(x = Group, y = Mass))+
+  geom_boxplot() +
+  theme_bw() 
+ggplot(Room546Wattle, aes(x = Group, y = Mass))+
+  geom_boxplot() +
+  theme_bw() 
+ggplot(Room547Wattle, aes(x = Group, y = Mass))+
+  geom_boxplot() +
+  theme_bw() 
 
 #### Wattle RGR ####
 WattleH <- Height[Height$Plant == "Wattle", ]
@@ -789,6 +829,64 @@ Biomass <- Biomass %>%
 
 # remove treatment groups that do not have nodules
 Nodules <- Biomass %>% filter(Group %in% c("2", "4", "5", "7"))
+Nodules <- Nodules %>% filter(Plant == "Wattle")
+
+# Kruskal-wallis for each room
+Room546Wattle <- Nodules %>% filter(Room == 546)
+
+kruskal.test(Nodule_change ~ Group, data = Room546Wattle)
+
+# Kruskal-wallis for each room
+Room547Wattle <- Nodules %>% filter(Room == 547)
+
+kruskal.test(Nodule_change ~ Group, data = Room547Wattle)
+
+# Kruskal-wallis for each room
+Room544Wattle <- Nodules %>% filter(Room == 544)
+
+kruskal.test(Nodule_change ~ Group, data = Room544Wattle)
+
+hist(Room544Wattle$Nodule_change)
+hist(Room546Wattle$Nodule_change)
+hist(Room547Wattle$Nodule_change)
+
+ggplot(Room544Wattle, aes(x = Group, y = Nodule_change))+
+  geom_boxplot() +
+  theme_bw() 
+ggplot(Room546Wattle, aes(x = Group, y = Nodule_change))+
+  geom_boxplot() +
+  theme_bw() 
+ggplot(Room547Wattle, aes(x = Group, y = Nodule_change))+
+  geom_boxplot() +
+  theme_bw() 
+
+Nodules <- Nodules %>%
+  left_join(Height %>% dplyr::select(Pot, Survive), by = "Pot")
+
+Nodules <- Nodules %>% filter(Survive == 1)
+
+#Not normal, need to try a transformation
+Nodules <- Nodules %>%
+  mutate(Nodule_change = log(Nodule_change))
+
+
+hist(Nodules$Nodule_change)
+
+hist(Nodules$Nodule_change[Nodules$Group == "2"])
+hist(Nodules$Nodule_change[Nodules$Group == "4"])
+hist(Nodules$Nodule_change[Nodules$Group == "5"])
+hist(Nodules$Nodule_change[Nodules$Group == "7"])
+
+boxplot(Nodules$Nodule_change ~ Nodules$Group)
+
+# Check for Homogeneous variance
+summ_Nodules <- Nodules %>%
+  group_by(Group) %>% 
+  summarise(mean_Nodule_change = mean(Nodule_change),
+            sd_Nodule_change = sd(Nodule_change),
+            n_Nodule_change = n())
+ratio <-(max(summ_Nodules$sd_Nodule_change))/(min(summ_Nodules$sd_Nodule_change))
+print(ratio)
 
 M1 <- lmer(Nodule_change ~  factor(Group) +  (1 | Room), data = Nodules)
 

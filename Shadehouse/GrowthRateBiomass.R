@@ -935,6 +935,10 @@ SaplingS <- SaplingS %>%
 # The sample sizes are not quite even and therefore we need to use Type 3 analysis
 contrasts(SaplingS$Group) <- contr.sum(8)
 
+hist(SaplingS$time)
+
+
+
 model <- lmer(time ~ factor(Group) + (1 | Room), data = SaplingS)
 
 summary(model)
