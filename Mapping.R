@@ -732,3 +732,250 @@ onRender("
       this.zoomControl.remove();
    }
  ")
+
+#### Nearest neighbor calculations ####
+
+# reduce to only distinct sites
+Bufferdata1 <- Bufferdata %>%
+  distinct(x, y, .keep_all = TRUE)
+
+library(spatstat)
+point_pattern <- as.ppp(Bufferdata1[,c("x","y")], W = owin(range(Bufferdata1$x), range(Bufferdata1$y)))
+
+summary(point_pattern)
+
+# calculate the ripley's k
+K_result <- Kest(point_pattern)
+
+plot(K_result)
+
+e <- envelope(point_pattern, Kest, nsim=99)
+plot(e, main="Ripley's K with Simulation Envelope")
+
+# let's make one for moth plant and one for ginger
+library(dplyr)
+MothPlant1 <- Bufferdata1 %>%
+  filter(A.sericifera != 0)
+
+point_moth <- as.ppp(MothPlant1[,c("x","y")], W = owin(range(MothPlant1$x), range(MothPlant1$y)))
+
+library(spatstat.geom)
+library(spatstat.explore)
+
+# ppp object: X
+clark_evans <- clarkevans(point_moth, correction = "none")
+clark_evans
+
+
+Ginger1 <- Bufferdata1 %>%
+  filter(H.gardnerianum != 0)
+
+point_ginger <- as.ppp(Ginger1[,c("x","y")], W = owin(range(Ginger1$x), range(Ginger1$y)))
+
+ClimbAsp1 <- Bufferdata1 %>%
+  filter(A.scandens != 0)
+
+point_ClimbAsp <- as.ppp(ClimbAsp1[,c("x","y")], W = owin(range(ClimbAsp1$x), range(ClimbAsp1$y)))
+
+BushyAsp1 <- Bufferdata1 %>%
+  filter(A.densiflorus != 0)
+
+point_BushyAsp <- as.ppp(BushyAsp1[,c("x","y")], W = owin(range(BushyAsp1$x), range(BushyAsp1$y)))
+
+Woolly1 <- Bufferdata1 %>%
+  filter(S.mauritianum != 0)
+
+point_woolly <- as.ppp(Woolly1[,c("x","y")], W = owin(range(Woolly1$x), range(Woolly1$y)))
+
+Banskia1 <- Bufferdata1 %>%
+  filter(B.integrifolia != 0)
+
+point_banksia <- as.ppp(Banskia1[,c("x","y")], W = owin(range(Banskia1$x), range(Banskia1$y)))
+
+Jasmine1 <- Bufferdata1 %>%
+  filter(J.polyanthum != 0)
+
+point_jasmine <- as.ppp(Jasmine1[,c("x","y")], W = owin(range(Jasmine1$x), range(Jasmine1$y)))
+
+MorningGlory1 <- Bufferdata1 %>%
+  filter(I.tricolor != 0)
+
+point_morningglory <- as.ppp(MorningGlory1[,c("x","y")], W = owin(range(MorningGlory1$x), range(MorningGlory1$y)))
+
+Ivy1 <- Bufferdata1 %>%
+  filter(H.helix != 0)
+
+point_ivy <- as.ppp(Ivy1[,c("x","y")], W = owin(range(Ivy1$x), range(Ivy1$y)))
+
+Periwinkle1 <- Bufferdata1 %>%
+  filter(V.major != 0)
+
+point_periwinkle <- as.ppp(Periwinkle1[,c("x","y")], W = owin(range(Periwinkle1$x), range(Periwinkle1$y)))
+
+Madeira1 <- Bufferdata1 %>%
+  filter(A.cordifolia != 0)
+
+point_madeira <- as.ppp(Madeira1[,c("x","y")], W = owin(range(Madeira1$x), range(Madeira1$y)))
+
+Honeysuckle1 <- Bufferdata1 %>%
+  filter(L.japonica != 0)
+
+point_honeysuckle <- as.ppp(Honeysuckle1[,c("x","y")], W = owin(range(Honeysuckle1$x), range(Honeysuckle1$y)))
+
+# Compute L-functions (using isotropic edge correction)
+l1 <- Lest(point_moth, correction = "isotropic")
+l2 <- Lest(point_ginger, correction = "isotropic")
+l3 <- Lest(point_ClimbAsp, correction = "isotropic")
+l4 <- Lest(point_BushyAsp, correction = "isotropic")
+l5 <- Lest(point_woolly, correction = "isotropic")
+l6 <- Lest(point_banksia, correction = "isotropic")
+l7 <- Lest(point_jasmine, correction = "isotropic")
+l8 <- Lest(point_morningglory, correction = "isotropic")
+l9 <- Lest(point_ivy, correction = "isotropic")
+l10 <- Lest(point_periwinkle, correction = "isotropic")
+l11 <- Lest(point_madeira, correction = "isotropic")
+l12 <- Lest(point_honeysuckle, correction = "isotropic")
+
+# Plot L(r) - r for both species to compare
+par(mar = c(5, 4, 4, 10))
+plot(l1, main = "Comparison of Clustering", col = "#B82783", pch = 16)
+plot(l2, add = TRUE, col = "#73B897")
+plot(l3, add = TRUE, col = "#E37450")
+plot(l4, add = TRUE, col = "#EAC225")
+plot(l5, add = TRUE, col = "#001889")
+plot(l6, add = TRUE, col = "#7D0112")
+plot(l7, add = TRUE, col = "#8A008D")
+plot(l8, add = TRUE, col = "#44038A")
+plot(l9, add = TRUE, col = "#51B09F")
+plot(l10, add = TRUE, col = "#3B99B1")
+plot(l11, add = TRUE, col = "#D85A68")
+plot(l12, add = TRUE, col = "#EA8E2B")
+
+legend("topright", inset = c(-0.3, 0), legend = c("A. sericifera", "H. gardnerianum", "A. scandens", "A. densiflorous", 
+       "S. mauritianum", "B. integrifolia", "J. polyanthum", "I. tricolor", "H. helix", 
+       "V. major", "A. cordifolia", "L. japonica"), col = c("#B82783", "#73B897", 
+      "#E37450", "#EAC225", "#001889", "#7D0112", "#8A008D", "#44038A", "#51B09F", 
+      "#3B99B1", "#D85A68", "#EA8E2B"), xpd = NA, lty = 1)
+
+# calculate the degree of aggregation for each species.
+library(spatstat)
+
+# Value < 1 means aggregation
+clarkevans(point_moth)
+
+# 3. Calculate Ripley's K Function (Spatial Cluster at different scales)
+K <- Kest(point_moth)
+plot(K) # If K(r) > theoretical, it is clustered
+
+# Value < 1 means aggregation
+clarkevans(point_ginger)
+
+# 3. Calculate Ripley's K Function (Spatial Cluster at different scales)
+K <- Kest(point_ginger)
+plot(K) # If K(r) > theoretical, it is clustered
+
+# Value < 1 means aggregation
+clarkevans(point_ClimbAsp)
+
+# 3. Calculate Ripley's K Function (Spatial Cluster at different scales)
+K <- Kest(point_ClimbAsp)
+plot(K) # If K(r) > theoretical, it is clustered
+
+# Value < 1 means aggregation
+clarkevans(point_BushyAsp)
+
+# 3. Calculate Ripley's K Function (Spatial Cluster at different scales)
+K <- Kest(point_BushyAsp)
+plot(K) # If K(r) > theoretical, it is clustered
+
+# Value < 1 means aggregation
+clarkevans(point_woolly)
+
+# 3. Calculate Ripley's K Function (Spatial Cluster at different scales)
+K <- Kest(point_woolly)
+plot(K) # If K(r) > theoretical, it is clustered
+
+# Value < 1 means aggregation
+clarkevans(point_banksia)
+
+# 3. Calculate Ripley's K Function (Spatial Cluster at different scales)
+K <- Kest(point_banksia)
+plot(K) # If K(r) > theoretical, it is clustered
+
+# Value < 1 means aggregation
+clarkevans(point_jasmine)
+
+# 3. Calculate Ripley's K Function (Spatial Cluster at different scales)
+K <- Kest(point_jasmine)
+plot(K) # If K(r) > theoretical, it is clustered
+
+# Value < 1 means aggregation
+clarkevans(point_morningglory)
+
+# 3. Calculate Ripley's K Function (Spatial Cluster at different scales)
+K <- Kest(point_morningglory)
+plot(K) # If K(r) > theoretical, it is clustered
+
+# Value < 1 means aggregation
+clarkevans(point_ivy)
+
+# 3. Calculate Ripley's K Function (Spatial Cluster at different scales)
+K <- Kest(point_ivy)
+plot(K) # If K(r) > theoretical, it is clustered
+
+# Value < 1 means aggregation
+clarkevans(point_periwinkle)
+
+# 3. Calculate Ripley's K Function (Spatial Cluster at different scales)
+K <- Kest(point_periwinkle)
+plot(K) # If K(r) > theoretical, it is clustered
+
+# Value < 1 means aggregation
+clarkevans(point_madeira)
+
+# 3. Calculate Ripley's K Function (Spatial Cluster at different scales)
+K <- Kest(point_madeira)
+plot(K) # If K(r) > theoretical, it is clustered
+
+# Value < 1 means aggregation
+clarkevans(point_honeysuckle)
+
+# 3. Calculate Ripley's K Function (Spatial Cluster at different scales)
+K <- Kest(point_honeysuckle)
+plot(K) # If K(r) > theoretical, it is clustered
+
+library(readr)
+CEIndex <- read_csv("Buffer Data/ClarkandEvansIndex.csv")
+
+colnames(CEIndex)[5] <- c("dispersal") ## Renaming the columns
+
+# If else than bird = other
+CEIndex <- CEIndex %>%
+  mutate(dispersal = if_else(dispersal == "bird", "bird", "other"))
+
+# Not normal, need to try a transformation
+CEIndex <- CEIndex %>%
+  mutate(logdonnelly = log(donnelly))
+
+hist(CEIndex$logdonnelly)
+
+bird <- CEIndex %>% filter(dispersal != "other")
+other <- CEIndex %>% filter(dispersal != "bird")
+
+# check for normal dist.
+hist(bird$logdonnelly)
+hist(other$logdonnelly)
+
+# Check for homogeneous variance
+summ_CEIndex <- CEIndex %>%
+  group_by(dispersal) %>%
+  summarise(mean_donnelly = mean(donnelly),
+            sd_donnelly = sd(donnelly),
+            se_donnelly = sd(donnelly)/sqrt(n()),
+            n_donnelly = n())
+ratio <-(max(summ_CEIndex$sd_donnelly))/(min(summ_CEIndex$sd_donnelly))
+print(ratio)
+
+wilcox.test(donnelly ~ dispersal, data = CEIndex, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+
+

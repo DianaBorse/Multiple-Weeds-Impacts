@@ -271,10 +271,11 @@ pairrichness %>%
 #### for weeds closer to SEA ####
 CloseWeeds2 <- subset(SEABuffer, DistanceSEA == 0)
 
-CloseWeeds2 <- subset(CloseWeeds2, select = -c(site, ID)) 
+CloseWeeds2 <- subset(CloseWeeds2, select = -c(ID, DistanceSEA, Richness)) 
 
 # names of species into the row names
-CloseWeeds2 <- CloseWeeds2[, c(14, setdiff(1:ncol(CloseWeeds2), 14))]
+#CloseWeeds2 <- CloseWeeds2[, c(14, setdiff(1:ncol(CloseWeeds2), 14))]
+CloseWeeds2$site <- as.numeric(CloseWeeds2$site)
 
 row.names(CloseWeeds2) <- CloseWeeds2$site 
 # Remove the first column from the data frame 
@@ -303,6 +304,7 @@ CloseWeeds2T[is.na(CloseWeeds2T)] <- 0
 CloseWeeds2T[CloseWeeds2T != 0] <- 1
 CloseWeeds2T <- CloseWeeds2T[rowSums(CloseWeeds2T) > 1, ]
 
+install.packages("cooccur")
 library(cooccur)
 
 cooccur.Survey <- cooccur(CloseWeeds2T,
