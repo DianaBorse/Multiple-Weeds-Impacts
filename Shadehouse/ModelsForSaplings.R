@@ -410,6 +410,15 @@ M1 <- lmer(AverageGR ~  factor(Group) +  (1 | Room), data = SaplingH)
 
 summary(M1)
 
+res <- residuals(M1)
+
+# Method 1: Base R diagnostic plot (select plot 2)
+plot(M1, which = 2)
+
+# Method 2: Specific Q-Q plot
+qqnorm(res)
+qqline(res, col = "red")
+
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M1, type = 3)
@@ -421,36 +430,6 @@ SaplingRGRComparison <- as.data.frame(SaplingRGRComparison)
 library(writexl)
 
 write_xlsx(SaplingRGRComparison, "C:/Users/bella/Documents/SaplingRGRComparison.xlsx")
-
-#### Survival ####
-# make a column that surviving y/n
-Height <- Height %>%
-  mutate(Survive = ifelse(is.na(Notes7), 1,
-                          ifelse(Notes7 == "dead", 0, 1)))
-
-SaplingH <- Height[Height$Plant == "ManukaSapling", ]
-
-Sapling <- Sapling %>%
-  left_join(dplyr::select(SaplingH, Pot, Survive), by = "Pot")
-
-# Load required package
-library(vegan)
-library(dplyr)
-
-# look at the effects
-# Fit a model 
-M1 <- lmer(Survive ~  factor(Group) +  (1 | Room), data = Sapling)
-
-summary(M1)
-
-# Type II/III tests (handle unbalanced designs)
-library(car)
-Anova(M1, type = 3) 
-
-# Estimated marginal means and pairwise comparisons
-library(emmeans)
-emm <- emmeans(M1, ~ Group)        # treatment effects within each room
-pairs(emm, adjust = "tukey")
 
 #### Woolly Nightshade Biomass ####
 
@@ -477,6 +456,43 @@ Woolly$Group <- factor(Woolly$Group, levels = c("1", "2", "3", "4", "5", "6", "7
 M1 <- lmer(Mass ~  factor(Group) +  (1 | Room), data = Woolly)
 
 summary(M1)
+
+res <- residuals(M1)
+
+# Method 1: Base R diagnostic plot (select plot 2)
+plot(M1, which = 2)
+
+# Method 2: Specific Q-Q plot
+qqnorm(res)
+qqline(res, col = "red")
+
+# transform
+hist(Woolly$Mass)
+
+# Define a custom function
+cuberoot <- function(x) {
+  sign(x) * abs(x)^(1/3)
+}
+
+#try a transformation
+Woolly <- Woolly %>%
+  mutate(cubeMass = cuberoot(Mass))
+
+hist(Woolly$cubeMass)
+
+# Fit a model 
+M1 <- lmer(cubeMass ~  factor(Group) +  (1 | Room), data = Woolly)
+
+summary(M1)
+
+res <- residuals(M1)
+
+# Method 1: Base R diagnostic plot (select plot 2)
+plot(M1, which = 2)
+
+# Method 2: Specific Q-Q plot
+qqnorm(res)
+qqline(res, col = "red")
 
 # Type II/III tests (handle unbalanced designs)
 library(car)
@@ -531,6 +547,15 @@ M1 <- lmer(AverageGR ~  factor(Group) +  (1 | Room), data = WoollyH)
 
 summary(M1)
 
+res <- residuals(M1)
+
+# Method 1: Base R diagnostic plot (select plot 2)
+plot(M1, which = 2)
+
+# Method 2: Specific Q-Q plot
+qqnorm(res)
+qqline(res, col = "red")
+
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M1, type = 3) 
@@ -579,6 +604,36 @@ M1 <- lmer(Mass ~  factor(Group) +  (1 | Room), data = Privet)
 
 summary(M1)
 
+res <- residuals(M1)
+
+# Method 1: Base R diagnostic plot (select plot 2)
+plot(M1, which = 2)
+
+# Method 2: Specific Q-Q plot
+qqnorm(res)
+qqline(res, col = "red")
+
+hist(Privet$Mass)
+
+#try a transformation
+Privet <- Privet %>%
+  mutate(cubeMass = cuberoot(Mass))
+
+hist(Privet$cubeMass)
+
+M1 <- lmer(cubeMass ~  factor(Group) +  (1 | Room), data = Privet)
+
+summary(M1)
+
+res <- residuals(M1)
+
+# Method 1: Base R diagnostic plot (select plot 2)
+plot(M1, which = 2)
+
+# Method 2: Specific Q-Q plot
+qqnorm(res)
+qqline(res, col = "red")
+
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M1, type = 3) 
@@ -626,6 +681,15 @@ M1 <- lmer(AverageGR ~  factor(Group) +  (1 | Room), data = PrivetH)
 
 summary(M1)
 
+res <- residuals(M1)
+
+# Method 1: Base R diagnostic plot (select plot 2)
+plot(M1, which = 2)
+
+# Method 2: Specific Q-Q plot
+qqnorm(res)
+qqline(res, col = "red")
+
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M1, type = 3) 
@@ -652,23 +716,16 @@ summ_PrivetHRoom <- PrivetH %>%
 print(summ_PrivetHRoom)
 
 #### Wattle Biomass ####
-# include only privet
+
 Wattle <- Biomass[Biomass$Plant == "Wattle", ]
 
 Wattle$Group <- as.numeric(Wattle$Group)
 
-hist(Wattle$Mass)
-
-# try including only the wattle that survived. Still does not work. Need to do
-# a kruskal-wallis for each room
-Wattle <- Wattle %>%
-  left_join(WattleH %>% dplyr::select(Pot, Survive), by = "Pot")
-
-Wattle <- Wattle %>% filter(Survive == 1)
-
 
 colnames(Wattle)[13:17] <- c("Nitrate","Ammonium", "Phosphorus", "Potassium",
                              "C_N") ## Renaming the columns
+
+hist(Wattle$Mass)
 
 # Load required package
 library(vegan)
@@ -679,22 +736,59 @@ Wattle$Group <- factor(Wattle$Group, levels = c("1", "2", "3", "4", "5", "6", "7
                         labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
 
 # look at the effects
-# Fit a model 
+# Fit a model
 M1 <- lmer(Mass ~  factor(Group) +  (1 | Room), data = Wattle)
 
 summary(M1)
 
-# Type II/III tests (handle unbalanced designs)
-library(car)
-Anova(M1, type = 3) 
-emm <- emmeans(M1, ~ Group)  
-WattleBiomassComparison <- pairs(emm, adjust = "tukey")
+res <- residuals(M1)
 
-WattleBiomassComparison <- as.data.frame(WattleBiomassComparison)
+# Method 1: Base R diagnostic plot (select plot 2)
+plot(M1, which = 2)
 
-library(writexl)
+# Method 2: Specific Q-Q plot
+qqnorm(res)
+qqline(res, col = "red")
 
-write_xlsx(WattleBiomassComparison, "C:/Users/bella/Documents/WattleBiomassComparison.xlsx")
+#try a transformation
+Wattle <- Wattle %>%
+  mutate(cubeMass = cuberoot(Mass))
+
+hist(Wattle$cubeMass)
+
+# look at the effects
+# Fit a model
+M1 <- lmer(cubeMass ~  factor(Group) +  (1 | Room), data = Wattle)
+
+summary(M1)
+
+res <- residuals(M1)
+
+# Method 1: Base R diagnostic plot (select plot 2)
+plot(M1, which = 2)
+
+# Method 2: Specific Q-Q plot
+qqnorm(res)
+qqline(res, col = "red")
+
+#try log + 1
+Wattle <- Wattle %>%
+  mutate(logMass = log(Mass + 1))
+
+hist(Wattle$logMass)
+
+
+# # Type II/III tests (handle unbalanced designs)
+# library(car)
+# Anova(M1, type = 3)
+# emm <- emmeans(M1, ~ Group)
+# WattleBiomassComparison <- pairs(emm, adjust = "tukey")
+# 
+# WattleBiomassComparison <- as.data.frame(WattleBiomassComparison)
+# 
+# library(writexl)
+# 
+# write_xlsx(WattleBiomassComparison, "C:/Users/bella/Documents/WattleBiomassComparison.xlsx")
 
 summ_Wattle <- Wattle %>%
   group_by(Group) %>% 
@@ -738,7 +832,148 @@ ggplot(Room547Wattle, aes(x = Group, y = Mass))+
   geom_boxplot() +
   theme_bw() 
 
+# look at differences within rooms
+
+dt <- dunnTest(Mass ~ Group,
+               data = Room546Wattle,
+               method = "bonferroni")
+
+dunn_tbl <- dt$res %>%
+  mutate(
+    Comparison =
+      dplyr::case_when(
+        # Case 2: FSA output already has a Comparison column
+        "Comparison" %in% names(.) ~ Comparison
+      ),
+    Z = round(Z, 3),
+    P.unadj = round(P.unadj, 4),
+    P.adj = round(P.adj, 4)
+  ) %>%
+  select(Comparison, Z, P.unadj, P.adj)
+
+gt_tbl <- dunn_tbl %>%
+  gt() %>%
+  tab_header(
+    title = "Pairwise Dunn Test with Bonferroni Correction"
+  ) %>%
+  cols_label(
+    Comparison = "Group Comparison",
+    Z = "Z Statistic",
+    P.unadj = "Unadjusted p",
+    P.adj = "Bonferroni-adjusted p"
+  ) %>%
+  fmt_number(
+    columns = c(Z, P.unadj, P.adj),
+    decimals = 4
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels()
+  )
+
+print(gt_tbl)
+
+gtsave(gt_tbl, "dunn_table.html")
+
+library(writexl)
+
+write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom546WattleMass.xlsx")
+
+# dunnTest automatically performs pairwise comparisons
+
+dt <- dunnTest(Mass ~ Group,
+               data = Room547Wattle,
+               method = "bonferroni")
+
+dunn_tbl <- dt$res %>%
+  mutate(
+    Comparison =
+      dplyr::case_when(
+        # Case 2: FSA output already has a Comparison column
+        "Comparison" %in% names(.) ~ Comparison
+      ),
+    Z = round(Z, 3),
+    P.unadj = round(P.unadj, 4),
+    P.adj = round(P.adj, 4)
+  ) %>%
+  select(Comparison, Z, P.unadj, P.adj)
+
+gt_tbl <- dunn_tbl %>%
+  gt() %>%
+  tab_header(
+    title = "Pairwise Dunn Test with Bonferroni Correction"
+  ) %>%
+  cols_label(
+    Comparison = "Group Comparison",
+    Z = "Z Statistic",
+    P.unadj = "Unadjusted p",
+    P.adj = "Bonferroni-adjusted p"
+  ) %>%
+  fmt_number(
+    columns = c(Z, P.unadj, P.adj),
+    decimals = 4
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels()
+  )
+
+print(gt_tbl)
+
+gtsave(gt_tbl, "dunn_table.html")
+
+library(writexl)
+
+write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom547WattleMass.xlsx")
+
+dt <- dunnTest(Mass ~ Group,
+               data = Room544Wattle,
+               method = "bonferroni")
+
+dunn_tbl <- dt$res %>%
+  mutate(
+    Comparison =
+      dplyr::case_when(
+        # Case 2: FSA output already has a Comparison column
+        "Comparison" %in% names(.) ~ Comparison
+      ),
+    Z = round(Z, 3),
+    P.unadj = round(P.unadj, 4),
+    P.adj = round(P.adj, 4)
+  ) %>%
+  select(Comparison, Z, P.unadj, P.adj)
+
+gt_tbl <- dunn_tbl %>%
+  gt() %>%
+  tab_header(
+    title = "Pairwise Dunn Test with Bonferroni Correction"
+  ) %>%
+  cols_label(
+    Comparison = "Group Comparison",
+    Z = "Z Statistic",
+    P.unadj = "Unadjusted p",
+    P.adj = "Bonferroni-adjusted p"
+  ) %>%
+  fmt_number(
+    columns = c(Z, P.unadj, P.adj),
+    decimals = 4
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels()
+  )
+
+print(gt_tbl)
+
+gtsave(gt_tbl, "dunn_table.html")
+
+library(writexl)
+
+write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom544WattleMass.xlsx")
+
+
 #### Wattle RGR ####
+# checked, normal enough!
 WattleH <- Height[Height$Plant == "Wattle", ]
 
 WattleH <- WattleH %>% 
@@ -749,6 +984,7 @@ WattleH <- WattleH %>%
   left_join(dplyr::select(RoomPot, Pot, Room), by = "Pot")
 
 WattleH$Group <- as.numeric(WattleH$Group)
+
 # Load required package
 library(vegan)
 library(dplyr)
@@ -757,6 +993,10 @@ library(dplyr)
 WattleH$Group <- factor(WattleH$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
                        labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
 
+
+hist(WattleH$AverageGR)
+
+# all good, very normal
 # look at the effects
 # Fit a model 
 M1 <- lmer(AverageGR ~  factor(Group) +  (1 | Room), data = WattleH)
@@ -806,9 +1046,24 @@ library(dplyr)
 Seedling$Group <- factor(Seedling$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
                         labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
 
+# check for normality
+hist(Seedling$Mass)
+
+# try a transformation
+Seedling <- Seedling %>%
+  mutate(logMass = log(Mass))
+
+
+hist(Seedling$logMass)
+
+# just for weeds
+SeedlingMassWeeds <- Seedling[Seedling$Group != "m", ]
+
+hist(SeedlingMassWeeds$logMass)
+
 # look at the effects
 # Fit a model 
-M1 <- lmer(Mass ~  factor(Group) +  (1 | Room), data = Seedling)
+M1 <- lmer(logMass ~  factor(Group) +  (1 | Room), data = SeedlingMassWeeds)
 
 summary(M1)
 
@@ -827,11 +1082,15 @@ library(writexl)
 
 write_xlsx(SeedlingBiomassComparison, "C:/Users/bella/Documents/SeedlingBiomassComparison.xlsx")
 
+# boxplot
+ggplot(Seedling, aes(x = Group, y = logMass))+
+  geom_boxplot() +
+  theme_bw() 
 
 summ_Seedling <- Seedling %>%
   group_by(Group) %>% 
-  summarise(mean_Mass = mean(Mass),
-            sd_Mass = sd(Mass))
+  summarise(meanlog_Mass = mean(logMass),
+            sd_logMass = sd(logMass))
 print(summ_Seedling)
 
 summ_SeedlingRoom <- Seedling %>%
@@ -859,12 +1118,46 @@ library(dplyr)
 SeedlingH$Group <- factor(SeedlingH$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
                          labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
 
+# check for normality
+hist(SeedlingH$AverageGR)
+
 # look at the effects
 # Fit a model 
 # Fit a model 
 M1 <- lmer(AverageGR ~  factor(Group) +  (1 | Room), data = SeedlingH)
 
 summary(M1)
+
+res <- residuals(M1)
+
+# Method 1: Base R diagnostic plot (select plot 2)
+plot(M1, which = 2)
+
+# Method 2: Specific Q-Q plot
+qqnorm(res)
+qqline(res, col = "red")
+
+#try a transformation
+SeedlingH <- SeedlingH %>%
+  mutate(cubeGR = cuberoot(AverageGR))
+
+
+hist(SeedlingH$cubeGR)
+
+# Fit a model 
+M1 <- lmer(cubeGR ~  factor(Group) +  (1 | Room), data = SeedlingH)
+
+summary(M1)
+
+res <- residuals(M1)
+
+# Method 1: Base R diagnostic plot (select plot 2)
+plot(M1, which = 2)
+
+# Method 2: Specific Q-Q plot
+qqnorm(res)
+qqline(res, col = "red")
+
 
 # Type II/III tests (handle unbalanced designs)
 library(car)
@@ -903,70 +1196,213 @@ Biomass <- Biomass %>%
 Nodules <- Biomass %>% filter(Group %in% c("2", "4", "5", "7"))
 Nodules <- Nodules %>% filter(Plant == "Wattle")
 
-# Kruskal-wallis for each room
-Room546Wattle <- Nodules %>% filter(Room == 546)
+Nodules$Group <- factor(Nodules$Group, levels = c("2", "4", "5", "7"), # order  
+                        labels = c("nbp", "nb", "bp", "b")) # labels 
 
-kruskal.test(Nodule_change ~ Group, data = Room546Wattle)
+# # Kruskal-wallis for each room
+# Room546Nodules <- Nodules %>% filter(Room == 546)
+# 
+# kruskal.test(Nodule_change ~ Group, data = Room546Nodules)
+# 
+# # Kruskal-wallis for each room
+# Room547Nodules <- Nodules %>% filter(Room == 547)
+# 
+# kruskal.test(Nodule_change ~ Group, data = Room547Nodules)
+# 
+# # Kruskal-wallis for each room
+# Room544Nodules <- Nodules %>% filter(Room == 544)
+# 
+# kruskal.test(Nodule_change ~ Group, data = Room544Nodules)
+# 
+# # look at differences within rooms
+# 
+# dt <- dunnTest(Nodule_change ~ Group,
+#                data = Room546Nodules,
+#                method = "bonferroni")
+# 
+# dunn_tbl <- dt$res %>%
+#   mutate(
+#     Comparison =
+#       dplyr::case_when(
+#         # Case 2: FSA output already has a Comparison column
+#         "Comparison" %in% names(.) ~ Comparison
+#       ),
+#     Z = round(Z, 3),
+#     P.unadj = round(P.unadj, 4),
+#     P.adj = round(P.adj, 4)
+#   ) %>%
+#   select(Comparison, Z, P.unadj, P.adj)
+# 
+# gt_tbl <- dunn_tbl %>%
+#   gt() %>%
+#   tab_header(
+#     title = "Pairwise Dunn Test with Bonferroni Correction"
+#   ) %>%
+#   cols_label(
+#     Comparison = "Group Comparison",
+#     Z = "Z Statistic",
+#     P.unadj = "Unadjusted p",
+#     P.adj = "Bonferroni-adjusted p"
+#   ) %>%
+#   fmt_number(
+#     columns = c(Z, P.unadj, P.adj),
+#     decimals = 4
+#   ) %>%
+#   tab_style(
+#     style = cell_text(weight = "bold"),
+#     locations = cells_column_labels()
+#   )
+# 
+# print(gt_tbl)
+# 
+# gtsave(gt_tbl, "dunn_table.html")
+# 
+# library(writexl)
+# 
+# write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom546NodulesNodule_change.xlsx")
+# 
+# # dunnTest automatically performs pairwise comparisons
+# 
+# dt <- dunnTest(Nodule_change ~ Group,
+#                data = Room547Nodules,
+#                method = "bonferroni")
+# 
+# dunn_tbl <- dt$res %>%
+#   mutate(
+#     Comparison =
+#       dplyr::case_when(
+#         # Case 2: FSA output already has a Comparison column
+#         "Comparison" %in% names(.) ~ Comparison
+#       ),
+#     Z = round(Z, 3),
+#     P.unadj = round(P.unadj, 4),
+#     P.adj = round(P.adj, 4)
+#   ) %>%
+#   select(Comparison, Z, P.unadj, P.adj)
+# 
+# gt_tbl <- dunn_tbl %>%
+#   gt() %>%
+#   tab_header(
+#     title = "Pairwise Dunn Test with Bonferroni Correction"
+#   ) %>%
+#   cols_label(
+#     Comparison = "Group Comparison",
+#     Z = "Z Statistic",
+#     P.unadj = "Unadjusted p",
+#     P.adj = "Bonferroni-adjusted p"
+#   ) %>%
+#   fmt_number(
+#     columns = c(Z, P.unadj, P.adj),
+#     decimals = 4
+#   ) %>%
+#   tab_style(
+#     style = cell_text(weight = "bold"),
+#     locations = cells_column_labels()
+#   )
+# 
+# print(gt_tbl)
+# 
+# gtsave(gt_tbl, "dunn_table.html")
+# 
+# library(writexl)
+# 
+# write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom547NodulesNodule_change.xlsx")
+# 
+# dt <- dunnTest(Nodule_change ~ Group,
+#                data = Room544Nodules,
+#                method = "bonferroni")
+# 
+# dunn_tbl <- dt$res %>%
+#   mutate(
+#     Comparison =
+#       dplyr::case_when(
+#         # Case 2: FSA output already has a Comparison column
+#         "Comparison" %in% names(.) ~ Comparison
+#       ),
+#     Z = round(Z, 3),
+#     P.unadj = round(P.unadj, 4),
+#     P.adj = round(P.adj, 4)
+#   ) %>%
+#   select(Comparison, Z, P.unadj, P.adj)
+# 
+# gt_tbl <- dunn_tbl %>%
+#   gt() %>%
+#   tab_header(
+#     title = "Pairwise Dunn Test with Bonferroni Correction"
+#   ) %>%
+#   cols_label(
+#     Comparison = "Group Comparison",
+#     Z = "Z Statistic",
+#     P.unadj = "Unadjusted p",
+#     P.adj = "Bonferroni-adjusted p"
+#   ) %>%
+#   fmt_number(
+#     columns = c(Z, P.unadj, P.adj),
+#     decimals = 4
+#   ) %>%
+#   tab_style(
+#     style = cell_text(weight = "bold"),
+#     locations = cells_column_labels()
+#   )
+# 
+# print(gt_tbl)
+# 
+# gtsave(gt_tbl, "dunn_table.html")
+# 
+# library(writexl)
+# 
+# write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom544NodulesNodule_change.xlsx")
 
-# Kruskal-wallis for each room
-Room547Wattle <- Nodules %>% filter(Room == 547)
-
-kruskal.test(Nodule_change ~ Group, data = Room547Wattle)
-
-# Kruskal-wallis for each room
-Room544Wattle <- Nodules %>% filter(Room == 544)
-
-kruskal.test(Nodule_change ~ Group, data = Room544Wattle)
-
-hist(Room544Wattle$Nodule_change)
-hist(Room546Wattle$Nodule_change)
-hist(Room547Wattle$Nodule_change)
-
-ggplot(Room544Wattle, aes(x = Group, y = Nodule_change))+
-  geom_boxplot() +
-  theme_bw() 
-ggplot(Room546Wattle, aes(x = Group, y = Nodule_change))+
-  geom_boxplot() +
-  theme_bw() 
-ggplot(Room547Wattle, aes(x = Group, y = Nodule_change))+
-  geom_boxplot() +
-  theme_bw() 
-
-Nodules <- Nodules %>%
-  left_join(Height %>% dplyr::select(Pot, Survive), by = "Pot")
-
-Nodules <- Nodules %>% filter(Survive == 1)
-
-#Not normal, need to try a transformation
-Nodules <- Nodules %>%
-  mutate(Nodule_change = log(Nodule_change))
-
-
-hist(Nodules$Nodule_change)
-
-hist(Nodules$Nodule_change[Nodules$Group == "2"])
-hist(Nodules$Nodule_change[Nodules$Group == "4"])
-hist(Nodules$Nodule_change[Nodules$Group == "5"])
-hist(Nodules$Nodule_change[Nodules$Group == "7"])
-
-boxplot(Nodules$Nodule_change ~ Nodules$Group)
-
-# Check for Homogeneous variance
-summ_Nodules <- Nodules %>%
-  group_by(Group) %>% 
-  summarise(mean_Nodule_change = mean(Nodule_change),
-            sd_Nodule_change = sd(Nodule_change),
-            n_Nodule_change = n())
-ratio <-(max(summ_Nodules$sd_Nodule_change))/(min(summ_Nodules$sd_Nodule_change))
-print(ratio)
-
+# 
 M1 <- lmer(Nodule_change ~  factor(Group) +  (1 | Room), data = Nodules)
 
 summary(M1)
 
+res <- residuals(M1)
+
+# Method 1: Base R diagnostic plot (select plot 2)
+plot(M1, which = 2)
+
+# Method 2: Specific Q-Q plot
+qqnorm(res)
+qqline(res, col = "red")
+
+hist(Nodules$Nodule_change)
+
+# try a transformation
+Nodules <- Nodules %>%
+  mutate(logNodules = log(Nodule_change + 1))
+
+hist(Nodules$logNodules)
+
+# Define a custom function
+cuberoot <- function(x) {
+  sign(x) * abs(x)^(1/3)
+}
+
+#try a transformation
+Nodules <- Nodules %>%
+  mutate(cubeNodules = cuberoot(Nodule_change))
+
+hist(Nodules$cubeNodules)
+
+M1 <- lmer(cubeNodules ~  factor(Group) +  (1 | Room), data = Nodules)
+
+summary(M1)
+
+res <- residuals(M1)
+
+# Method 1: Base R diagnostic plot (select plot 2)
+plot(M1, which = 2)
+
+# Method 2: Specific Q-Q plot
+qqnorm(res)
+qqline(res, col = "red")
+
+
 # Type II/III tests (handle unbalanced designs)
 library(car)
-Anova(M1, type = 3) 
+Anova(M1, type = 3)
 emm <- emmeans(M1, ~ Group)        # treatment effects within each room
 NodulesOutput <- pairs(emm, adjust = "tukey")
 
@@ -978,9 +1414,9 @@ write_xlsx(NodulesOutput, "C:/Users/bella/Documents/NodulesOutput.xlsx")
 
 summ_Nodules <- Nodules %>%
   group_by(Group) %>% 
-  summarise(mean_Nodules = mean(Nodule_change),
-            sd_Nodules = sd(Nodule_change), 
-            se_Nodule_change = sd(Nodule_change)/sqrt(n()))
+  summarise(mean_Nodules = mean(cubeNodules),
+            sd_Nodules = sd(cubeNodules), 
+            se_cubeNodules = sd(cubeNodules)/sqrt(n()))
 print(summ_Nodules)
 ratio <-(max(summ_Nodules$sd_Nodules))/(min(summ_Nodules$sd_Nodules))
 print(ratio)
@@ -990,18 +1426,6 @@ summ_Nodules <- as.data.frame(summ_Nodules)
 library(writexl)
 
 write_xlsx(summ_Nodules, "C:/Users/bella/Documents/summ_Nodules.xlsx")
-
-# try a transformation
-Nodules <- Nodules %>%
-  mutate(sqrtNodule_change = sqrt(Nodule_change))
-
-summ_Nodules <- Nodules %>%
-  group_by(Group) %>% 
-  summarise(mean_Nodules = mean(logNodule_change),
-            sd_Nodules = sd(logNodule_change))
-print(summ_Nodules)
-ratio <-(max(summ_Nodules$sd_Nodules))/(min(summ_Nodules$sd_Nodules))
-print(ratio)
 
 
 summ_NodulesRoom <- Nodules %>%

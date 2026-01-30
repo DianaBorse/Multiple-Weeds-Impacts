@@ -161,4 +161,4 @@ fit <- coxme(Surv(time, status) ~ Group + (1|Room), data = SaplingS)
 
 summary(fit)
 
-# 
+ 
