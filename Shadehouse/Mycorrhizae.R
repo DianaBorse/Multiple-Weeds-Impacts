@@ -94,7 +94,7 @@ Myc4 <- Myc4 %>%
 library(ggplot2)
 
 #Myc3$Exp1Group <- factor(Myc3$Exp1Group, levels = c("0", "1", "2", "3", "4", "5", "6", "7", "8"), # order  
-#                         labels = c("Baseline", "m", "nwp", "mnp", "mnw", "mwp", "n", "w", "p")) # labels 
+ #                        labels = c("Baseline", "m", "nwp", "mnp", "mnw", "mwp", "n", "w", "p")) # labels 
 
 MycPlot <- ggplot(data = Myc3, 
                   aes(x = factor(Exp1Group), y = perc_c, fill = Exp1Group)) +
@@ -160,27 +160,208 @@ summ_Myc3 <- Myc3 %>%
 ratio <-(max(summ_Myc3$sd_perc_c))/(min(summ_Myc3$sd_perc_c))
 print(ratio)
 
-# The sample sizes are not quite even and therefore we need to use Type 3 analysis
-Myc3$Exp1Group <- as.factor(Myc3$Exp1Group)
+hist(Myc3$perc_c)
 
-contrasts(Myc3$Exp1Group) <- contr.sum(9)
+# not normal, check within each group
+ggplot(Myc3) +
+  geom_histogram(aes(perc_c), binwidth = 1)+
+  facet_wrap(~Exp1Group)
 
-model <- lm(perc_c ~ factor(Exp1Group), data = Myc3)
+#try a transformation
+Myc3 <- Myc3 %>%
+mutate(logperc_c = log(perc_c))
 
-# Run Type III ANOVA
-library(car)
-Anova(model, type = 3)
+hist(Myc3$logperc_c)
 
-# Tukey-Kramer test (automatically applied for unequal sample sizes)
-library(emmeans)
-emm <- emmeans(model, ~ Exp1Group)        # treatment effects within each room
-MycModel <- pairs(emm, adjust = "tukey")
+# not better
+# check for differences in myc with kruskal wallis within each room
+#Kruskal-wallis for each room
+Room546Myc3 <- Myc3 %>% filter(Room == 546)
 
-MycModel <- as.data.frame(MycModel)
+kruskal.test(perc_c ~ Exp1Group, data = Room546Myc3)
+
+# Kruskal-wallis for each room
+Room547Myc3 <- Myc3 %>% filter(Room == 547)
+
+kruskal.test(perc_c ~ Exp1Group, data = Room547Myc3)
+
+# Kruskal-wallis for each room
+Room544Myc3 <- Myc3 %>% filter(Room == 544)
+
+kruskal.test(perc_c ~ Exp1Group, data = Room544Myc3)
+
+# dunn test
+library(FSA)
+library(dplyr)
+library(gt)
+
+# Example data
+# response = numeric variable
+# group = factor with 3+ groups
+# dunnTest automatically performs pairwise comparisons
+
+dt <- dunnTest(perc_c ~ Exp1Group,
+         data = Room546Myc3,
+         method = "bonferroni")
+
+dunn_tbl <- dt$res %>%
+  mutate(
+    Comparison =
+      dplyr::case_when(
+        # Case 2: FSA output already has a Comparison column
+        "Comparison" %in% names(.) ~ Comparison
+      ),
+    Z = round(Z, 3),
+    P.unadj = round(P.unadj, 4),
+    P.adj = round(P.adj, 4)
+  ) %>%
+  select(Comparison, Z, P.unadj, P.adj)
+
+gt_tbl <- dunn_tbl %>%
+  gt() %>%
+  tab_header(
+    title = "Pairwise Dunn Test with Bonferroni Correction"
+  ) %>%
+  cols_label(
+    Comparison = "Group Comparison",
+    Z = "Z Statistic",
+    P.unadj = "Unadjusted p",
+    P.adj = "Bonferroni-adjusted p"
+  ) %>%
+  fmt_number(
+    columns = c(Z, P.unadj, P.adj),
+    decimals = 4
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels()
+  )
+
+print(gt_tbl)
+
+gtsave(gt_tbl, "dunn_table.html")
 
 library(writexl)
 
-write_xlsx(MycModel, "C:/Users/bella/Documents/MycModel.xlsx")
+write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom546.xlsx")
+
+# dunnTest automatically performs pairwise comparisons
+
+dt <- dunnTest(perc_c ~ Exp1Group,
+               data = Room547Myc3,
+               method = "bonferroni")
+
+dunn_tbl <- dt$res %>%
+  mutate(
+    Comparison =
+      dplyr::case_when(
+        # Case 2: FSA output already has a Comparison column
+        "Comparison" %in% names(.) ~ Comparison
+      ),
+    Z = round(Z, 3),
+    P.unadj = round(P.unadj, 4),
+    P.adj = round(P.adj, 4)
+  ) %>%
+  select(Comparison, Z, P.unadj, P.adj)
+
+gt_tbl <- dunn_tbl %>%
+  gt() %>%
+  tab_header(
+    title = "Pairwise Dunn Test with Bonferroni Correction"
+  ) %>%
+  cols_label(
+    Comparison = "Group Comparison",
+    Z = "Z Statistic",
+    P.unadj = "Unadjusted p",
+    P.adj = "Bonferroni-adjusted p"
+  ) %>%
+  fmt_number(
+    columns = c(Z, P.unadj, P.adj),
+    decimals = 4
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels()
+  )
+
+print(gt_tbl)
+
+gtsave(gt_tbl, "dunn_table.html")
+
+library(writexl)
+
+write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom547.xlsx")
+
+dt <- dunnTest(perc_c ~ Exp1Group,
+               data = Room544Myc3,
+               method = "bonferroni")
+
+dunn_tbl <- dt$res %>%
+  mutate(
+    Comparison =
+      dplyr::case_when(
+        # Case 2: FSA output already has a Comparison column
+        "Comparison" %in% names(.) ~ Comparison
+      ),
+    Z = round(Z, 3),
+    P.unadj = round(P.unadj, 4),
+    P.adj = round(P.adj, 4)
+  ) %>%
+  select(Comparison, Z, P.unadj, P.adj)
+
+gt_tbl <- dunn_tbl %>%
+  gt() %>%
+  tab_header(
+    title = "Pairwise Dunn Test with Bonferroni Correction"
+  ) %>%
+  cols_label(
+    Comparison = "Group Comparison",
+    Z = "Z Statistic",
+    P.unadj = "Unadjusted p",
+    P.adj = "Bonferroni-adjusted p"
+  ) %>%
+  fmt_number(
+    columns = c(Z, P.unadj, P.adj),
+    decimals = 4
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels()
+  )
+
+print(gt_tbl)
+
+gtsave(gt_tbl, "dunn_table.html")
+
+library(writexl)
+
+write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom544.xlsx")
+
+
+#### Do the same for Myc4 ####
+
+
+# # The sample sizes are not quite even and therefore we need to use Type 3 analysis
+# Myc3$Exp1Group <- as.factor(Myc3$Exp1Group)
+# 
+# contrasts(Myc3$Exp1Group) <- contr.sum(9)
+# 
+# model <- lm(perc_c ~ factor(Exp1Group), data = Myc3)
+# 
+# # Run Type III ANOVA
+# library(car)
+# Anova(model, type = 3)
+# 
+# # Tukey-Kramer test (automatically applied for unequal sample sizes)
+# library(emmeans)
+# emm <- emmeans(model, ~ Exp1Group)        # treatment effects within each room
+# MycModel <- pairs(emm, adjust = "tukey")
+# 
+# MycModel <- as.data.frame(MycModel)
+# 
+# library(writexl)
+# 
+# write_xlsx(MycModel, "C:/Users/bella/Documents/MycModel.xlsx")
 
 # calculate some summary statistics
 print(summ_Myc3)
@@ -190,12 +371,9 @@ print(summ_Myc3)
 Myc4$Exp1Group <- factor(Myc4$Exp1Group, levels = c("0", "1", "2","3","4", "5", "6", "7", "8"), # order  
                         labels = c("baseline", "m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
 
-# Fit a model 
-M2 <- lmer(perc_A ~ factor(Exp1Group) + (1 | Room), data = Myc4)
 
-summary(M2)
 
-# Check for Homogeneous variance for arbuscule only presence
+# Check for Homogeneous variance for any myc structure presence
 summ_Myc4 <- Myc4 %>%
   group_by(Exp1Group) %>% 
   summarise(mean_perc_A = mean(perc_A),
@@ -205,27 +383,222 @@ summ_Myc4 <- Myc4 %>%
 ratio <-(max(summ_Myc4$sd_perc_A))/(min(summ_Myc4$sd_perc_A))
 print(ratio)
 
-# The sample sizes are not quite even and therefore we need to use Type 3 analysis
-Myc4$Exp1Group <- as.factor(Myc4$Exp1Group)
+hist(Myc4$perc_A)
 
-contrasts(Myc4$Exp1Group) <- contr.sum(9)
+# not normal, check within each group
+ggplot(Myc4) +
+  geom_histogram(aes(perc_A), binwidth = 1)+
+  facet_wrap(~Exp1Group)
 
-model <- lm(perc_A ~ factor(Exp1Group), data = Myc4)
+#try a transformation
+Myc4 <- Myc4 %>%
+  mutate(logperc_A = log(perc_A))
 
-# Run Type III ANOVA
-library(car)
-Anova(model, type = 3)
+hist(Myc4$logperc_A)
 
-# Tukey-Kramer test (automatically applied for unequal sample sizes)
-library(emmeans)
-emm <- emmeans(model, ~ Exp1Group)        # treatment effects within each room
-ArbusculeModel <- pairs(emm, adjust = "tukey")
+# too many infinities
 
-ArbusculeModel <- as.data.frame(ArbusculeModel)
+# not better
+# check for differences in myc with kruskal wallis within each room
+#Kruskal-wallis for each room
+Room546Myc4 <- Myc4 %>% filter(Room == 546)
+
+kruskal.test(perc_A ~ Exp1Group, data = Room546Myc4)
+
+# Kruskal-wallis for each room
+Room547Myc4 <- Myc4 %>% filter(Room == 547)
+
+kruskal.test(perc_A ~ Exp1Group, data = Room547Myc4)
+
+# Kruskal-wallis for each room
+Room544Myc4 <- Myc4 %>% filter(Room == 544)
+
+kruskal.test(perc_A ~ Exp1Group, data = Room544Myc4)
+
+# dunn test
+library(FSA)
+library(dplyr)
+library(gt)
+
+# Example data
+# response = numeric variable
+# group = factor with 3+ groups
+# dunnTest automatically performs pairwise comparisons
+
+dt <- dunnTest(perc_A ~ Exp1Group,
+               data = Room546Myc4,
+               method = "bonferroni")
+
+dunn_tbl <- dt$res %>%
+  mutate(
+    Comparison =
+      dplyr::case_when(
+        # Case 2: FSA output already has a Comparison column
+        "Comparison" %in% names(.) ~ Comparison
+      ),
+    Z = round(Z, 3),
+    P.unadj = round(P.unadj, 4),
+    P.adj = round(P.adj, 4)
+  ) %>%
+  select(Comparison, Z, P.unadj, P.adj)
+
+gt_tbl <- dunn_tbl %>%
+  gt() %>%
+  tab_header(
+    title = "Pairwise Dunn Test with Bonferroni Correction"
+  ) %>%
+  cols_label(
+    Comparison = "Group Comparison",
+    Z = "Z Statistic",
+    P.unadj = "Unadjusted p",
+    P.adj = "Bonferroni-adjusted p"
+  ) %>%
+  fmt_number(
+    columns = c(Z, P.unadj, P.adj),
+    decimals = 4
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels()
+  )
+
+print(gt_tbl)
+
+gtsave(gt_tbl, "dunn_table.html")
 
 library(writexl)
 
-write_xlsx(ArbusculeModel, "C:/Users/bella/Documents/ArbusculeModel.xlsx")
+write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom546AMF.xlsx")
 
-# calculate summary stats
-print(summ_Myc4)
+# dunnTest automatically performs pairwise comparisons
+
+dt <- dunnTest(perc_A ~ Exp1Group,
+               data = Room547Myc4,
+               method = "bonferroni")
+
+dunn_tbl <- dt$res %>%
+  mutate(
+    Comparison =
+      dplyr::case_when(
+        # Case 2: FSA output already has a Comparison column
+        "Comparison" %in% names(.) ~ Comparison
+      ),
+    Z = round(Z, 3),
+    P.unadj = round(P.unadj, 4),
+    P.adj = round(P.adj, 4)
+  ) %>%
+  select(Comparison, Z, P.unadj, P.adj)
+
+gt_tbl <- dunn_tbl %>%
+  gt() %>%
+  tab_header(
+    title = "Pairwise Dunn Test with Bonferroni Correction"
+  ) %>%
+  cols_label(
+    Comparison = "Group Comparison",
+    Z = "Z Statistic",
+    P.unadj = "Unadjusted p",
+    P.adj = "Bonferroni-adjusted p"
+  ) %>%
+  fmt_number(
+    columns = c(Z, P.unadj, P.adj),
+    decimals = 4
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels()
+  )
+
+print(gt_tbl)
+
+gtsave(gt_tbl, "dunn_table.html")
+
+library(writexl)
+
+write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom547AMF.xlsx")
+
+dt <- dunnTest(perc_A ~ Exp1Group,
+               data = Room544Myc4,
+               method = "bonferroni")
+
+dunn_tbl <- dt$res %>%
+  mutate(
+    Comparison =
+      dplyr::case_when(
+        # Case 2: FSA output already has a Comparison column
+        "Comparison" %in% names(.) ~ Comparison
+      ),
+    Z = round(Z, 3),
+    P.unadj = round(P.unadj, 4),
+    P.adj = round(P.adj, 4)
+  ) %>%
+  select(Comparison, Z, P.unadj, P.adj)
+
+gt_tbl <- dunn_tbl %>%
+  gt() %>%
+  tab_header(
+    title = "Pairwise Dunn Test with Bonferroni Correction"
+  ) %>%
+  cols_label(
+    Comparison = "Group Comparison",
+    Z = "Z Statistic",
+    P.unadj = "Unadjusted p",
+    P.adj = "Bonferroni-adjusted p"
+  ) %>%
+  fmt_number(
+    columns = c(Z, P.unadj, P.adj),
+    decimals = 4
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels()
+  )
+
+print(gt_tbl)
+
+gtsave(gt_tbl, "dunn_table.html")
+
+library(writexl)
+
+write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom544AMF.xlsx")
+
+
+# # Fit a model 
+# M2 <- lmer(perc_A ~ factor(Exp1Group) + (1 | Room), data = Myc4)
+# 
+# summary(M2)
+# 
+# # Check for Homogeneous variance for arbuscule only presence
+# summ_Myc4 <- Myc4 %>%
+#   group_by(Exp1Group) %>% 
+#   summarise(mean_perc_A = mean(perc_A),
+#             sd_perc_A = sd(perc_A),
+#             se_perc_A = sd(perc_A)/sqrt(n()),
+#             n_perc_A = n())
+# ratio <-(max(summ_Myc4$sd_perc_A))/(min(summ_Myc4$sd_perc_A))
+# print(ratio)
+# 
+# # The sample sizes are not quite even and therefore we need to use Type 3 analysis
+# Myc4$Exp1Group <- as.factor(Myc4$Exp1Group)
+# 
+# contrasts(Myc4$Exp1Group) <- contr.sum(9)
+# 
+# model <- lm(perc_A ~ factor(Exp1Group), data = Myc4)
+# 
+# # Run Type III ANOVA
+# library(car)
+# Anova(model, type = 3)
+# 
+# # Tukey-Kramer test (automatically applied for unequal sample sizes)
+# library(emmeans)
+# emm <- emmeans(model, ~ Exp1Group)        # treatment effects within each room
+# ArbusculeModel <- pairs(emm, adjust = "tukey")
+# 
+# ArbusculeModel <- as.data.frame(ArbusculeModel)
+# 
+# library(writexl)
+# 
+# write_xlsx(ArbusculeModel, "C:/Users/bella/Documents/ArbusculeModel.xlsx")
+# 
+# # calculate summary stats
+# print(summ_Myc4)

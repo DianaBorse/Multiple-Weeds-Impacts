@@ -152,37 +152,73 @@ print(summ_weeds)
 # include only saplings
 Sapling <- Biomass[Biomass$Plant == "ManukaSapling", ]
 
-Sapling$Group <- as.numeric(Sapling$Group)
+# Check for normal distribution homogenous variance
+ggplot(Sapling, aes(x = Group, y = Mass))+
+  geom_boxplot(fill = "#33B08D", varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Mānuka sapling RGR ln(mm/month)") + xlab("Treatment") +   ##Change axis titles
+  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black")) +  ##If you want to add an axis colour
+theme_classic() 
+ggplot(Sapling) +
+  geom_histogram(aes(Mass), binwidth = 1)+
+  facet_wrap(~Group)
+ggplot(Sapling) +
+  geom_histogram(aes(Mass), binwidth = 1)
+ggplot(Sapling)+
+  geom_qq(aes(sample = Mass, color = Group))
 
+# Check for homogeneous variance
+summ_Sapling <- Sapling %>%
+  group_by(Group) %>% 
+  summarise(mean_Mass = mean(Mass),
+            sd_Mass = sd(Mass),
+            n_Mass = n())
+ratio <-(max(summ_Sapling$sd_Mass))/(min(summ_Sapling$sd_Mass))
+print(ratio)
 
-colnames(Sapling)[13:17] <- c("Nitrate","Ammonium", "Phosphorus", "Potassium",
-                                       "C_N") ## Renaming the columns
+# try a mutation
+Sapling <- Sapling %>%
+  mutate(logMass = log(Mass))
 
-# Load required package
-library(vegan)
-library(dplyr)
+# Check for homogeneous variance
+summ_Sapling <- Sapling %>%
+  group_by(Group) %>% 
+  summarise(mean_logMass = mean(logMass),
+            sd_logMass = sd(logMass),
+            n_logMass = n())
+ratio <-(max(summ_Sapling$sd_logMass))/(min(summ_Sapling$sd_logMass))
+print(ratio)
 
-# try a mixed effects model
-library(lme4)
-library(MuMIn)
+ggplot(Sapling,aes(x = Group, y = logMass))+
+  geom_boxplot(fill = "#33B08D", varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Mānuka sapling logMass)") + xlab("Treatment") +   ##Change axis titles
+  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+theme_classic() 
+ggplot(Sapling) +
+  geom_histogram(aes(logMass), binwidth = 1)+
+  facet_wrap(~Group)
+ggplot(Sapling) +
+  geom_histogram(aes(logMass), binwidth = 1)
+ggplot(Sapling)+
+  geom_qq(aes(sample = logMass, color = Group))
 
-model.full <- lmer(Mass ~ factor(Group) + (1 | Room),
-                    data = Sapling,
-                    na.action = na.fail)   # critical for dredge
-summary(model.full)
-ranef(model.full)
-
-Sapling$pred_fixed <- predict(model.full, re.form = NA)
-Sapling$pred_random <- predict(model.full)
-library(ggplot2)
-
-ggplot(Sapling, aes(x = Group, y = Mass, color = Room)) +
-  geom_point(alpha = 0.6) +
-  geom_line(aes(y = pred_random, group = Room), linetype = "solid") +   # random effects
-  geom_line(aes(y = pred_fixed, group = 1), color = "black", size = 1.2, linetype = "dashed") +
-  theme_minimal() +
-  labs(title = "Fixed vs Random Effect Predictions",
-       y = "Mass", x = "Group")
 
 # change group names
 Sapling$Group <- factor(Sapling$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
@@ -190,7 +226,7 @@ Sapling$Group <- factor(Sapling$Group, levels = c("1", "2", "3", "4", "5", "6", 
 
 # look at the effects
 # Fit a model 
-M2 <- lmer(Mass ~ factor(Group) + (1 | Room), data = Sapling)
+M2 <- lmer(logMass ~ factor(Group) + (1 | Room), data = Sapling)
 
 summary(M2)
 # Type II/III tests (handle unbalanced designs)
@@ -203,7 +239,7 @@ SaplingBiomassComparison <- as.data.frame(SaplingBiomassComparison)
 
 library(writexl)
 
-#write_xlsx(SaplingBiomassComparison, "C:/Users/bella/Documents/SaplingBiomassComparison.xlsx")
+write_xlsx(SaplingBiomassComparison, "C:/Users/bella/Documents/SaplingBiomassComparison.xlsx")
 
 #### RGR ####
 library(readr)
@@ -275,7 +311,6 @@ Height <- Height %>%
 Height$AverageGR <- rowMeans(Height[, 26:31], na.rm = TRUE)
 Height$AverageGR <- Height$AverageGR * 10
 
-
 # Clean up empty rows
 library(dplyr)
 
@@ -317,10 +352,14 @@ print(summ_height)
 #### Let's look at Sapling height ####
 SaplingH <- Height[Height$Plant == "ManukaSapling", ]
 
-Sapling <- Sapling %>%
-  left_join(dplyr::select(SaplingH, Pot, AverageGR), by = "Pot")
+# Remove outlier -4 RGR
+SaplingH<-SaplingH[-53, ]
 
-Sapling <- Sapling %>% 
+# I need to add room 
+SaplingH <- SaplingH %>%
+  left_join(dplyr::select(RoomPot, Pot, Room), by = "Pot")
+
+SaplingH <- SaplingH %>% 
   filter(!is.na(AverageGR))
 
 # Load required package
@@ -328,13 +367,46 @@ library(vegan)
 library(dplyr)
 
 # change group names
-#Sapling$Group <- factor(Sapling$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
- #                       labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
+SaplingH$Group <- factor(SaplingH$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                       labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
 
+
+# Check for normal distribution homogenous variance
+
+ggplot(SaplingH,aes(x = Group, y = AverageGR))+
+  geom_boxplot(fill = "#33B08D", varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Mānuka sapling RGR ln(mm/month)") + xlab("Treatment Group") +   ##Change axis titles
+  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+  theme_classic() 
+ggplot(SaplingH) +
+  geom_histogram(aes(AverageGR), binwidth = 1)+
+  facet_wrap(~Group)
+ggplot(SaplingH) +
+  geom_histogram(aes(AverageGR), binwidth = 1)
+ggplot(SaplingH)+
+  geom_qq(aes(sample = AverageGR, color = Group))
+
+# Check for homogeneous variance
+summ_SaplingH <- SaplingH %>%
+  group_by(Group) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            n_AverageGR = n())
+ratio <-(max(summ_SaplingH$sd_AverageGR))/(min(summ_SaplingH$sd_AverageGR))
+print(ratio)
 
 # look at the effects
 # Fit a model 
-M1 <- lmer(AverageGR ~  factor(Group) +  (1 | Room), data = Sapling)
+M1 <- lmer(AverageGR ~  factor(Group) +  (1 | Room), data = SaplingH)
 
 summary(M1)
 
@@ -348,7 +420,7 @@ SaplingRGRComparison <- as.data.frame(SaplingRGRComparison)
 
 library(writexl)
 
-#write_xlsx(SaplingRGRComparison, "C:/Users/bella/Documents/SaplingRGRComparison.xlsx")
+write_xlsx(SaplingRGRComparison, "C:/Users/bella/Documents/SaplingRGRComparison.xlsx")
 
 #### Survival ####
 # make a column that surviving y/n

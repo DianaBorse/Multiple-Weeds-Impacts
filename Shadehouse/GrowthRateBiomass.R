@@ -937,8 +937,17 @@ contrasts(SaplingS$Group) <- contr.sum(8)
 
 hist(SaplingS$time)
 
+# try a transformation
+SaplingS <- SaplingS %>%
+  mutate(logtime = log(time))
 
+hist(SaplingS$logtime)
 
+# Doesn't make sense because parametric would assume that most only survived for
+# a short time.
+
+# does not make sense for this data.
+library(lme4)
 model <- lmer(time ~ factor(Group) + (1 | Room), data = SaplingS)
 
 summary(model)

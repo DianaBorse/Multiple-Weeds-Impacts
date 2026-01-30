@@ -127,6 +127,7 @@ plot_obj$plot
 survdiff(Surv(time, status) ~ Group, data = SaplingS)
 ?sruvdiff
 
+# look for which treatments have different survival curves
 PairwiseSapling <- pairwise_survdiff(
   Surv(time, status) ~ Group,
   data = SaplingS,
@@ -153,31 +154,7 @@ contrasts(SaplingS$Group) <- contr.sum(8)
 
 hist(SaplingS$time)
 
-# try a transformation
-SaplingS <- SaplingS %>%
-  mutate(logtime = log(time))
-
-hist(SaplingS$logtime)
-
-# Doesn't make sense because parametric would assume that most only survived for
-# a short time.
-
-# Kruskal-wallis for each room
-Room546SaplingS <- SaplingS %>% filter(Room == 546)
-
-kruskal.test(time ~ Group, data = Room546SaplingS)
-
-# Kruskal-wallis for each room
-Room547SaplingS <- SaplingS %>% filter(Room == 547)
-
-kruskal.test(time ~ Group, data = Room547SaplingS)
-
-# Kruskal-wallis for each room
-Room544SaplingS <- SaplingS %>% filter(Room == 544)
-
-kruskal.test(time ~ Group, data = Room544SaplingS)
-
-# try something else
+# mixed effects model for survival, just to account for room
 library(coxme)
 
 fit <- coxme(Surv(time, status) ~ Group + (1|Room), data = SaplingS)
