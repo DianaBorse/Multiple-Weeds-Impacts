@@ -1366,9 +1366,17 @@ SeedlingPlot %>%
   ggplot(aes(x = Group, y = ResponseRatio)) +
   geom_boxplot(fill = "#82C782", varwidth = TRUE, notch = FALSE) +
   geom_jitter(color = "black", size = 0.4, alpha = 0.9) +
-  ylab("Mānuka seedling log Biomass mixture / control (g)") +
+  ylab("Mānuka seedling log biomass mixture / control (g)") +
   xlab("Treatment") +
-  theme_classic()
+  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=10, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=12,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))  
 
 # log response ratio
 # Seedling
