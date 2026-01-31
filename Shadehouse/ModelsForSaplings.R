@@ -237,9 +237,9 @@ SaplingBiomassComparison <- pairs(emm, adjust = "tukey")
 
 SaplingBiomassComparison <- as.data.frame(SaplingBiomassComparison)
 
-library(writexl)
-
-write_xlsx(SaplingBiomassComparison, "C:/Users/bella/Documents/SaplingBiomassComparison.xlsx")
+# library(writexl)
+# 
+# write_xlsx(SaplingBiomassComparison, "C:/Users/bella/Documents/SaplingBiomassComparison.xlsx")
 
 #### RGR ####
 library(readr)
@@ -317,13 +317,29 @@ library(dplyr)
 Height <- Height %>% 
   filter(!is.na(AverageGR))
 
+# this is needed for running the model for RGR across all species, but will throw
+# off the rest of the code.
+# # I need to add room 
+# Height <- Height %>%
+#   left_join(dplyr::select(RoomPot, Pot, Room), by = "Pot")
+
+
 # which plant has the highest biomass
 # reduce to just seedlings
 # Fit a model 
 library(lme4)
-M2 <- lm(AverageGR ~ factor(Plant), data = Height)
+M2 <- lmer(AverageGR ~ factor(Plant) +  (1 | Room), data = Height)
 
 summary(M2)
+
+res <- residuals(M2)
+
+# Method 1: Base R diagnostic plot (select plot 2)
+plot(M1, which = 2)
+
+# Method 2: Specific Q-Q plot
+qqnorm(res)
+qqline(res, col = "red")
 # Type II/III tests (handle unbalanced designs)
 library(car)
 Anova(M2, type = 3) 
@@ -333,7 +349,7 @@ RGRComparisons <- pairs(emm, adjust = "tukey")
 
 RGRComparisons <- as.data.frame(RGRComparisons)
 
-library(writexl)
+# library(writexl)
 
 #write_xlsx(RGRComparisons, "C:/Users/bella/Documents/RGRComparisons.xlsx")
 
@@ -426,10 +442,10 @@ emm <- emmeans(M1, ~ Group)
 SaplingRGRComparison <- pairs(emm, adjust = "tukey")
 
 SaplingRGRComparison <- as.data.frame(SaplingRGRComparison)
-
-library(writexl)
-
-write_xlsx(SaplingRGRComparison, "C:/Users/bella/Documents/SaplingRGRComparison.xlsx")
+# 
+# library(writexl)
+# 
+# write_xlsx(SaplingRGRComparison, "C:/Users/bella/Documents/SaplingRGRComparison.xlsx")
 
 #### Woolly Nightshade Biomass ####
 
@@ -502,9 +518,98 @@ WoollyBiomassComparison <- pairs(emm, adjust = "tukey")
 
 WoollyBiomassComparison <- as.data.frame(WoollyBiomassComparison)
 
-library(writexl)
+# library(writexl)
+# 
+# write_xlsx(WoollyBiomassComparison, "C:/Users/bella/Documents/WoollyBiomassComparison.xlsx")
+#Visualisation
+Woolly$Group <- as.factor(Woolly$Group)
 
-write_xlsx(WoollyBiomassComparison, "C:/Users/bella/Documents/WoollyBiomassComparison.xlsx")
+# Add a column that is the mass of each sample / mean control mass
+groupn_mean <- mean(Woolly$cubeMass[Woolly$Group == "n"], na.rm = TRUE)
+
+Woolly$ResponseRatio <- Woolly$cubeMass / groupn_mean
+
+# filter to remove baseline for plot
+WoollyPlot <- Woolly[Woolly$Group != "n", ]
+
+
+WoollyPlot %>%
+  ggplot(aes(x = Group, y = ResponseRatio)) +
+  geom_boxplot(fill = "#CF597E", varwidth = TRUE, notch = TRUE) +
+  geom_jitter(color = "black", size = 0.4, alpha = 0.9) +
+  ylab("Woolly nightshade cube root Biomass mixture / control (g)") +
+  xlab("Treatment") +
+  theme_classic()
+
+# log response ratio
+# Woolly
+#Function to compute lnRR using metafor for a given plant and control group
+library(metafor)
+compute_lnRR <- function(Biomass, plant_name = "Nightshade", control_group = 6) {
+  # Filter for specified plant
+  df_filtered <- Biomass %>% filter(Plant == plant_name)
+  
+  df_filtered <- df_filtered %>%
+    mutate(cubeMass = cuberoot(Mass))
+  
+  
+  # Split into treatment and control
+  control <- df_filtered %>% filter(Group == control_group)
+  treatments <- df_filtered %>% filter(Group != control_group)
+  
+  # Summarise group stats
+  group_stats <- treatments %>%
+    group_by(Group) %>%
+    summarise(
+      m1i = mean(cubeMass),
+      sd1i = sd(cubeMass),
+      n1i = n(),
+      .groups = "drop"
+    ) %>%
+    mutate(
+      m2i = mean(control$cubeMass),
+      sd2i = sd(control$cubeMass),
+      n2i = nrow(control)
+    )
+  
+  # Compute lnRR and sampling variance
+  escalc_results <- escalc(
+    measure = "ROM",
+    m1i = group_stats$m1i,
+    sd1i = group_stats$sd1i,
+    n1i = group_stats$n1i,
+    m2i = group_stats$m2i,
+    sd2i = group_stats$sd2i,
+    n2i = group_stats$n2i
+  )
+  
+  # Combine with group info
+  results <- bind_cols(group_stats["Group"], escalc_results)
+  return(results)
+}
+
+# Run the function
+lnrr_output <- compute_lnRR(Biomass, plant_name = "Nightshade", control_group = 6)
+print(lnrr_output)
+
+# Fix up the treatment groups
+lnrr_output$Group <- factor(lnrr_output$Group, levels = c("2", "3", "4", "6"), # order  
+                            labels = c("nbp", "np", "nb", "n")) # labels 
+
+# Plot lnRR with 95% CI
+ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
+  geom_point(shape = 16, size = 3) +
+  geom_errorbar(aes(ymin = yi - 1.96 * sqrt(vi), ymax = yi + 1.96 * sqrt(vi)), width = 0.2) +
+  labs(
+    x = "Treatment",
+    y = "lnRR_mixed/monoculture woolly nightshade cube root biomass (g)"
+  ) +
+  theme_classic() +
+  theme(
+    text = element_text(size = 10),
+    axis.title = element_text(face = "bold")
+  )
+
 
 # Estimated marginal means and pairwise comparisons
 summ_Woolly <- Woolly %>%
@@ -564,9 +669,9 @@ WoollyRGRComparison <- pairs(emm, adjust = "tukey")
 
 WoollyRGRComparison <- as.data.frame(WoollyRGRComparison)
 
-library(writexl)
-
-write_xlsx(WoollyRGRComparison, "C:/Users/bella/Documents/WoollyRGRComparison.xlsx")
+# library(writexl)
+# 
+# write_xlsx(WoollyRGRComparison, "C:/Users/bella/Documents/WoollyRGRComparison.xlsx")
 
 summ_WoollyH <- WoollyH %>%
   group_by(Group) %>% 
@@ -579,6 +684,23 @@ summ_WoollyHRoom <- WoollyH %>%
   summarise(mean_AverageGR = mean(AverageGR),
             sd_AverageGR = sd(AverageGR))
 print(summ_WoollyHRoom)
+
+NightshadePlot <- ggplot(data = WoollyH, 
+                         aes(y = AverageGR, ##Change this to variable name
+                             x = Group)) + ##Change this to variable name
+  geom_boxplot(fill = "#CF597E", notch = TRUE, varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Relative growth rate ln(mm/month)h") + xlab("Treatment") +   ##Change axis titles
+  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+NightshadePlot
 
 #### Tree Privet Biomass ####
 # include only privet
@@ -642,9 +764,99 @@ PrivetBiomassComparison <- pairs(emm, adjust = "tukey")
 
 PrivetBiomassComparison <- as.data.frame(PrivetBiomassComparison)
 
-library(writexl)
+# library(writexl)
+# 
+# write_xlsx(PrivetBiomassComparison, "C:/Users/bella/Documents/PrivetBiomassComparison.xlsx")
 
-write_xlsx(PrivetBiomassComparison, "C:/Users/bella/Documents/PrivetBiomassComparison.xlsx")
+#Visualisation
+Privet$Group <- as.factor(Privet$Group)
+
+# Add a column that is the mass of each sample / mean control mass
+groupn_mean <- mean(Privet$cubeMass[Privet$Group == "p"], na.rm = TRUE)
+
+Privet$ResponseRatio <- Privet$cubeMass / groupn_mean
+
+# filter to remove baseline for plot
+PrivetPlot <- Privet[Privet$Group != "p", ]
+
+
+PrivetPlot %>%
+  ggplot(aes(x = Group, y = ResponseRatio)) +
+  geom_boxplot(fill = "#E57F6C", varwidth = TRUE, notch = TRUE) +
+  geom_jitter(color = "black", size = 0.4, alpha = 0.9) +
+  ylab("Tree privet cube root Biomass mixture / control (g)") +
+  xlab("Treatment") +
+  theme_classic()
+
+# log response ratio
+# Privet
+#Function to compute lnRR using metafor for a given plant and control group
+library(metafor)
+compute_lnRR <- function(Biomass, plant_name = "Privet", control_group = 8) {
+  # Filter for specified plant
+  df_filtered <- Biomass %>% filter(Plant == plant_name)
+  
+  df_filtered <- df_filtered %>%
+    mutate(cubeMass = cuberoot(Mass))
+  
+  
+  # Split into treatment and control
+  control <- df_filtered %>% filter(Group == control_group)
+  treatments <- df_filtered %>% filter(Group != control_group)
+  
+  # Summarise group stats
+  group_stats <- treatments %>%
+    group_by(Group) %>%
+    summarise(
+      m1i = mean(cubeMass),
+      sd1i = sd(cubeMass),
+      n1i = n(),
+      .groups = "drop"
+    ) %>%
+    mutate(
+      m2i = mean(control$cubeMass),
+      sd2i = sd(control$cubeMass),
+      n2i = nrow(control)
+    )
+  
+  # Compute lnRR and sampling variance
+  escalc_results <- escalc(
+    measure = "ROM",
+    m1i = group_stats$m1i,
+    sd1i = group_stats$sd1i,
+    n1i = group_stats$n1i,
+    m2i = group_stats$m2i,
+    sd2i = group_stats$sd2i,
+    n2i = group_stats$n2i
+  )
+  
+  # Combine with group info
+  results <- bind_cols(group_stats["Group"], escalc_results)
+  return(results)
+}
+
+# Run the function
+lnrr_output <- compute_lnRR(Biomass, plant_name = "Privet", control_group = 8)
+print(lnrr_output)
+
+# Fix up the treatment groups
+lnrr_output$Group <- factor(lnrr_output$Group, levels = c("2", "3", "5", "8"), # order  
+                            labels = c("nbp", "np", "bp", "p")) # labels 
+
+# Plot lnRR with 95% CI
+ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
+  geom_point(shape = 16, size = 3) +
+  geom_errorbar(aes(ymin = yi - 1.96 * sqrt(vi), ymax = yi + 1.96 * sqrt(vi)), width = 0.2) +
+  labs(
+    x = "Treatment",
+    y = "lnRR_mixed/monoculture tree privet cube root biomass (g)"
+  ) +
+  theme_classic() +
+  theme(
+    text = element_text(size = 10),
+    axis.title = element_text(face = "bold")
+  )
+
 
 summ_Privet <- Privet %>%
   group_by(Group) %>% 
@@ -698,10 +910,9 @@ PrivetRGRComparison <- pairs(emm, adjust = "tukey")
 
 PrivetRGRComparison <- as.data.frame(PrivetRGRComparison)
 
-library(writexl)
-
-write_xlsx(PrivetRGRComparison, "C:/Users/bella/Documents/PrivetRGRComparison.xlsx")
-
+# library(writexl)
+# 
+# write_xlsx(PrivetRGRComparison, "C:/Users/bella/Documents/PrivetRGRComparison.xlsx")
 
 summ_PrivetH <- PrivetH %>%
   group_by(Group) %>% 
@@ -714,6 +925,28 @@ summ_PrivetHRoom <- PrivetH %>%
   summarise(mean_AverageGR = mean(AverageGR),
             sd_AverageGR = sd(AverageGR))
 print(summ_PrivetHRoom)
+
+# Fix up the treatment groups
+PrivetH$Group <- factor(PrivetH$Group, levels = c("2", "3", "5", "8"), # order  
+                        labels = c("nbp", "np", "bp", "p")) # labels 
+
+PrivetPlot <- ggplot(data = PrivetH, 
+                     aes(y = AverageGR, ##Change this to variable name
+                         x = Group)) + ##Change this to variable name
+  geom_boxplot(fill = "#E57F6C", notch = TRUE, varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Relative growth rate ln(mm/month)") + xlab("Treatment") +   ##Change axis titles
+  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+PrivetPlot 
+
 
 #### Wattle Biomass ####
 
@@ -833,7 +1066,7 @@ ggplot(Room547Wattle, aes(x = Group, y = Mass))+
   theme_bw() 
 
 # look at differences within rooms
-
+library(FSA)
 dt <- dunnTest(Mass ~ Group,
                data = Room546Wattle,
                method = "bonferroni")
@@ -1010,10 +1243,10 @@ emm <- emmeans(M1, ~ Group)
 WattleRGRComparison <- pairs(emm, adjust = "tukey")
 
 WattleRGRComparison <- as.data.frame(WattleRGRComparison)
-
-library(writexl)
-
-write_xlsx(WattleRGRComparison, "C:/Users/bella/Documents/WattleRGRComparison.xlsx")
+# 
+# library(writexl)
+# 
+# write_xlsx(WattleRGRComparison, "C:/Users/bella/Documents/WattleRGRComparison.xlsx")
 
 summ_WattleH <- WattleH %>%
   group_by(Group) %>% 
@@ -1026,6 +1259,24 @@ summ_WattleHRoom <- WattleH %>%
   summarise(mean_AverageGR = mean(AverageGR),
             sd_AverageGR = sd(AverageGR))
 print(summ_WattleHRoom)
+
+library(ggplot2)
+WattlePlot <- ggplot(data = WattleH, 
+                     aes(y = AverageGR, ##Change this to variable name
+                         x = Group)) + ##Change this to variable name
+  geom_boxplot(fill = "#E9A96C", notch = TRUE, varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Relative growth rate ln(mm/month)") + xlab("Treatment") +   ##Change axis titles
+  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+WattlePlot
 
 #### Seedling Biomass ####
 # include only seedlings
@@ -1078,9 +1329,9 @@ SeedlingBiomassComparison <- pairs(emm, adjust = "tukey")
 
 SeedlingBiomassComparison <- as.data.frame(SeedlingBiomassComparison)
 
-library(writexl)
-
-write_xlsx(SeedlingBiomassComparison, "C:/Users/bella/Documents/SeedlingBiomassComparison.xlsx")
+# library(writexl)
+# 
+# write_xlsx(SeedlingBiomassComparison, "C:/Users/bella/Documents/SeedlingBiomassComparison.xlsx")
 
 # boxplot
 ggplot(Seedling, aes(x = Group, y = logMass))+
@@ -1098,6 +1349,90 @@ summ_SeedlingRoom <- Seedling %>%
   summarise(mean_Mass = mean(Mass),
             sd_Mass = sd(Mass))
 print(summ_SeedlingRoom)
+
+#Visualisation
+Seedling$Group <- as.factor(Seedling$Group)
+
+# Add a column that is the mass of each sample / mean control mass
+groupn_mean <- mean(Seedling$logMass[Seedling$Group == "m"], na.rm = TRUE)
+
+Seedling$ResponseRatio <- Seedling$logMass / groupn_mean
+
+# filter to remove baseline for plot
+SeedlingPlot <- Seedling[Seedling$Group != "m", ]
+
+
+SeedlingPlot %>%
+  ggplot(aes(x = Group, y = ResponseRatio)) +
+  geom_boxplot(fill = "#82C782", varwidth = TRUE, notch = FALSE) +
+  geom_jitter(color = "black", size = 0.4, alpha = 0.9) +
+  ylab("Mānuka seedling log Biomass mixture / control (g)") +
+  xlab("Treatment") +
+  theme_classic()
+
+# log response ratio
+# Seedling
+#Function to compute lnRR using metafor for a given plant and control group
+library(metafor)
+compute_lnRR <- function(Seedling, control_group = "m") {
+
+  # Split into treatment and control
+  control <- Seedling %>% filter(Group == control_group)
+  treatments <- Seedling %>% filter(Group != control_group)
+  
+  # Summarise group stats
+  group_stats <- treatments %>%
+    group_by(Group) %>%
+    summarise(
+      m1i = mean(logMass),
+      sd1i = sd(logMass),
+      n1i = n(),
+      .groups = "drop"
+    ) %>%
+    mutate(
+      m2i = mean(control$logMass),
+      sd2i = sd(control$logMass),
+      n2i = nrow(control)
+    )
+  
+  # Compute lnRR and sampling variance
+  escalc_results <- escalc(
+    measure = "ROM",
+    m1i = group_stats$m1i,
+    sd1i = group_stats$sd1i,
+    n1i = group_stats$n1i,
+    m2i = group_stats$m2i,
+    sd2i = group_stats$sd2i,
+    n2i = group_stats$n2i
+  )
+  
+  # Combine with group info
+  results <- bind_cols(group_stats["Group"], escalc_results)
+  return(results)
+}
+
+# Run the function
+lnrr_output <- compute_lnRR(Seedling, control_group = "m")
+print(lnrr_output)
+
+# # Fix up the treatment groups
+# lnrr_output$Group <- factor(lnrr_output$Group, levels = c("2", "3", "4", "6"), # order  
+#                             labels = c("nbp", "np", "nb", "n")) # labels 
+
+# Plot lnRR with 95% CI
+ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
+  geom_point(shape = 16, size = 3) +
+  geom_errorbar(aes(ymin = yi - 1.96 * sqrt(vi), ymax = yi + 1.96 * sqrt(vi)), width = 0.2) +
+  labs(
+    x = "Treatment Group",
+    y = "lnRR_mixed/monoculture Seedling log root biomass (g)"
+  ) +
+  theme_classic() +
+  theme(
+    text = element_text(size = 10),
+    axis.title = element_text(face = "bold")
+  )
+
 
 #### Seedling RGR ####
 SeedlingH <- Height[Height$Plant == "ManukaSeedling", ]
@@ -1141,7 +1476,6 @@ qqline(res, col = "red")
 SeedlingH <- SeedlingH %>%
   mutate(cubeGR = cuberoot(AverageGR))
 
-
 hist(SeedlingH$cubeGR)
 
 # Fit a model 
@@ -1158,6 +1492,25 @@ plot(M1, which = 2)
 qqnorm(res)
 qqline(res, col = "red")
 
+# try log
+SeedlingH <- SeedlingH %>%
+  mutate(logGR = log(AverageGR + 1))
+
+hist(SeedlingH$logGR)
+
+# Fit a model 
+M1 <- lmer(logGR ~  factor(Group) +  (1 | Room), data = SeedlingH)
+
+summary(M1)
+
+res <- residuals(M1)
+
+# Method 1: Base R diagnostic plot (select plot 2)
+plot(M1, which = 2)
+
+# Method 2: Specific Q-Q plot
+qqnorm(res)
+qqline(res, col = "red")
 
 # Type II/III tests (handle unbalanced designs)
 library(car)
@@ -1185,6 +1538,24 @@ summ_SeedlingHRoom <- SeedlingH %>%
   summarise(mean_AverageGR = mean(AverageGR),
             sd_AverageGR = sd(AverageGR))
 print(summ_SeedlingHRoom)
+
+SeedlingPlot <- ggplot(data = SeedlingH, 
+                       aes(y = logGR, ##Change this to variable name
+                           x = Group)) + ##Change this to variable name
+  geom_boxplot(fill = "#82C782", notch = TRUE, varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Mānuka seedling log(RGR ln(mm/month))") + xlab("Treatment") +   ##Change axis titles
+  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+SeedlingPlot 
+
 
 #### look at Nodules ####
 # look at the effects
