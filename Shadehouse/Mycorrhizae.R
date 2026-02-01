@@ -160,6 +160,18 @@ summ_Myc3 <- Myc3 %>%
 ratio <-(max(summ_Myc3$sd_perc_c))/(min(summ_Myc3$sd_perc_c))
 print(ratio)
 
+# Run Type III ANOVA
+library(car)
+Anova(M1, type = 3)
+
+# Tukey-Kramer test (automatically applied for unequal sample sizes)
+library(emmeans)
+emm <- emmeans(M1, ~ Exp1Group)        # treatment effects within each room
+MycModel <- pairs(emm, adjust = "tukey")
+
+MycModel <- as.data.frame(MycModel)
+
+
 # hist(Myc3$perc_c)
 # 
 # # not normal, check within each group
@@ -371,9 +383,9 @@ MycModel <- pairs(emm, adjust = "tukey")
 
 MycModel <- as.data.frame(MycModel)
 
-library(writexl)
-
-write_xlsx(MycModel, "C:/Users/bella/Documents/MycModel.xlsx")
+# library(writexl)
+# 
+# write_xlsx(MycModel, "C:/Users/bella/Documents/MycModel.xlsx")
 
 # calculate some summary statistics
 print(summ_Myc3)
@@ -601,11 +613,11 @@ model <- lm(perc_A ~ factor(Exp1Group), data = Myc4)
 
 # Run Type III ANOVA
 library(car)
-Anova(model, type = 3)
+Anova(M2, type = 3)
 
 # Tukey-Kramer test (automatically applied for unequal sample sizes)
 library(emmeans)
-emm <- emmeans(model, ~ Exp1Group)        # treatment effects within each room
+emm <- emmeans(M2, ~ Exp1Group)        # treatment effects within each room
 ArbusculeModel <- pairs(emm, adjust = "tukey")
 
 ArbusculeModel <- as.data.frame(ArbusculeModel)

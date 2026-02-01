@@ -320,8 +320,8 @@ Height <- Height %>%
 # this is needed for running the model for RGR across all species, but will throw
 # off the rest of the code.
 # # I need to add room 
-# Height <- Height %>%
-#   left_join(dplyr::select(RoomPot, Pot, Room), by = "Pot")
+ Height <- Height %>%
+   left_join(dplyr::select(RoomPot, Pot, Room), by = "Pot")
 
 
 # which plant has the highest biomass
@@ -335,7 +335,7 @@ summary(M2)
 res <- residuals(M2)
 
 # Method 1: Base R diagnostic plot (select plot 2)
-plot(M1, which = 2)
+plot(M2, which = 2)
 
 # Method 2: Specific Q-Q plot
 qqnorm(res)
@@ -676,7 +676,8 @@ WoollyRGRComparison <- as.data.frame(WoollyRGRComparison)
 summ_WoollyH <- WoollyH %>%
   group_by(Group) %>% 
   summarise(mean_AverageGR = mean(AverageGR),
-            sd_AverageGR = sd(AverageGR))
+            sd_AverageGR = sd(AverageGR), 
+            se_AverageGR = sd(AverageGR)/sqrt(n()))
 print(summ_WoollyH)
 
 summ_WoollyHRoom <- WoollyH %>%
