@@ -437,14 +437,14 @@ SeedlingsH$Group <- factor(SeedlingsH$Group, levels = c("1", "2", "3", "4", "5",
 ggplot(SeedlingsH, aes(x = Group, y = AverageGR, fill = Plant)) +
   geom_boxplot(position = position_dodge(width = 0.8)) +
   theme_minimal() +
-  labs(x = "Treatment group", y = "Relative growth rate ln(mm/month)", fill = "Species") +
+  labs(x = "Treatment", y = "Relative growth rate ln(mm/month)", fill = "Species") +
   scale_fill_manual(values = c(
     "ManukaSeedling"  = "#82C782", 
     "Nightshade" = "#CF597E",  
     "Privet" = "#E57F6C" , 
     "Wattle" = "#E9A96C"),
-    labels = c("ManukaSeedling" = "L. scoparium seedling","Nightshade" = "S. mauritianum",
-               "Privet" = "L. lucidum", "Wattle" = "P. lophantha")) +
+    labels = c("ManukaSeedling" = "mānuka seedling","Nightshade" = "woolly nightshade",
+               "Privet" = "tree privet", "Wattle" = "brush wattle")) +
   geom_vline(xintercept = 1.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
   geom_vline(xintercept = 2.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
   geom_vline(xintercept = 5.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +

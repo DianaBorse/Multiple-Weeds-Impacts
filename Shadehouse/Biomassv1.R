@@ -587,11 +587,19 @@ ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
   )
 
 # Wattle
+
+# Define a custom function
+cuberoot <- function(x) {
+  sign(x) * abs(x)^(1/3)
+}
+
 #Function to compute lnRR using metafor for a given plant and control group
 compute_lnRR <- function(Biomass, plant_name = "Wattle", control_group = 7) {
   # Filter for specified plant
   df_filtered <- Biomass %>% filter(Plant == plant_name)
-  
+  #try a transformation
+  df_filtered <- df_filtered %>%
+    mutate(cubeMass = cuberoot(Mass))
   # Split into treatment and control
   control <- df_filtered %>% filter(Group == control_group)
   treatments <- df_filtered %>% filter(Group != control_group)
@@ -600,14 +608,14 @@ compute_lnRR <- function(Biomass, plant_name = "Wattle", control_group = 7) {
   group_stats <- treatments %>%
     group_by(Group) %>%
     summarise(
-      m1i = mean(Mass),
-      sd1i = sd(Mass),
+      m1i = mean(cubeMass),
+      sd1i = sd(cubeMass),
       n1i = n(),
       .groups = "drop"
     ) %>%
     mutate(
-      m2i = mean(control$Mass),
-      sd2i = sd(control$Mass),
+      m2i = mean(control$cubeMass),
+      sd2i = sd(control$cubeMass),
       n2i = nrow(control)
     )
   
@@ -640,13 +648,13 @@ ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
   geom_point(shape = 16, size = 3) +
   geom_errorbar(aes(ymin = yi - 1.96 * sqrt(vi), ymax = yi + 1.96 * sqrt(vi)), width = 0.2) +
   labs(
-    x = "Treatment Group",
-    y = "lnRR_mixed/monoculture brush wattle seedling biomass (g)"
+    x = "Treatment",
+    y = "lnRR_mixed/monoculture brush wattle seedling cube root biomass (g)"
   ) +
   geom_hline(yintercept = 0, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
   theme_classic() +
   theme(
-    text = element_text(size = 12),
+    text = element_text(size = 10),
     axis.title = element_text(face = "bold")
   )
 

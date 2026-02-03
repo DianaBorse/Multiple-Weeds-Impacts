@@ -319,9 +319,9 @@ Height <- Height %>%
 
 # this is needed for running the model for RGR across all species, but will throw
 # off the rest of the code.
-# # I need to add room 
- Height <- Height %>%
-   left_join(dplyr::select(RoomPot, Pot, Room), by = "Pot")
+# # # I need to add room 
+#  Height <- Height %>%
+#    left_join(dplyr::select(RoomPot, Pot, Room), by = "Pot")
 
 
 # which plant has the highest biomass
@@ -1008,10 +1008,35 @@ qqline(res, col = "red")
 #try log + 1
 Wattle <- Wattle %>%
   mutate(logMass = log(Mass + 1))
-
+hist(Wattle$Mass)
 hist(Wattle$logMass)
 
+install.packages("robustlmm")
+library(robustlmm)
 
+M1_robust <- rlmer(
+  cubeMass ~ factor(Group) + (1 | Room),
+  data = Wattle
+)
+summary(M1_robust)
+
+plot(M1_robust)              # residual weights
+
+par(mfrow = c(2,2))
+plot(resid(M1_robust) ~ fitted(M1_robust))
+qqnorm(resid(M1_robust)); qqline(resid(M1_robust))
+
+ranef(M1_robust)
+
+library(car)
+Anova(M1_robust, type = 3) 
+
+library(emmeans)
+
+emmeans(M1_robust, pairwise ~ Group, type = "response")
+
+
+# 
 # # Type II/III tests (handle unbalanced designs)
 # library(car)
 # Anova(M1, type = 3)
@@ -1204,7 +1229,6 @@ gtsave(gt_tbl, "dunn_table.html")
 library(writexl)
 
 write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom544WattleMass.xlsx")
-
 
 #### Wattle RGR ####
 # checked, normal enough!
