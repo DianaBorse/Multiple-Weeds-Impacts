@@ -87,6 +87,7 @@ ggplot(Bufferdata) +
   xlab("Number of weeds present") +
   theme_classic()
 
+
 # calculate the probability of having 0, 1, 2 - 8 weeds
 
 library(dplyr)
@@ -152,6 +153,134 @@ ggplot(SEABuffer, aes(DistanceSEA, Richness)) +
   ylab("Number of weeds present") +
   xlab("Distance to nearest SEA in m") +
   theme_classic()
+
+# Make one with species
+# names of species into the row names
+#CloseWeeds2 <- CloseWeeds2[, c(14, setdiff(1:ncol(CloseWeeds2), 14))]
+StackData <- SEABuffer
+StackData <- subset(StackData, select = -c(ID, DistanceSEA)) 
+StackData$site <- as.numeric(StackData$site)
+
+row.names(StackData) <- StackData$site 
+
+# make the columns numeric
+StackData$A.sericifera <- as.numeric(StackData$A.sericifera)
+StackData$H.gardnerianum <- as.numeric(StackData$H.gardnerianum)
+StackData$A.scandens <- as.numeric(StackData$A.scandens)
+StackData$A.densiflorus <- as.numeric(StackData$A.densiflorus)
+StackData$S.mauritianum <- as.numeric(StackData$S.mauritianum)
+StackData$R.alaternus <- as.numeric(StackData$R.alaternus)
+StackData$B.integrifolia <- as.numeric(StackData$B.integrifolia)
+StackData$J.polyanthum <- as.numeric(StackData$J.polyanthum)
+StackData$I.tricolor <- as.numeric(StackData$I.tricolor)
+StackData$H.helix <- as.numeric(StackData$H.helix)
+StackData$A.cordifolia <- as.numeric(StackData$A.cordifolia)
+StackData$L.japonica <- as.numeric(StackData$L.japonica)
+StackData$V.major <- as.numeric(StackData$V.major)
+
+StackData <- StackData %>%
+  pivot_longer(
+    cols = 2:14,
+    names_to = "variable",
+    values_to = "value"
+  )  %>% filter(value == 1) %>%
+  select(-value)
+
+# need a column for count of sites
+StackData <- StackData %>%
+  group_by(Richness) %>%
+  mutate(count = n_distinct(site)) %>%
+  ungroup()
+
+okabe_ito_13 <- c(
+  "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
+  "#D55E00", "#CC79A7", "#999999",   # original 8
+  "#A6761D", "#1B9E77", "#7570B3", "#E7298A", "#66A61E"  # added distinct tones
+)
+library(colorspace)
+
+qual_13 <- qualitative_hcl(
+  n = 13,
+  palette = "Dark3"   # or "Set3", "Harmonic", "Dynamic"
+)
+
+props <- StackData %>%
+  group_by(Richness, variable) %>%
+  summarise(n = n(), .groups = "drop_last") %>%
+  mutate(prop = n / sum(n)) %>%
+  ungroup()
+
+
+ggplot(StackData, aes(fill = variable, y = count, x = Richness, binwidth = 1)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_x_continuous(breaks = seq(0, 9, by = 1),
+                     limits = c(0.5, 8.5)) +
+  scale_fill_manual(values = okabe_ito_13) +
+  theme_classic()
+
+ggplot(props, aes(fill = variable, y = prop, x = Richness, binwidth = 1)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_x_continuous(breaks = seq(0, 9, by = 1),
+                     limits = c(0.5, 8.5)) +
+  ylab("Proportion of total weeds") +
+  xlab("Richness") +
+  scale_fill_manual(values = okabe_ito_13) +
+  theme(axis.text.x=element_text(size=14, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=14, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=16,face="bold"), #Change axis title text font etc
+       #legend.title = element_text("species"), #If you want to remove the legend
+      #  legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))  
+
+# some analysis of whether these proportions are different between the proportions 
+# for each richness
+library(dplyr)
+library(purrr)
+library(broom)
+
+# Step 1: compute proportions
+props <- StackData %>%
+  group_by(Richness, variable) %>%
+  summarise(n = n(), .groups = "drop_last") %>%
+  mutate(prop = n / sum(n)) %>%
+  ungroup()
+
+# Step 2: run ANOVA for each variable
+anova_results <- props %>%
+  group_by(variable) %>%
+  do(tidy(aov(prop ~ Richness, data = .))) %>%
+  ungroup()
+
+anova_results
+
+anova_two_way <- aov(prop ~ Richness, data = props)
+summary(anova_two_way)
+
+library(emmeans)
+emm <- emmeans(anova_two_way, ~ Richness)  
+proportions <- pairs(emm, adjust = "tukey")
+
+library(dplyr)
+library(purrr)
+library(broom)
+
+# counts per Richness × variable
+counts <- StackData %>%
+  count(Richness, variable, name = "k") %>%
+  group_by(Richness) %>%
+  mutate(n = sum(k)) %>%   # total for that richness
+  ungroup()
+
+# fit binomial GLM for each variable
+glm_results <- counts %>%
+  group_by(variable) %>%
+  do(tidy(glm(cbind(k, n - k) ~ Richness, family = binomial, data = .))) %>%
+  ungroup()
+
+glm_results <- as.data.frame(glm_results)
 
 #### commmon species ####
 # Let's look at what species were most common closest to SEAs

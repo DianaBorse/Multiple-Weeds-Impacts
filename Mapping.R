@@ -78,6 +78,11 @@ addTiles(urlTemplate = paste0(
     fillOpacity = 0.8,
     stroke = FALSE
   ) %>%
+  addScaleBar(position = "bottomleft",  # Specify the position (bottomleft, bottomright, topleft, topright)
+              options = scaleBarOptions(maxWidth = 150,  # Max width in pixels
+                                        metric = TRUE,  # Show metric units (km, m)
+                                        imperial = FALSE, # Hide imperial units (miles, feet)
+                                        updateWhenIdle = TRUE)) %>%
   addMiniMap(
     tiles =(urlTemplate = paste0(
       "https://basemaps.linz.govt.nz/v1/tiles/aerial/3857/{z}/{x}/{y}.png?api=", 
@@ -121,6 +126,11 @@ leaflet() %>%
     fillOpacity = 0.8,
     stroke = FALSE
   ) %>%
+  addScaleBar(position = "bottomleft",  # Specify the position (bottomleft, bottomright, topleft, topright)
+              options = scaleBarOptions(maxWidth = 150,  # Max width in pixels
+                                        metric = TRUE,  # Show metric units (km, m)
+                                        imperial = FALSE, # Hide imperial units (miles, feet)
+                                        updateWhenIdle = TRUE)) %>%
   addMiniMap(
     tiles = providers$Esri.WorldTopoMap,
     toggleDisplay = TRUE
