@@ -81,8 +81,8 @@ summary_Buffer <- Bufferdata %>%
 
 ggplot(Bufferdata) +
   geom_histogram(aes(Richness), binwidth = 1, color = "orange3", fill = "orange") +
-  scale_x_continuous(breaks = seq(0, 13, by = 1),
-  limits = c(-0.5, 13)) +
+  scale_x_continuous(breaks = seq(0, 8, by = 1),
+  limits = c(-0.5, 8.5)) +
   ylab("Count of gardens") +
   xlab("Number of weeds present") +
   theme_classic()
@@ -107,6 +107,53 @@ SEABuffer$y_xy...4 <- as.numeric(as.factor(SEABuffer$y_xy...4))
 
 # Rename the x column to a more logical name: site
 colnames(SEABuffer)[4] <- c("site") ## Renaming the columns
+
+# I need to make a copy of SEA buffer that removes seedlings
+SEABufferNoSeedlings <- subset(SEABuffer, select = -c(Flowers_Seeds_PodsHoneysuckle, Area_m2Honeysuckle, HeightMetresHoneysuckle, Flowers_Seeds_PodsMadeiraVine,
+                                           Area_m2MadeiraVine, HeightMetresMadeiraVine, Area_m2Periwinkle, HeightMetresPeriwinkle, Flowers_Seeds_PodsEnglishIvy, Area_m2EnglishIvy, 
+                                           HeightMetresEnglishIvy,Flowers_Seeds_PodsBlueMorningGlory, Area_m2BlueMorningGlory, HeightMetresBlueMorningGlory, Flowers_Seeds_PodsJasmine, 
+                                           Area_m2Jasmine, HeightMetresJasmine, Flowers_Seeds_PodsCoastalBanksia, Area_m2CoastalBanksia, HeightMetresCoastalBanksia, Flowers_Seeds_PodsRhamnus, 
+                                           Area_m2Rhamnus, HeightMetresRhamnus, Flowers_Seeds_PodsWoolly, Area_m2Woolly, HeightMetresWoolly,
+                                           Area_m2BushyAsparagus, HeightMetresBushyAsparagus, Flowers_Seeds_PodsClimbingAsparagus, Area_m2ClimbingAsparagus, HeightMetresClimbingAsparagus,
+                                           Flowers_Seeds_PodsGinger, Area_m2Ginger, Height_metresGinger, Flowers_Seeds_PodsMothPlant, Area_m2MothPlant, HeightMetresMothPlant, EndOutcome, y_xy...56, y, x))
+
+colnames(SEABufferNoSeedlings)[5:17] <- c("A.sericifera", "H.gardnerianum", "A.scandens", "A.densiflorus", "S.mauritianum", "R.alaternus", 
+                               "B.integrifolia", "J.polyanthum", "I.tricolor", "H.helix", "V.major", "A.cordifolia", "L.japonica") ## Renaming the columns
+
+SEABufferNoSeedlings[, 5:17] <- lapply(SEABufferNoSeedlings[, 4:16], \(x) ifelse(x == "Seedling", 0, x))
+
+SEABufferNoSeedlings[, 5:17] <- lapply(SEABufferNoSeedlings[, 4:16], function(col) {
+  ifelse(!is.na(col), "1", NA) })
+SEABufferNoSeedlings <- SEABufferNoSeedlings %>%
+  mutate_all(~ replace(., is.na(.), 0))
+
+# remove duplicates
+SEABufferNoSeedlings <- SEABufferNoSeedlings |>
+  dplyr::arrange(site, CreationDate) |>
+  dplyr::filter(!duplicated(site)) |>
+  as.data.frame()
+
+# Now I want to see what the most common species richness was across the sites
+# I need to calculate sp. richness for each site which is the number of columns
+# with a 1 in it
+
+SEABufferNoSeedlings$Richness <- rowSums(SEABufferNoSeedlings[, 5:17] == "1")
+
+lmSEA <- lm(Richness ~ DistanceSEA, data = SEABufferNoSeedlings)
+
+summary(lmSEA)
+
+plot(SEABufferNoSeedlings$Richness, pch = 16, col = "blue")
+abline(lmSEA)
+
+ggplot(SEABufferNoSeedlings, aes(DistanceSEA, Richness)) +
+  scale_x_continuous(breaks = seq(0, 300, by = 50)) +
+  scale_y_continuous(breaks = seq(0, 13, by = 1)) +
+  geom_point(color = "orange") +
+  geom_smooth(method = lm, color = "orange4", fill = "orange") +
+  ylab("Number of weeds present") +
+  xlab("Distance to nearest SEA in m") +
+  theme_classic()
 
 # I need to change the current df so that it is presence/absence for each species
 # first, i will reduce to only one column for each species
@@ -153,6 +200,16 @@ ggplot(SEABuffer, aes(DistanceSEA, Richness)) +
   ylab("Number of weeds present") +
   xlab("Distance to nearest SEA in m") +
   theme_classic()
+
+# Calculate summ stats for distance to nearest SEA
+summary_SEABuffer <- SEABuffer %>%
+  summarise(mean_DistanceSEA = mean(DistanceSEA),
+            median_DistanceSEA = median(DistanceSEA),
+            IQR_DistanceSEA = IQR(DistanceSEA),
+            sd_DistanceSEA = sd(DistanceSEA),
+            var_DistanceSEA = var(DistanceSEA),
+            se_DistanceSEA = sd(DistanceSEA)/sqrt(n()),
+            n_DistanceSEA = n())
 
 # Make one with species
 # names of species into the row names

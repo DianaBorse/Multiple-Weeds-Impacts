@@ -188,7 +188,7 @@ leaflet() %>%
   addCircleMarkers(
     data = MothPlant,
     radius = 3,
-    color = "#B82783",
+    color = "#001889",
     fillOpacity = 0.8,
     stroke = FALSE
   ) |>
@@ -231,7 +231,7 @@ leaflet() %>%
   addCircleMarkers(
     data = Ginger,
     radius = 3,
-    color = "#73B897",
+    color = "#001889",
     fillOpacity = 1.0,
     stroke = FALSE
   ) |>
@@ -274,7 +274,7 @@ leaflet() %>%
   addCircleMarkers(
     data = CAsp,
     radius = 3,
-    color = "#E37450",
+    color = "#001889",
     fillOpacity = 1.0,
     stroke = FALSE
   ) |>
@@ -317,7 +317,7 @@ leaflet() %>%
   addCircleMarkers(
     data = BAsp,
     radius = 3,
-    color = "#EAC225",
+    color = "#001889",
     fillOpacity = 1.0,
     stroke = FALSE
   ) |>
@@ -404,7 +404,7 @@ leaflet() %>%
   addCircleMarkers(
     data = Banksia,
     radius = 4,
-    color = "#7D0112",
+    color = "#001889",
     fillOpacity = 0.8,
     stroke = FALSE
   ) |>
@@ -447,7 +447,7 @@ leaflet() %>%
   addCircleMarkers(
     data = Jasmine,
     radius = 3,
-    color = "#8A008D",
+    color = "#001889",
     fillOpacity = 0.8,
     stroke = FALSE
   ) |>
@@ -490,7 +490,7 @@ leaflet() %>%
   addCircleMarkers(
     data = MorningGlory,
     radius = 3,
-    color = "#44038A",
+    color = "#001889",
     fillOpacity = 0.8,
     stroke = FALSE
   ) |>
@@ -533,7 +533,7 @@ leaflet() %>%
   addCircleMarkers(
     data = Ivy,
     radius = 3,
-    color = "#51B09F",
+    color = "#001889",
     fillOpacity = 0.8,
     stroke = FALSE
   ) |>
@@ -576,7 +576,7 @@ leaflet() %>%
   addCircleMarkers(
     data = Periwinkle,
     radius = 4,
-    color = "#3B99B1",
+    color = "#001889",
     fillOpacity = 1.0,
     stroke = FALSE
   ) |>
@@ -619,7 +619,7 @@ leaflet() %>%
   addCircleMarkers(
     data = Madeira,
     radius = 3,
-    color = "#D85A68",
+    color = "#001889",
     fillOpacity = 0.8,
     stroke = FALSE
   ) |>
@@ -662,7 +662,7 @@ leaflet() %>%
   addCircleMarkers(
     data = Honeysuckle,
     radius = 3,
-    color = "#EA8E2B",
+    color = "#001889",
     fillOpacity = 0.8,
     stroke = FALSE
   ) |>
