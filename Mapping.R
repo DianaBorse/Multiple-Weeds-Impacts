@@ -963,18 +963,29 @@ colnames(CEIndex)[5] <- c("dispersal") ## Renaming the columns
 CEIndex <- CEIndex %>%
   mutate(dispersal = if_else(dispersal == "bird", "bird", "other"))
 
+# try removing vinca
+CEIndexnoVinca<-CEIndex[-10, ]
+
 # Not normal, need to try a transformation
 CEIndex <- CEIndex %>%
   mutate(logdonnelly = log(donnelly))
 
 hist(CEIndex$logdonnelly)
+hist(CEIndexnoVinca$donnelly)
 
 bird <- CEIndex %>% filter(dispersal != "other")
 other <- CEIndex %>% filter(dispersal != "bird")
 
+bird <- CEIndexnoVinca %>% filter(dispersal != "other")
+other <- CEIndexnoVinca %>% filter(dispersal != "bird")
+
 # check for normal dist.
 hist(bird$logdonnelly)
 hist(other$logdonnelly)
+
+# check for normal dist.
+hist(bird$donnelly)
+hist(other$donnelly)
 
 # Check for homogeneous variance
 summ_CEIndex <- CEIndex %>%
@@ -986,6 +997,17 @@ summ_CEIndex <- CEIndex %>%
 ratio <-(max(summ_CEIndex$sd_donnelly))/(min(summ_CEIndex$sd_donnelly))
 print(ratio)
 
+# Check for homogeneous variance
+summ_CEIndexnoVinca <- CEIndexnoVinca %>%
+  group_by(dispersal) %>%
+  summarise(mean_donnelly = mean(donnelly),
+            sd_donnelly = sd(donnelly),
+            se_donnelly = sd(donnelly)/sqrt(n()),
+            n_donnelly = n())
+ratio <-(max(summ_CEIndex$sd_donnelly))/(min(summ_CEIndex$sd_donnelly))
+print(ratio)
+
 wilcox.test(donnelly ~ dispersal, data = CEIndex, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
+wilcox.test(donnelly ~ dispersal, data = CEIndexnoVinca, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
 
 

@@ -39,6 +39,15 @@ Bufferdata$x <- as.numeric(as.factor(Bufferdata$x))
 # Rename the x column to a more logical name: site
 colnames(Bufferdata)[53] <- c("site") ## Renaming the columns
 
+# make a data frame for only seedlings
+BufferdataSeedlings<- subset(Bufferdata, select = -c(Flowers_Seeds_PodsHoneysuckle, Area_m2Honeysuckle, HeightMetresHoneysuckle, Flowers_Seeds_PodsMadeiraVine,
+                                 Area_m2MadeiraVine, HeightMetresMadeiraVine, Area_m2Periwinkle, HeightMetresPeriwinkle, Flowers_Seeds_PodsEnglishIvy, Area_m2EnglishIvy, 
+                                 HeightMetresEnglishIvy,Flowers_Seeds_PodsBlueMorningGlory, Area_m2BlueMorningGlory, HeightMetresBlueMorningGlory, Flowers_Seeds_PodsJasmine, 
+                                 Area_m2Jasmine, HeightMetresJasmine, Flowers_Seeds_PodsCoastalBanksia, Area_m2CoastalBanksia, HeightMetresCoastalBanksia, Flowers_Seeds_PodsRhamnus, 
+                                 Area_m2Rhamnus, HeightMetresRhamnus, Flowers_Seeds_PodsWoolly, Area_m2Woolly, HeightMetresWoolly,
+                                 Area_m2BushyAsparagus, HeightMetresBushyAsparagus, Flowers_Seeds_PodsClimbingAsparagus, Area_m2ClimbingAsparagus, HeightMetresClimbingAsparagus,
+                                 Flowers_Seeds_PodsGinger, Area_m2Ginger, Height_metresGinger, Flowers_Seeds_PodsMothPlant, Area_m2MothPlant, HeightMetresMothPlant, EndOutcome))
+
 # I need to change the current df so that it is presence/absence for each species
 # first, i will reduce to only one column for each species
 Bufferdata <- subset(Bufferdata, select = -c(OldestGrowthStageHoneysuckle, Area_m2Honeysuckle, HeightMetresHoneysuckle, OldestGrowthStageMadeiraVine,
@@ -155,6 +164,36 @@ ggplot(SEABufferNoSeedlings, aes(DistanceSEA, Richness)) +
   xlab("Distance to nearest SEA in m") +
   theme_classic()
 
+
+ggplot(SEABufferNoSeedlings) +
+geom_histogram(aes(Richness), binwidth = 1, color = "orange3", fill = "orange") +
+  scale_x_continuous(breaks = seq(0, 8, by = 1),
+                     limits = c(-0.5, 8.5)) +
+  ylab("Count of gardens") +
+  xlab("Number of weeds present") +
+  theme_classic()
+
+# Let's look at some summary stats
+summary_SEABufferNoSeedlings <- SEABufferNoSeedlings %>%
+  summarise(mean_Richness = mean(Richness),
+            median_Richness = median(Richness),
+            IQR_Richness = IQR(Richness),
+            sd_Richness = sd(Richness),
+            var_Richness = var(Richness),
+            se_Richness = sd(Richness)/sqrt(n()),
+            n_Richness = n())
+
+# Great! Now let's start with moth plant, if there is a 1, keep, if there is a
+# 0, remove that row
+library(dplyr)
+MothPlant <- SEABufferNoSeedlings %>%
+  filter(A.sericifera != 0)
+
+# and let's make one that is the properties without moth plant as well
+NoMothPlant <- SEABufferNoSeedlings %>%
+  filter(A.sericifera == 0)
+
+
 # I need to change the current df so that it is presence/absence for each species
 # first, i will reduce to only one column for each species
 SEABuffer <- subset(SEABuffer, select = -c(OldestGrowthStageHoneysuckle, Area_m2Honeysuckle, HeightMetresHoneysuckle, OldestGrowthStageMadeiraVine,
@@ -163,27 +202,33 @@ SEABuffer <- subset(SEABuffer, select = -c(OldestGrowthStageHoneysuckle, Area_m2
                                              Area_m2Jasmine, HeightMetresJasmine, OldestGrowthStageCoastalBanksia, Area_m2CoastalBanksia, HeightMetresCoastalBanksia, OldestGrowthStageRhamnus, 
                                              Area_m2Rhamnus, HeightMetresRhamnus, OldestGrowthStageWoolly, Area_m2Woolly, HeightMetresWoolly,
                                              Area_m2BushyAsparagus, HeightMetresBushyAsparagus, OldestGrowthStageClimbingAsparagus, Area_m2ClimbingAsparagus, HeightMetresClimbingAsparagus,
-                                             OldestGrowthStageGinger, Area_m2Ginger, Height_metresGinger, OldestGrowthStageMothPlant, Area_m2MothPlant, HeightMetresMothPlant, CreationDate, EndOutcome, y_xy...56, y, x))
+                                             OldestGrowthStageGinger, Area_m2Ginger, Height_metresGinger, OldestGrowthStageMothPlant, Area_m2MothPlant, HeightMetresMothPlant, EndOutcome, y_xy...56, y, x))
 
-colnames(SEABuffer)[4:16] <- c("A.sericifera", "H.gardnerianum", "A.scandens", "A.densiflorus", "S.mauritianum", "R.alaternus", 
+colnames(SEABuffer)[5:17] <- c("A.sericifera", "H.gardnerianum", "A.scandens", "A.densiflorus", "S.mauritianum", "R.alaternus", 
                                 "B.integrifolia", "J.polyanthum", "I.tricolor", "H.helix", "V.major", "A.cordifolia", "L.japonica") ## Renaming the columns
 
 # Now I need any rows that are NA to be 0 and any with text to be 1
-SEABuffer[, 4:16] <- lapply(SEABuffer[, 4:16], function(col) {
+SEABuffer[, 5:17] <- lapply(SEABuffer[, 5:17], function(col) {
   ifelse(!is.na(col), "1", NA) })
 SEABuffer <- SEABuffer %>%
   mutate_all(~ replace(., is.na(.), 0))
 
 # remove duplicates
-SEABuffer <- SEABuffer[!duplicated(SEABuffer$site), ]
+#SEABuffer <- SEABuffer[!duplicated(SEABuffer$site), ]
 
-SEABuffer = as.data.frame(SEABuffer)
+#SEABuffer = as.data.frame(SEABuffer)
+
+# remove duplicates
+SEABuffer <- SEABuffer |>
+  dplyr::arrange(site, CreationDate) |>
+  dplyr::filter(!duplicated(site)) |>
+  as.data.frame()
 
 # Now I want to see what the most common species richness was across the sites
 # I need to calculate sp. richness for each site which is the number of columns
 # with a 1 in it
 
-SEABuffer$Richness <- rowSums(SEABuffer[, 4:16] == "1")
+SEABuffer$Richness <- rowSums(SEABuffer[, 5:17] == "1")
 
 lmSEA <- lm(Richness ~ DistanceSEA, data = SEABuffer)
 
@@ -210,6 +255,53 @@ summary_SEABuffer <- SEABuffer %>%
             var_DistanceSEA = var(DistanceSEA),
             se_DistanceSEA = sd(DistanceSEA)/sqrt(n()),
             n_DistanceSEA = n())
+
+# Let's look at some summary stats
+summary_SEABufferRichness <- SEABuffer %>%
+  summarise(mean_Richness = mean(Richness),
+            median_Richness = median(Richness),
+            IQR_Richness = IQR(Richness),
+            sd_Richness = sd(Richness),
+            var_Richness = var(Richness),
+            se_Richness = sd(Richness)/sqrt(n()),
+            n_Richness = n())
+
+ggplot(SEABuffer) +
+  geom_histogram(aes(Richness), binwidth = 1, color = "orange3", fill = "orange") +
+  scale_x_continuous(breaks = seq(0, 8, by = 1),
+                     limits = c(-0.5, 8.5)) +
+  ylab("Count of gardens") +
+  xlab("Number of weeds present") +
+  theme_classic()
+
+# Great! Now let's start with moth plant, if there is a 1, keep, if there is a
+# 0, remove that row
+library(dplyr)
+MothPlant <- SEABuffer %>%
+  filter(A.sericifera != 0)
+
+# and let's make one that is the properties without moth plant as well
+NoMothPlant <- SEABuffer %>%
+  filter(A.sericifera == 0)
+
+# How many moth plant seedlings
+colnames(BufferdataSeedlings)[2:14] <- c("A.sericifera", "H.gardnerianum", "A.scandens", "A.densiflorus", "S.mauritianum", "R.alaternus", 
+                                "B.integrifolia", "J.polyanthum", "I.tricolor", "H.helix", "V.major", "A.cordifolia", "L.japonica") ## Renaming the columns
+
+
+BufferdataSeedlings <- as.data.frame(BufferdataSeedlings)
+
+# remove duplicates
+BufferdataSeedlings <- BufferdataSeedlings |>
+  dplyr::arrange(site, CreationDate) |>
+  dplyr::filter(!duplicated(site)) |>
+  as.data.frame()
+
+# filter to just moth plant
+MothPlant <- BufferdataSeedlings[ , 2, drop = FALSE]
+
+MothPlant <- MothPlant %>%
+  filter(if_any(1, ~ .x == "Seedling"))
 
 # Make one with species
 # names of species into the row names
