@@ -597,9 +597,7 @@ cuberoot <- function(x) {
 compute_lnRR <- function(Biomass, plant_name = "Wattle", control_group = 7) {
   # Filter for specified plant
   df_filtered <- Biomass %>% filter(Plant == plant_name)
-  #try a transformation
-  df_filtered <- df_filtered %>%
-    mutate(cubeMass = cuberoot(Mass))
+
   # Split into treatment and control
   control <- df_filtered %>% filter(Group == control_group)
   treatments <- df_filtered %>% filter(Group != control_group)
@@ -608,14 +606,14 @@ compute_lnRR <- function(Biomass, plant_name = "Wattle", control_group = 7) {
   group_stats <- treatments %>%
     group_by(Group) %>%
     summarise(
-      m1i = mean(cubeMass),
-      sd1i = sd(cubeMass),
+      m1i = mean(Mass),
+      sd1i = sd(Mass),
       n1i = n(),
       .groups = "drop"
     ) %>%
     mutate(
-      m2i = mean(control$cubeMass),
-      sd2i = sd(control$cubeMass),
+      m2i = mean(control$Mass),
+      sd2i = sd(control$Mass),
       n2i = nrow(control)
     )
   
@@ -649,7 +647,7 @@ ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
   geom_errorbar(aes(ymin = yi - 1.96 * sqrt(vi), ymax = yi + 1.96 * sqrt(vi)), width = 0.2) +
   labs(
     x = "Treatment",
-    y = "lnRR_mixed/monoculture brush wattle seedling cube root biomass (g)"
+    y = "lnRR_mixed/monoculture brush wattle seedling biomass (g)"
   ) +
   geom_hline(yintercept = 0, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
   theme_classic() +

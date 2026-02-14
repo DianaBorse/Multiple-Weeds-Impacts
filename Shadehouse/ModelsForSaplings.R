@@ -307,9 +307,27 @@ Height <- Height %>%
   mutate(GR6 = if_else(is.na(Notes7) | Notes7 != "dead", log(Height7) - log(Height6), NA_real_))
 
 
+Height2 <- Height %>%
+  mutate(Growth1 = if_else(is.na(Notes2) | Notes2 != "dead", (Height2) - (Height1), NA_real_))
+Height2 <- Height2 %>%
+  mutate(Growth2 = if_else(is.na(Notes3) | Notes3 != "dead", (Height3) - (Height2), NA_real_))
+Height2 <- Height2 %>%
+  mutate(Growth3 = if_else(is.na(Notes4) | Notes4 != "dead", (Height4) - (Height3), NA_real_))
+Height2 <- Height2 %>%
+  mutate(Growth4 = if_else(is.na(Notes5) | Notes5 != "dead", (Height5) - (Height4), NA_real_))
+Height2 <- Height2 %>%
+  mutate(Growth5 = if_else(is.na(Notes6) | Notes6 != "dead", (Height6) - (Height5), NA_real_))
+Height2 <- Height2 %>%
+  mutate(Growth6 = if_else(is.na(Notes7) | Notes7 != "dead", (Height7) - (Height6), NA_real_))
+
 # Calculate average growth rate for each plant
 Height$AverageGR <- rowMeans(Height[, 26:31], na.rm = TRUE)
 Height$AverageGR <- Height$AverageGR * 10
+
+# Calculate pure average growth rate for each plant
+Height2$AverageGR <- rowMeans(Height2[, 32:37], na.rm = TRUE)
+Height2$AverageGR <- Height2$AverageGR * 10
+
 
 # Clean up empty rows
 library(dplyr)
@@ -320,8 +338,8 @@ Height <- Height %>%
 # this is needed for running the model for RGR across all species, but will throw
 # off the rest of the code.
 # # # I need to add room 
-#  Height <- Height %>%
-#    left_join(dplyr::select(RoomPot, Pot, Room), by = "Pot")
+ # Height <- Height %>%
+ #   left_join(dplyr::select(RoomPot, Pot, Room), by = "Pot")
 
 
 # which plant has the highest biomass
@@ -349,12 +367,23 @@ RGRComparisons <- pairs(emm, adjust = "tukey")
 
 RGRComparisons <- as.data.frame(RGRComparisons)
 
+# Summary stats for each plant
+summary_RGR<- Height %>%
+  group_by(Plant) %>%
+  summarise(mean_AverageGR = mean(AverageGR),
+            median_AverageGR = median(AverageGR),
+            IQR_AverageGR = IQR(AverageGR),
+            sd_AverageGR = sd(AverageGR),
+            var_AverageGR = var(AverageGR),
+            se_AverageGR = sd(AverageGR)/sqrt(n()),
+            n_AverageGR = n())
+
 # library(writexl)
 
 #write_xlsx(RGRComparisons, "C:/Users/bella/Documents/RGRComparisons.xlsx")
 
 # calculate means
-summ_height <- Height %>%
+summ_height <- Height2 %>%
   group_by(Plant) %>%
   summarise(mean_AverageGR = mean(AverageGR),
             median_AverageGR = median(AverageGR),
@@ -390,9 +419,9 @@ SaplingH$Group <- factor(SaplingH$Group, levels = c("1", "2", "3", "4", "5", "6"
 # Check for normal distribution homogenous variance
 
 ggplot(SaplingH,aes(x = Group, y = AverageGR))+
-  geom_boxplot(fill = "#33B08D", varwidth = TRUE) +
+  geom_boxplot(fill = "#33B08D", varwidth = FALSE) +
   geom_jitter(color="black", size=0.4, alpha=0.9) +
-  ylab("Mānuka sapling RGR ln(mm/month)") + xlab("Treatment Group") +   ##Change axis titles
+  ylab("Mānuka sapling RGR ln(mm/month)") + xlab("Treatment") +   ##Change axis titles
   theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
         axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
         axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
@@ -401,7 +430,11 @@ ggplot(SaplingH,aes(x = Group, y = AverageGR))+
         panel.grid.major = element_blank(),#If you want to remove gridlines
         panel.grid.minor = element_blank(),#If you want to remove gridlines
         panel.background = element_blank(),    #If you want to remove background
-        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+        axis.line = element_line(colour = "black")) +
+  geom_vline(xintercept = 1.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
+  geom_vline(xintercept = 2.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
+  geom_vline(xintercept = 5.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
+  geom_vline(xintercept = 8.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
   theme_classic() 
 ggplot(SaplingH) +
   geom_histogram(aes(AverageGR), binwidth = 1)+
@@ -548,11 +581,7 @@ library(metafor)
 compute_lnRR <- function(Biomass, plant_name = "Nightshade", control_group = 6) {
   # Filter for specified plant
   df_filtered <- Biomass %>% filter(Plant == plant_name)
-  
-  df_filtered <- df_filtered %>%
-    mutate(cubeMass = cuberoot(Mass))
-  
-  
+
   # Split into treatment and control
   control <- df_filtered %>% filter(Group == control_group)
   treatments <- df_filtered %>% filter(Group != control_group)
@@ -561,14 +590,14 @@ compute_lnRR <- function(Biomass, plant_name = "Nightshade", control_group = 6) 
   group_stats <- treatments %>%
     group_by(Group) %>%
     summarise(
-      m1i = mean(cubeMass),
-      sd1i = sd(cubeMass),
+      m1i = mean(Mass),
+      sd1i = sd(Mass),
       n1i = n(),
       .groups = "drop"
     ) %>%
     mutate(
-      m2i = mean(control$cubeMass),
-      sd2i = sd(control$cubeMass),
+      m2i = mean(control$Mass),
+      sd2i = sd(control$Mass),
       n2i = nrow(control)
     )
   
@@ -602,13 +631,14 @@ ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
   geom_errorbar(aes(ymin = yi - 1.96 * sqrt(vi), ymax = yi + 1.96 * sqrt(vi)), width = 0.2) +
   labs(
     x = "Treatment",
-    y = "lnRR_mixed/monoculture woolly nightshade cube root biomass (g)"
+    y = "lnRR_mixed/monoculture woolly nightshade biomass (g)"
   ) +
+  geom_hline(yintercept = 0, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
   theme_classic() +
   theme(
     text = element_text(size = 10),
     axis.title = element_text(face = "bold")
-  )
+  ) 
 
 
 # Estimated marginal means and pairwise comparisons
@@ -796,11 +826,7 @@ library(metafor)
 compute_lnRR <- function(Biomass, plant_name = "Privet", control_group = 8) {
   # Filter for specified plant
   df_filtered <- Biomass %>% filter(Plant == plant_name)
-  
-  df_filtered <- df_filtered %>%
-    mutate(cubeMass = cuberoot(Mass))
-  
-  
+
   # Split into treatment and control
   control <- df_filtered %>% filter(Group == control_group)
   treatments <- df_filtered %>% filter(Group != control_group)
@@ -809,14 +835,14 @@ compute_lnRR <- function(Biomass, plant_name = "Privet", control_group = 8) {
   group_stats <- treatments %>%
     group_by(Group) %>%
     summarise(
-      m1i = mean(cubeMass),
-      sd1i = sd(cubeMass),
+      m1i = mean(Mass),
+      sd1i = sd(Mass),
       n1i = n(),
       .groups = "drop"
     ) %>%
     mutate(
-      m2i = mean(control$cubeMass),
-      sd2i = sd(control$cubeMass),
+      m2i = mean(control$Mass),
+      sd2i = sd(control$Mass),
       n2i = nrow(control)
     )
   
@@ -850,8 +876,9 @@ ggplot(lnrr_output, aes(x = factor(Group), y = yi)) +
   geom_errorbar(aes(ymin = yi - 1.96 * sqrt(vi), ymax = yi + 1.96 * sqrt(vi)), width = 0.2) +
   labs(
     x = "Treatment",
-    y = "lnRR_mixed/monoculture tree privet cube root biomass (g)"
+    y = "lnRR_mixed/monoculture tree privet biomass (g)"
   ) +
+  geom_hline(yintercept = 0, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
   theme_classic() +
   theme(
     text = element_text(size = 10),
@@ -995,6 +1022,9 @@ hist(Wattle$cubeMass)
 M1 <- lmer(cubeMass ~  factor(Group) +  (1 | Room), data = Wattle)
 
 summary(M1)
+
+library(car)
+Anova(M1, type = 3) 
 
 res <- residuals(M1)
 
@@ -1504,6 +1534,21 @@ plot(M1, which = 2)
 # Method 2: Specific Q-Q plot
 qqnorm(res)
 qqline(res, col = "red")
+
+# Type II/III tests (handle unbalanced designs)
+library(car)
+Anova(M1, type = 3) 
+
+# Estimated marginal means and pairwise comparisons
+library(emmeans)
+emm <- emmeans(M1, ~ Group)  
+SeedlingRGRComparison <- pairs(emm, adjust = "tukey")
+
+SeedlingRGRComparison <- as.data.frame(SeedlingRGRComparison)
+
+library(writexl)
+
+write_xlsx(SeedlingRGRComparison, "C:/Users/bella/Documents/SeedlingRGRComparison.xlsx")
 
 #try a transformation
 SeedlingH <- SeedlingH %>%

@@ -125,7 +125,6 @@ plot_obj$plot
 
 # logrank test
 survdiff(Surv(time, status) ~ Group, data = SaplingS)
-?sruvdiff
 
 # look for which treatments have different survival curves
 PairwiseSapling <- pairwise_survdiff(
@@ -133,6 +132,17 @@ PairwiseSapling <- pairwise_survdiff(
   data = SaplingS,
   p.adjust.method = "BH"   # or "bonferroni", "holm", etc.
 )
+
+readable_pw <- PairwiseSapling$p.value %>%
+  as.data.frame() %>%
+  mutate(Group1 = rownames(.)) %>%
+  pivot_longer(
+    cols = -Group1,
+    names_to = "Group2",
+    values_to = "p_value"
+  ) %>%
+  filter(!is.na(p_value)) %>%
+  arrange(Group1, Group2)
 
 ## Stratified 8-sample test (7 df)
 survdiff(Surv(time, status) ~ Group, data=SaplingS)
@@ -161,4 +171,26 @@ fit <- coxme(Surv(time, status) ~ Group + (1|Room), data = SaplingS)
 
 summary(fit)
 
- 
+# what % of mānuka were alive at the end?
+SaplingS <- SaplingS %>% 
+  filter(!is.na(status))
+
+percent_status1 <- SaplingS %>%
+  summarise(percent = mean(status == "0") * 100) %>%
+  pull(percent)
+
+#for each treatment?
+summary_stats <- SaplingS %>%
+  group_by(Group) %>%
+  summarise(
+    n = n(),
+    n1 = sum(status == "0"),
+    prop = n1 / n,
+    percent = prop * 100,
+    se = sqrt(prop * (1 - prop) / n)
+  )
+
+# summary_stats <- as.data.frame(summary_stats)
+# library(writexl)
+# 
+# write_xlsx(summary_stats, "C:/Users/bella/Documents/SaplingSurvivalAverages.xlsx")

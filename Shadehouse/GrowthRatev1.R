@@ -430,25 +430,25 @@ SeedlingPlot
 
 # Make a boxplot with all values on it
 SeedlingsH <- Height[Height$Plant != "ManukaSapling", ]
+SeedlingsH <- SeedlingsH[SeedlingsH$Plant != "ManukaSeedling", ]
 # Fix up treatment group names
-SeedlingsH$Group <- factor(SeedlingsH$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
-                         labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
+SeedlingsH$Group <- factor(SeedlingsH$Group, levels = c("2", "3", "4", "5", "6", "7", "8"), # order  
+                         labels = c("nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
 
 ggplot(SeedlingsH, aes(x = Group, y = AverageGR, fill = Plant)) +
   geom_boxplot(position = position_dodge(width = 0.8)) +
   theme_minimal() +
   labs(x = "Treatment", y = "Relative growth rate ln(mm/month)", fill = "Species") +
   scale_fill_manual(values = c(
-    "ManukaSeedling"  = "#82C782", 
     "Nightshade" = "#CF597E",  
     "Privet" = "#E57F6C" , 
     "Wattle" = "#E9A96C"),
-    labels = c("ManukaSeedling" = "mānuka seedling","Nightshade" = "woolly nightshade",
+    labels = c("Nightshade" = "woolly nightshade",
                "Privet" = "tree privet", "Wattle" = "brush wattle")) +
   geom_vline(xintercept = 1.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
-  geom_vline(xintercept = 2.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
-  geom_vline(xintercept = 5.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
-  geom_vline(xintercept = 8.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
+ # geom_vline(xintercept = 2.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
+  geom_vline(xintercept = 4.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
+  geom_vline(xintercept = 7.5, linetype = "dotted", linewidth = 0.5, colour = "grey40") +
   theme_classic()
 
 hcl.colors(8, palette = "Temps") # remove # to look at colors below

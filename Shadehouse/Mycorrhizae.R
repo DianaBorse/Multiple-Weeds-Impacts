@@ -30,10 +30,11 @@ Myc <- Myc %>%
 # Now we need to make a distinct name for each subsample of each pot
 colnames(Myc)[3:3] <- c("Sample") ## Renaming the columns
 
+Myc$Plant <- Myc$Sample
+
 library(tidyr)
 Myc2 <- Myc %>%
   unite(Sample, Subsample, Sample, sep = "-")
-
 
 Myc_summary1 <- Myc2 %>%
   group_by(Sample) %>%
@@ -59,6 +60,16 @@ Myc3 <- Myc3 %>%
     by = "Sample"
   )
 
+# Add plant back
+Myc2_unique <- Myc2 %>%
+  distinct(Sample, .keep_all = TRUE)
+
+Myc3 <- Myc3 %>%
+  left_join(Myc2_unique %>% select(Sample, Plant), by = "Sample")
+
+Myc3 <- Myc3 %>%
+  dplyr::distinct(Sample, .keep_all = TRUE)
+
 # Add Exp1 group to this data frame
 Myc4 <- Myc_summary2 %>%
   left_join(Myc2 %>% dplyr::select(Sample, Exp1Group), by = "Sample")
@@ -71,6 +82,14 @@ Myc4 <- Myc4 %>%
     by = "Sample"
   )
 
+# Add plant back
+Myc4 <- Myc4 %>%
+  left_join(Myc2_unique %>% select(Sample, Plant), by = "Sample")
+
+# only 1 row per subsample
+Myc4 <- Myc4 %>%
+  dplyr::distinct(Sample, .keep_all = TRUE)
+
 # Remove if treatment group = NA
 Myc3 <- Myc3 %>%
   filter(!is.na(Exp1Group))
@@ -79,55 +98,6 @@ Myc3 <- Myc3 %>%
 Myc4 <- Myc4 %>%
   filter(!is.na(Exp1Group))
 
-#### visualisations ####
-# Let's make a boxplot for presence of any myc structures
-library(ggplot2)
-
-#Myc3$Exp1Group <- factor(Myc3$Exp1Group, levels = c("0", "1", "2", "3", "4", "5", "6", "7", "8"), # order  
- #                        labels = c("Baseline", "m", "nwp", "mnp", "mnw", "mwp", "n", "w", "p")) # labels 
-
-MycPlot <- ggplot(data = Myc3, 
-                  aes(x = factor(Exp1Group), y = perc_c, fill = Exp1Group)) +
-  geom_boxplot(notch = TRUE, varwidth = TRUE) +
-  geom_jitter(color = "black", size = 0.4, alpha = 0.6, width = 0.2) +
-  ylab("Percent mycorrhizal colonisation") +
-  xlab("Treatment Group") +
-  scale_fill_manual(values = c( "Baseline" = "#1b9e77", "m" = "#82C782", "nwp" = "#CF597E", 
-  "mnp" = "lavender", "mnw" = "lavender", "mwp" = "lavender", "n" = "#E9A96C", "w" = "#E9A96C", "p" = "#E9A96C" )) +
-  theme(axis.text.x = element_text(size = 10, color = 'black'),
-        axis.text.y = element_text(size = 15, hjust = 1, colour = 'black'), 
-        axis.title = element_text(size = 17, face = "bold"),
-        legend.title = element_blank(),
-        legend.position = "none",
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.background = element_blank(),
-        axis.line = element_line(colour = "black"))
-MycPlot
-
-# Let's make a boxplot for presence of arbuscules
-#Myc4$Exp1Group <- factor(Myc4$Exp1Group, levels = c("0", "1", "2", "3", "4", "5", "6", "7", "8"), # order  
-#                         labels = c("Baseline", "m", "nwp", "mnp", "mnw", "mwp", "n", "w", "p")) # labels 
-
-library(ggplot2)
-MycPlot <- ggplot(data = Myc4, 
-                  aes(x = factor(Exp1Group), y = perc_A, fill = Exp1Group)) +
-  geom_boxplot(notch = TRUE, varwidth = TRUE) +
-  geom_jitter(color = "black", size = 0.4, alpha = 0.6, width = 0.2) +
-  ylab("Percent arbuscular colonisation") +
-  xlab("Treatment Group") +
-  scale_fill_manual(values = c( "Baseline" = "#1b9e77", "m" = "#82C782", "nwp" = "#CF597E", 
-                                "mnp" = "lavender", "mnw" = "lavender", "mwp" = "lavender", "n" = "#E9A96C", "w" = "#E9A96C", "p" = "#E9A96C" )) +
-  theme(axis.text.x = element_text(size = 10, color = 'black'),
-        axis.text.y = element_text(size = 15, hjust = 1, colour = 'black'), 
-        axis.title = element_text(size = 17, face = "bold"),
-        legend.title = element_blank(),
-        legend.position = "none",
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.background = element_blank(),
-        axis.line = element_line(colour = "black"))
-MycPlot
 
 #### analysis ####
 # model
@@ -138,6 +108,19 @@ Myc3$Exp1Group <- factor(Myc3$Exp1Group, levels = c("0", "1", "2","3","4", "5", 
 library(lme4)
 # Fit a model 
 M1 <- lmer(perc_c ~ factor(Exp1Group) + (1 | Room), data = Myc3)
+
+model <- glmer(
+  perc_c ~ factor(Exp1Group) + (1 | Plant),  #+ (1 | Room),
+  data = Myc3,
+  family = binomial
+)
+
+model <- lmer(
+  perc_c ~ factor(Exp1Group) + (1 | Plant),  #+ (1 | Room),
+  data = Myc3
+)
+
+summary(model)
 
 summary(M1)
 
@@ -170,200 +153,6 @@ emm <- emmeans(M1, ~ Exp1Group)        # treatment effects within each room
 MycModel <- pairs(emm, adjust = "tukey")
 
 MycModel <- as.data.frame(MycModel)
-
-
-# hist(Myc3$perc_c)
-# 
-# # not normal, check within each group
-# ggplot(Myc3) +
-#   geom_histogram(aes(perc_c), binwidth = 1)+
-#   facet_wrap(~Exp1Group)
-# 
-# #try a transformation
-# Myc3 <- Myc3 %>%
-# mutate(logperc_c = log(perc_c + 1))
-# 
-# #try a transformation
-# Myc3 <- Myc3 %>%
-#   mutate(sqrtperc_c = sqrt(perc_c))
-# 
-# hist(Myc3$sqrtperc_c)
-# 
-# # Define a custom function
-# cuberoot <- function(x) {
-#   sign(x) * abs(x)^(1/3)
-# }
-# 
-# #try a transformation
-# Myc3 <- Myc3 %>%
-#   mutate(cubeperc_c = cuberoot(perc_c))
-# 
-# hist(Myc3$cubeperc_c)
-# 
-# 
-# # not better
-# # check for differences in myc with kruskal wallis within each room
-# #Kruskal-wallis for each room
-# Room546Myc3 <- Myc3 %>% filter(Room == 546)
-# 
-# kruskal.test(perc_c ~ Exp1Group, data = Room546Myc3)
-# 
-# # Kruskal-wallis for each room
-# Room547Myc3 <- Myc3 %>% filter(Room == 547)
-# 
-# kruskal.test(perc_c ~ Exp1Group, data = Room547Myc3)
-# 
-# # Kruskal-wallis for each room
-# Room544Myc3 <- Myc3 %>% filter(Room == 544)
-# 
-# kruskal.test(perc_c ~ Exp1Group, data = Room544Myc3)
-# 
-# # dunn test
-# library(FSA)
-# library(dplyr)
-# library(gt)
-# 
-# # Example data
-# # response = numeric variable
-# # group = factor with 3+ groups
-# # dunnTest automatically performs pairwise comparisons
-# 
-# dt <- dunnTest(perc_c ~ Exp1Group,
-#          data = Room546Myc3,
-#          method = "bonferroni")
-# 
-# dunn_tbl <- dt$res %>%
-#   mutate(
-#     Comparison =
-#       dplyr::case_when(
-#         # Case 2: FSA output already has a Comparison column
-#         "Comparison" %in% names(.) ~ Comparison
-#       ),
-#     Z = round(Z, 3),
-#     P.unadj = round(P.unadj, 4),
-#     P.adj = round(P.adj, 4)
-#   ) %>%
-#   select(Comparison, Z, P.unadj, P.adj)
-# 
-# gt_tbl <- dunn_tbl %>%
-#   gt() %>%
-#   tab_header(
-#     title = "Pairwise Dunn Test with Bonferroni Correction"
-#   ) %>%
-#   cols_label(
-#     Comparison = "Group Comparison",
-#     Z = "Z Statistic",
-#     P.unadj = "Unadjusted p",
-#     P.adj = "Bonferroni-adjusted p"
-#   ) %>%
-#   fmt_number(
-#     columns = c(Z, P.unadj, P.adj),
-#     decimals = 4
-#   ) %>%
-#   tab_style(
-#     style = cell_text(weight = "bold"),
-#     locations = cells_column_labels()
-#   )
-# 
-# print(gt_tbl)
-# 
-# gtsave(gt_tbl, "dunn_table.html")
-# 
-# library(writexl)
-# 
-# write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom546.xlsx")
-# 
-# # dunnTest automatically performs pairwise comparisons
-# 
-# dt <- dunnTest(perc_c ~ Exp1Group,
-#                data = Room547Myc3,
-#                method = "bonferroni")
-# 
-# dunn_tbl <- dt$res %>%
-#   mutate(
-#     Comparison =
-#       dplyr::case_when(
-#         # Case 2: FSA output already has a Comparison column
-#         "Comparison" %in% names(.) ~ Comparison
-#       ),
-#     Z = round(Z, 3),
-#     P.unadj = round(P.unadj, 4),
-#     P.adj = round(P.adj, 4)
-#   ) %>%
-#   select(Comparison, Z, P.unadj, P.adj)
-# 
-# gt_tbl <- dunn_tbl %>%
-#   gt() %>%
-#   tab_header(
-#     title = "Pairwise Dunn Test with Bonferroni Correction"
-#   ) %>%
-#   cols_label(
-#     Comparison = "Group Comparison",
-#     Z = "Z Statistic",
-#     P.unadj = "Unadjusted p",
-#     P.adj = "Bonferroni-adjusted p"
-#   ) %>%
-#   fmt_number(
-#     columns = c(Z, P.unadj, P.adj),
-#     decimals = 4
-#   ) %>%
-#   tab_style(
-#     style = cell_text(weight = "bold"),
-#     locations = cells_column_labels()
-#   )
-# 
-# print(gt_tbl)
-# 
-# gtsave(gt_tbl, "dunn_table.html")
-# 
-# library(writexl)
-# 
-# write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom547.xlsx")
-# 
-# dt <- dunnTest(perc_c ~ Exp1Group,
-#                data = Room544Myc3,
-#                method = "bonferroni")
-# 
-# dunn_tbl <- dt$res %>%
-#   mutate(
-#     Comparison =
-#       dplyr::case_when(
-#         # Case 2: FSA output already has a Comparison column
-#         "Comparison" %in% names(.) ~ Comparison
-#       ),
-#     Z = round(Z, 3),
-#     P.unadj = round(P.unadj, 4),
-#     P.adj = round(P.adj, 4)
-#   ) %>%
-#   select(Comparison, Z, P.unadj, P.adj)
-# 
-# gt_tbl <- dunn_tbl %>%
-#   gt() %>%
-#   tab_header(
-#     title = "Pairwise Dunn Test with Bonferroni Correction"
-#   ) %>%
-#   cols_label(
-#     Comparison = "Group Comparison",
-#     Z = "Z Statistic",
-#     P.unadj = "Unadjusted p",
-#     P.adj = "Bonferroni-adjusted p"
-#   ) %>%
-#   fmt_number(
-#     columns = c(Z, P.unadj, P.adj),
-#     decimals = 4
-#   ) %>%
-#   tab_style(
-#     style = cell_text(weight = "bold"),
-#     locations = cells_column_labels()
-#   )
-# 
-# print(gt_tbl)
-# 
-# gtsave(gt_tbl, "dunn_table.html")
-# 
-# library(writexl)
-# 
-# write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom544.xlsx")
 
 # # The sample sizes are not quite even and therefore we need to use Type 3 analysis
  Myc3$Exp1Group <- as.factor(Myc3$Exp1Group)
@@ -410,173 +199,6 @@ ratio <-(max(summ_Myc4$sd_perc_A))/(min(summ_Myc4$sd_perc_A))
 print(ratio)
 
 hist(Myc4$perc_A)
-
-# too many infinities
-
-# not better
-# # check for differences in myc with kruskal wallis within each room
-# #Kruskal-wallis for each room
-# Room546Myc4 <- Myc4 %>% filter(Room == 546)
-# 
-# kruskal.test(perc_A ~ Exp1Group, data = Room546Myc4)
-# 
-# # Kruskal-wallis for each room
-# Room547Myc4 <- Myc4 %>% filter(Room == 547)
-# 
-# kruskal.test(perc_A ~ Exp1Group, data = Room547Myc4)
-# 
-# # Kruskal-wallis for each room
-# Room544Myc4 <- Myc4 %>% filter(Room == 544)
-# 
-# kruskal.test(perc_A ~ Exp1Group, data = Room544Myc4)
-# 
-# # dunn test
-# library(FSA)
-# library(dplyr)
-# library(gt)
-# 
-# # Example data
-# # response = numeric variable
-# # group = factor with 3+ groups
-# # dunnTest automatically performs pairwise comparisons
-# 
-# dt <- dunnTest(perc_A ~ Exp1Group,
-#                data = Room546Myc4,
-#                method = "bonferroni")
-# 
-# dunn_tbl <- dt$res %>%
-#   mutate(
-#     Comparison =
-#       dplyr::case_when(
-#         # Case 2: FSA output already has a Comparison column
-#         "Comparison" %in% names(.) ~ Comparison
-#       ),
-#     Z = round(Z, 3),
-#     P.unadj = round(P.unadj, 4),
-#     P.adj = round(P.adj, 4)
-#   ) %>%
-#   select(Comparison, Z, P.unadj, P.adj)
-# 
-# gt_tbl <- dunn_tbl %>%
-#   gt() %>%
-#   tab_header(
-#     title = "Pairwise Dunn Test with Bonferroni Correction"
-#   ) %>%
-#   cols_label(
-#     Comparison = "Group Comparison",
-#     Z = "Z Statistic",
-#     P.unadj = "Unadjusted p",
-#     P.adj = "Bonferroni-adjusted p"
-#   ) %>%
-#   fmt_number(
-#     columns = c(Z, P.unadj, P.adj),
-#     decimals = 4
-#   ) %>%
-#   tab_style(
-#     style = cell_text(weight = "bold"),
-#     locations = cells_column_labels()
-#   )
-# 
-# print(gt_tbl)
-# 
-# gtsave(gt_tbl, "dunn_table.html")
-# 
-# library(writexl)
-# 
-# write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom546AMF.xlsx")
-# 
-# # dunnTest automatically performs pairwise comparisons
-# 
-# dt <- dunnTest(perc_A ~ Exp1Group,
-#                data = Room547Myc4,
-#                method = "bonferroni")
-# 
-# dunn_tbl <- dt$res %>%
-#   mutate(
-#     Comparison =
-#       dplyr::case_when(
-#         # Case 2: FSA output already has a Comparison column
-#         "Comparison" %in% names(.) ~ Comparison
-#       ),
-#     Z = round(Z, 3),
-#     P.unadj = round(P.unadj, 4),
-#     P.adj = round(P.adj, 4)
-#   ) %>%
-#   select(Comparison, Z, P.unadj, P.adj)
-# 
-# gt_tbl <- dunn_tbl %>%
-#   gt() %>%
-#   tab_header(
-#     title = "Pairwise Dunn Test with Bonferroni Correction"
-#   ) %>%
-#   cols_label(
-#     Comparison = "Group Comparison",
-#     Z = "Z Statistic",
-#     P.unadj = "Unadjusted p",
-#     P.adj = "Bonferroni-adjusted p"
-#   ) %>%
-#   fmt_number(
-#     columns = c(Z, P.unadj, P.adj),
-#     decimals = 4
-#   ) %>%
-#   tab_style(
-#     style = cell_text(weight = "bold"),
-#     locations = cells_column_labels()
-#   )
-# 
-# print(gt_tbl)
-# 
-# gtsave(gt_tbl, "dunn_table.html")
-# 
-# library(writexl)
-# 
-# write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom547AMF.xlsx")
-# 
-# dt <- dunnTest(perc_A ~ Exp1Group,
-#                data = Room544Myc4,
-#                method = "bonferroni")
-# 
-# dunn_tbl <- dt$res %>%
-#   mutate(
-#     Comparison =
-#       dplyr::case_when(
-#         # Case 2: FSA output already has a Comparison column
-#         "Comparison" %in% names(.) ~ Comparison
-#       ),
-#     Z = round(Z, 3),
-#     P.unadj = round(P.unadj, 4),
-#     P.adj = round(P.adj, 4)
-#   ) %>%
-#   select(Comparison, Z, P.unadj, P.adj)
-# 
-# gt_tbl <- dunn_tbl %>%
-#   gt() %>%
-#   tab_header(
-#     title = "Pairwise Dunn Test with Bonferroni Correction"
-#   ) %>%
-#   cols_label(
-#     Comparison = "Group Comparison",
-#     Z = "Z Statistic",
-#     P.unadj = "Unadjusted p",
-#     P.adj = "Bonferroni-adjusted p"
-#   ) %>%
-#   fmt_number(
-#     columns = c(Z, P.unadj, P.adj),
-#     decimals = 4
-#   ) %>%
-#   tab_style(
-#     style = cell_text(weight = "bold"),
-#     locations = cells_column_labels()
-#   )
-# 
-# print(gt_tbl)
-# 
-# gtsave(gt_tbl, "dunn_table.html")
-# 
-# library(writexl)
-# 
-# write_xlsx(dunn_tbl, "C:/Users/bella/Documents/DunnTableRoom544AMF.xlsx")
-# 
 
 # Fit a model
 M2 <- lmer(perc_A ~ factor(Exp1Group) + (1 | Room), data = Myc4)
@@ -628,3 +250,54 @@ write_xlsx(ArbusculeModel, "C:/Users/bella/Documents/ArbusculeModel.xlsx")
 
 # calculate summary stats
 print(summ_Myc4)
+
+
+#### visualisations ####
+# # Let's make a boxplot for presence of any myc structures
+# library(ggplot2)
+# 
+# #Myc3$Exp1Group <- factor(Myc3$Exp1Group, levels = c("0", "1", "2", "3", "4", "5", "6", "7", "8"), # order  
+#  #                        labels = c("Baseline", "m", "nwp", "mnp", "mnw", "mwp", "n", "w", "p")) # labels 
+# 
+# MycPlot <- ggplot(data = Myc3, 
+#                   aes(x = factor(Exp1Group), y = perc_c, fill = Exp1Group)) +
+#   geom_boxplot(notch = TRUE, varwidth = TRUE) +
+#   geom_jitter(color = "black", size = 0.4, alpha = 0.6, width = 0.2) +
+#   ylab("Percent mycorrhizal colonisation") +
+#   xlab("Treatment Group") +
+#   scale_fill_manual(values = c( "Baseline" = "#1b9e77", "m" = "#82C782", "nwp" = "#CF597E", 
+#   "mnp" = "lavender", "mnw" = "lavender", "mwp" = "lavender", "n" = "#E9A96C", "w" = "#E9A96C", "p" = "#E9A96C" )) +
+#   theme(axis.text.x = element_text(size = 10, color = 'black'),
+#         axis.text.y = element_text(size = 15, hjust = 1, colour = 'black'), 
+#         axis.title = element_text(size = 17, face = "bold"),
+#         legend.title = element_blank(),
+#         legend.position = "none",
+#         panel.grid.major = element_blank(),
+#         panel.grid.minor = element_blank(),
+#         panel.background = element_blank(),
+#         axis.line = element_line(colour = "black"))
+# MycPlot
+# 
+# # Let's make a boxplot for presence of arbuscules
+# #Myc4$Exp1Group <- factor(Myc4$Exp1Group, levels = c("0", "1", "2", "3", "4", "5", "6", "7", "8"), # order  
+# #                         labels = c("Baseline", "m", "nwp", "mnp", "mnw", "mwp", "n", "w", "p")) # labels 
+# 
+# library(ggplot2)
+# MycPlot <- ggplot(data = Myc4, 
+#                   aes(x = factor(Exp1Group), y = perc_A, fill = Exp1Group)) +
+#   geom_boxplot(notch = TRUE, varwidth = TRUE) +
+#   geom_jitter(color = "black", size = 0.4, alpha = 0.6, width = 0.2) +
+#   ylab("Percent arbuscular colonisation") +
+#   xlab("Treatment Group") +
+#   scale_fill_manual(values = c( "Baseline" = "#1b9e77", "m" = "#82C782", "nwp" = "#CF597E", 
+#                                 "mnp" = "lavender", "mnw" = "lavender", "mwp" = "lavender", "n" = "#E9A96C", "w" = "#E9A96C", "p" = "#E9A96C" )) +
+#   theme(axis.text.x = element_text(size = 10, color = 'black'),
+#         axis.text.y = element_text(size = 15, hjust = 1, colour = 'black'), 
+#         axis.title = element_text(size = 17, face = "bold"),
+#         legend.title = element_blank(),
+#         legend.position = "none",
+#         panel.grid.major = element_blank(),
+#         panel.grid.minor = element_blank(),
+#         panel.background = element_blank(),
+#         axis.line = element_line(colour = "black"))
+# MycPlot
