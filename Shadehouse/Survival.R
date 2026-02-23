@@ -194,3 +194,82 @@ summary_stats <- SaplingS %>%
 # library(writexl)
 # 
 # write_xlsx(summary_stats, "C:/Users/bella/Documents/SaplingSurvivalAverages.xlsx")
+
+# Brush wattle survival
+#### Wattle Analysis ####
+WattleS <- Height[Height$Plant == "Wattle", ]
+WattleS$Group <- factor(WattleS$Group, levels = c("1", "2", "3", "4", "5", "6", "7", "8"), # order  
+                        labels = c("m", "nbp", "np", "nb", "bp", "n", "b", "p")) # labels 
+
+# Create survival object
+surv_obj <- Surv(time = WattleS$time, event = WattleS$status)
+
+# Fit Kaplan-Meier curves
+fit <- survfit(surv_obj ~ Group, data = WattleS)
+
+# Plot the curves (labels go inside ggsurvplot)
+ggsurvplot(
+  fit,
+  data = SaplingS,
+  pval = TRUE,
+  risk.table = TRUE,
+  xlim = c(0, 200),
+  xlab = "Days",
+  ylab = "Overall survival probability"
+)
+plot_obj <- ggsurvplot(fit, data = WattleS, pval = TRUE, risk.table = TRUE, xlim = c(0, 200))
+plot_obj$plot 
+
+## Stratified 8-sample test (7 df)
+survdiff(Surv(time, status) ~ Group, data=WattleS)
+check <- coxph(Surv(time, status) ~ factor(Group), WattleS)
+round(summary(check)$sctest, 3)
+
+# logrank test
+survdiff(Surv(time, status) ~ Group, data = WattleS)
+
+# look for which treatments have different survival curves
+PairwiseWattle <- pairwise_survdiff(
+  Surv(time, status) ~ Group,
+  data = WattleS,
+  p.adjust.method = "BH"   # or "bonferroni", "holm", etc.
+)
+
+readable_pw <- PairwiseWattle$p.value %>%
+  as.data.frame() %>%
+  mutate(Group1 = rownames(.)) %>%
+  pivot_longer(
+    cols = -Group1,
+    names_to = "Group2",
+    values_to = "p_value"
+  ) %>%
+  filter(!is.na(p_value)) %>%
+  arrange(Group1, Group2)
+
+## Stratified 8-sample test (7 df)
+survdiff(Surv(time, status) ~ Group, data=SaplingS)
+check <- coxph(Surv(time, status) ~ factor(Group), SaplingS)
+round(summary(check)$sctest, 3)
+
+# Can I do an ANOVA for survival? 
+
+# Add room
+library(readr)
+RoomPot <- read_csv("Shadehouse/RoomPot.csv")
+
+colnames(RoomPot)[1:1] <- c("Pot") ## Renaming the columns
+SaplingS <- SaplingS %>%
+  left_join(RoomPot %>% dplyr::select(Pot, Room), by = "Pot")
+# See if time differs by group, need to account for different group sample sizes
+# The sample sizes are not quite even and therefore we need to use Type 3 analysis
+contrasts(SaplingS$Group) <- contr.sum(8)
+
+hist(SaplingS$time)
+
+# mixed effects model for survival, just to account for room
+library(coxme)
+
+fit <- coxme(Surv(time, status) ~ Group + (1|Room), data = SaplingS)
+
+summary(fit)
+

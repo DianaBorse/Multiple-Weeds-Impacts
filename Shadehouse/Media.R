@@ -608,6 +608,46 @@ wilcox.test(ChangePhosphorus ~ Group, data = MediaWattle, var.equal = TRUE,exact
 wilcox.test(ChangePotassium ~ Group, data = MediaWattle, var.equal = TRUE,exact = FALSE, alternative = "less", mu = 0, conf.level = 0.95)
 t.test(ChangeTotalNitrogen ~ Group, data = MediaWattle, var.equal = FALSE)
 
+# nitrate
+summary_Wattle <- MediaWattle %>%
+  group_by(Group) %>%
+  summarise(mean_ChangeNitrate = mean(ChangeNitrate),
+            median_ChangeNitrate = median(ChangeNitrate),
+            IQR_ChangeNitrate = IQR(ChangeNitrate),
+            sd_ChangeNitrate = sd(ChangeNitrate),
+            var_ChangeNitrate = var(ChangeNitrate),
+            se_ChangeNitrate = sd(ChangeNitrate)/sqrt(n()),
+            n_ChangeNitrate = n())
+
+print(summary_Wattle)
+
+# ammonium
+summary_Wattle <- MediaWattle %>%
+  group_by(Group) %>%
+  summarise(mean_ChangeAmmonium = mean(ChangeAmmonium),
+            median_ChangeAmmonium = median(ChangeAmmonium),
+            IQR_ChangeAmmonium = IQR(ChangeAmmonium),
+            sd_ChangeAmmonium = sd(ChangeAmmonium),
+            var_ChangeAmmonium = var(ChangeAmmonium),
+            se_ChangeAmmonium = sd(ChangeAmmonium)/sqrt(n()),
+            n_ChangeAmmonium = n())
+
+print(summary_Wattle)
+
+# total nitrogen
+summary_Wattle <- MediaWattle %>%
+  group_by(Group) %>%
+  summarise(mean_ChangeTotalNitrogen = mean(ChangeTotalNitrogen),
+            median_ChangeTotalNitrogen = median(ChangeTotalNitrogen),
+            IQR_ChangeTotalNitrogen = IQR(ChangeTotalNitrogen),
+            sd_ChangeTotalNitrogen = sd(ChangeTotalNitrogen),
+            var_ChangeTotalNitrogen = var(ChangeTotalNitrogen),
+            se_ChangeTotalNitrogen = sd(ChangeTotalNitrogen)/sqrt(n()),
+            n_ChangeTotalNitrogen = n())
+
+print(summary_Wattle)
+
+
 # privet
 MediaPrivet <- Media %>%
   mutate(Group = case_when(

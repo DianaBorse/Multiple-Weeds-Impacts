@@ -436,10 +436,11 @@ glm_results <- as.data.frame(glm_results)
 library(dplyr)
 library(tidyr)
 SEABuffer$R.alaternus <- as.character(as.factor(SEABuffer$R.alaternus))
+SEABuffer$DistanceSEA <- as.numeric(SEABuffer$DistanceSEA)
 
 Weeds <- SEABuffer %>%
   pivot_longer(
-    cols = 4:16,
+    cols = 5:17,
     names_to = "variable",
     values_to = "value"
   ) %>%

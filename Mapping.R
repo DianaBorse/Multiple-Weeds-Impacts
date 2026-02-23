@@ -965,6 +965,8 @@ CEIndex <- CEIndex %>%
 
 # try removing vinca
 CEIndexnoVinca<-CEIndex[-10, ]
+# try removing Banksia too
+CEIndexnoVinca<-CEIndexnoVinca[-6, ]
 
 # Not normal, need to try a transformation
 CEIndex <- CEIndex %>%

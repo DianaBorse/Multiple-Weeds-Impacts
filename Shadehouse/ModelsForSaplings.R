@@ -480,6 +480,20 @@ SaplingRGRComparison <- as.data.frame(SaplingRGRComparison)
 # 
 # write_xlsx(SaplingRGRComparison, "C:/Users/bella/Documents/SaplingRGRComparison.xlsx")
 
+# summarize mm/month for each treatment
+SapplingH2 <- Height2[Height2$Plant == "ManukaSapling", ]
+
+SapplingH2 <- SapplingH2 %>% 
+  filter(!is.na(AverageGR))
+
+summ_SapplingH2 <- SapplingH2 %>%
+#  group_by(Group) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR), 
+            se_AverageGR = sd(AverageGR)/sqrt(n()))
+print(summ_SapplingH2)
+
+
 #### Woolly Nightshade Biomass ####
 
 # include only saplings
@@ -733,6 +747,20 @@ NightshadePlot <- ggplot(data = WoollyH,
         axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
 NightshadePlot
 
+# summarize mm/month for each treatment
+WoollyH2 <- Height2[Height2$Plant == "Nightshade", ]
+
+WoollyH2 <- WoollyH2 %>% 
+  filter(!is.na(AverageGR))
+
+summ_WoollyH2 <- WoollyH2 %>%
+  group_by(Group) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR), 
+            se_AverageGR = sd(AverageGR)/sqrt(n()))
+print(summ_WoollyH)
+
+
 #### Tree Privet Biomass ####
 # include only privet
 Privet <- Biomass[Biomass$Plant == "Privet", ]
@@ -975,7 +1003,18 @@ PrivetPlot <- ggplot(data = PrivetH,
         axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
 PrivetPlot 
 
+# summarize mm/month for each treatment
+PrivetH2 <- Height2[Height2$Plant == "Privet", ]
 
+PrivetH2 <- PrivetH2 %>% 
+  filter(!is.na(AverageGR))
+
+summ_PrivetH2 <- PrivetH2 %>%
+  group_by(Group) %>% 
+  summarise(mean_AverageGR = mean(AverageGR),
+            sd_AverageGR = sd(AverageGR), 
+            se_AverageGR = sd(AverageGR)/sqrt(n()))
+print(summ_PrivetH2)
 #### Wattle Biomass ####
 
 Wattle <- Biomass[Biomass$Plant == "Wattle", ]
