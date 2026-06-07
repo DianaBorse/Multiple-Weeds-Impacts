@@ -94,8 +94,9 @@ row.names(PresenceAbsence_df) <- PresenceAbsence_df$ScientificName
 # Remove the first column from the data frame 
 PresenceAbsence_df <- PresenceAbsence_df[, -1]
 
-# install.packages("cooccur")
+# devtools::install_local("C:/Users/bella/OneDrive/Desktop/Thesis/Analysis/Multiple-Weeds-Impacts/Fieldwork/cooccur_1.3.tar.gz")
 library(cooccur)
+
 
 cooccur.Survey <- cooccur(PresenceAbsence_df,
                           type = "spp_site",
@@ -212,6 +213,43 @@ pair(mod = cooccur.Survey, spp = "Paraserianthes lophantha")
 # Try subsetting to non-seedlings
 
 SurveyData_Combined <- subset(SurveyData_Combined, Tier_3 != 0)
+
+#### Co-occurrence analysis for bird-dispersed vs non-bird dispersed species ####
+
+# I need to subset the data to only include bird-dispersed species
+
+BirdDisp <- subset(subset_SurveyData_Combined_weeds, BirdDisp == 1)
+
+PresenceAbsence <-subset_SurveyData_Combined_weeds15 %>%
+  pivot_wider(id_cols = ScientificName, names_from=Plot, values_from=Plot,
+              values_fn=function(x) any(unique(x) == x) * 1, values_fill = 0)
+
+# instead of being a tibble, I wanted to convert it back to a data frame
+PresenceAbsence_df = as.data.frame(PresenceAbsence)
+
+# Needs to remove the first column of numbers as row names and make the Scientific 
+# names of species into the row names
+row.names(PresenceAbsence_df) <- PresenceAbsence_df$ScientificName
+
+# Remove the first column from the data frame 
+PresenceAbsence_df <- PresenceAbsence_df[, -1]
+
+
+## Co-occur 
+
+# install.packages("cooccur")
+library(cooccur)
+
+cooccur.Survey <- cooccur(PresenceAbsence_df,
+                          type = "spp_site",
+                          thresh = TRUE,
+                          spp_name = TRUE)
+class(cooccur.Survey)
+summary(cooccur.Survey)
+cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = TRUE, spp_names = TRUE)
+
+Prob_table <- prob.table(cooccur.Survey)
+
 
 #### Co-occurrence Matrix with top 15 most commonly occurring scientific name ####
 
@@ -383,10 +421,6 @@ pair(mod = cooccur.Survey, spp = "Paraserianthes lophantha")
 # Try subsetting to non-seedlings
 
 SurveyData_Combined <- subset(SurveyData_Combined, Tier_3 != 0)
-
-
-
-
 
 
 #### Co-occurrence matrix with top 15 most common non-native species ####

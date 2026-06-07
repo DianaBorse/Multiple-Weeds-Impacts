@@ -418,7 +418,7 @@ plot(Effect("Vascular", M1), xlab = "Cover of vascular vegetation in the plot",
 plot(Effect("PopDensityHist", M1), xlab = "1996 human population density",
      ylab = "Weed richness", main = "", colors = "maroon", cex.lab = 3)
 
-# Diversity effects plot
+# Richness effects plot
 plot(Effect("RichnessResidentNatives", M1), xlab = "Richness of resident native species in the plot",
      ylab = "Weed richness", main = "", colors = "darkgreen", cex.lab = 2)
 
