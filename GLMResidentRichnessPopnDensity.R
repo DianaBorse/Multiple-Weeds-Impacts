@@ -292,9 +292,9 @@ cor(data)
 
 # Re-doing the multicolinarity tests with the reduced factor set
 # Make a new model with at least one of the correlated factors omitted 
-model.full <- glm(Richness ~ RichnessResidentNatives + RichnessResidentWeeds + Height + DBH + Slope + Canopy + Vascular + WN +
+model.full <- glmer(Richness ~ RichnessResidentNatives + RichnessResidentWeeds + Height + DBH + Slope + Canopy + Vascular + WN +
                     Disturbance + Housing + PopDensityHist + DwellingsCurr +
-                    PopDensityCurr + Place, family = "poisson", data = df_Env_Species.pca)
+                    PopDensityCurr + (1 | Place), family = "poisson", data = df_Env_Species.pca)
 
 # Look for Multicolliniarity
 library(car)
@@ -317,7 +317,7 @@ model.full <- glmer(Richness ~ RichnessResidentNatives + RichnessResidentWeeds +
                     data = df_Env_Species.pca,
                     family = poisson,
                     na.action = na.fail)   # critical for dredge
-dd <- dredge(model.full, rank = "AICc", extra = c("R^2", adjRsq = function(x) summary(x)$adj.r.squared))
+dd <- dredge(model.full, rank = "AICc")
 head(dd)          # top models
 summary(dd)       # overview
 
