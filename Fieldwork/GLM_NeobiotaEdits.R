@@ -344,9 +344,22 @@ head(dredge, 10)
 # Install and load the writexl package
 library(writexl)
 
-write_xlsx(dredge, "C:/Users/bella/Documents/dredgeresultsGLM20Oct.xlsx")
+write_xlsx(dd, "C:/Users/bella/Documents/dredgeresultsGLM10June.xlsx")
 # This gives the simplest possible model which includes Housing Density, 96 Population, 
 # LitterCover, PARlop, SOLmau, and Slope
+
+# make individual models for the top 20 models
+
+# Table output for modelling 
+install.packages("stargazer")
+library(stargazer)
+stargazer(fFly1sr,fLatfly1,fsApp1r,gfsTimeR, report = "vcs*p", type = "html",  
+          title = "The relationship between weed seedling richness and plot attributes", 
+          align=TRUE, model.numbers  = FALSE,
+          single.row = TRUE,   intercept.bottom = FALSE, notes.align = "l",
+          out="Richness Model table 10 June 2026.doc")
+
+
 
 # Compare factors to how they relate to richness
 library(MASS) ## do to the GLM
@@ -442,6 +455,7 @@ PopnPlot  <- ggplot() +theme_classic()+
   geom_smooth(method = "lm", se = TRUE, level = 0.95) +
   labs(y = "Weed richness", x = "1996 human population density") 
 PopnPlot
+
 
 
 #### Visualizing the results ####
