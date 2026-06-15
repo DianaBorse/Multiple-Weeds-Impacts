@@ -62,6 +62,7 @@ library(dplyr)
 Richness <- SurveyData_Combined %>% group_by(Plot) %>% summarize(unique_values = n_distinct(ScientificName))
 
 SurveyData_Combined <- left_join(Richness, SurveyData_Combined, by = "Plot") 
+Richness <- left_join(SurveyData_Combined, Richness, by = "Plot") 
 
 # Calculate Summarry Statistics
 library(dplyr)
@@ -144,7 +145,7 @@ library(ggplot2)
 RichnessPlotNative <- ggplot(data = RichnessNative, 
                        aes(y = unique_values, ##Change this to variable name
                            x = CentralSpecies)) + ##Change this to variable name
-  geom_boxplot(aes(x = factor(CentralSpecies, level=c('Native', 'Paraserianthes lophantha', 'Ligustrum lucidum', 'Solanum mauritianum'))), fill = "green4", notch = TRUE, varwidth = TRUE) +
+  geom_boxplot(aes(x = factor(CentralSpecies, level=c('Native', 'Paraserianthes lophantha', 'Ligustrum lucidum', 'Solanum mauritianum'))), fill = "green4", notch = FALSE, varwidth = TRUE) +
   geom_jitter(color="black", size=0.4, alpha=0.9) +
   ylab("Species Richness") + xlab("Central Species") +   ##Change axis titles
   theme(axis.text.x=element_text(face = "italic", size=10, color = 'black'), #Change axis text font size and angle and colour etc
@@ -157,6 +158,8 @@ RichnessPlotNative <- ggplot(data = RichnessNative,
         panel.background = element_blank(),    #If you want to remove background
         axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
 RichnessPlotNative
+
+#### Proportion Native Species ####
 
 #### Non-Native Species Richness by Central species ####
 
@@ -206,7 +209,7 @@ library(ggplot2)
 RichnessPlotWeed <- ggplot(data = RichnessWeed, 
                              aes(y = unique_values_log, ##Change this to variable name
                                  x = CentralSpecies)) + ##Change this to variable name
-  geom_boxplot(aes(x = factor(CentralSpecies, level=c('Native', 'Paraserianthes lophantha', 'Ligustrum lucidum', 'Solanum mauritianum'))), fill = "red4", notch = TRUE, varwidth = TRUE) +
+  geom_boxplot(aes(x = factor(CentralSpecies, level=c('Native', 'Paraserianthes lophantha', 'Ligustrum lucidum', 'Solanum mauritianum'))), fill = "red4", notch = FALSE, varwidth = TRUE) +
   geom_jitter(color="black", size=0.4, alpha=0.9) +
   ylab("Weed Species Richness") + xlab("Central Species") +   ##Change axis titles
   theme(axis.text.x=element_text(face = "italic", size=10, color = 'black'), #Change axis text font size and angle and colour etc
@@ -357,4 +360,160 @@ RichnessPlotWeed <- ggplot(data = SurveyData_Combined,
         axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
 RichnessPlotWeed
 
+
+#### proportion native species ####
+
+library(readr)
+SurveyData <- read_csv("Fieldwork/SurveyData_Clean_WN_removed.csv")
+
+# Assigning the Site a unique numeric value
+SurveyData$Site <- as.numeric(as.factor(SurveyData$Site))
+# Assigning W and N unique numeric values (weed is now 2, native is now 1)
+SurveyData$W_N <- as.numeric(as.factor(SurveyData$W_N))  
+
+# Unite Site and Plot columns
+
+library(tidyr)
+SurveyData_united <- SurveyData %>%
+  unite(Plot, Site, Plot, sep = " - ")
+
+# Unite Plot and Weed vs Native columns so that now the plot id is all in one
+# column that includes the site, plot number, and whether it is weed or native
+
+library(tidyr)
+SurveyData_Combined <- SurveyData_united %>%
+  unite(Plot, Plot, W_N, sep = " - ")
+
+
+# Make a count native species by plot column
+SurveyData_Combined <- SurveyData_Combined %>%
+  group_by(Plot) %>%
+  mutate(prop_zero = mean(WeedList == 0)) %>%
+  ungroup()
+
+SurveyData_Combined <- SurveyData_Combined %>%
+  mutate(seedlings = case_when(
+    GrowthHabit %in% c("Tree", "Shrub") ~ Tier_1 - Tier_3,
+    GrowthHabit %in% c("Forb", "Vine", "Grass") ~ Tier_1 - Tier_2,
+    TRUE ~ NA_real_  # fallback for unexpected GrowthHabit values
+  ))
+
+SurveyData_Combined <- subset(SurveyData_Combined, seedlings != 0)
+
+#change column name
+colnames(SurveyData_Combined)[20:20] <- c("ProportionNative")
+
+library(dplyr)
+summ_ProportionNative <- SurveyData_Combined %>%
+  group_by(CentralSpecies) %>%
+  summarise(mean_ProportionNative = mean(ProportionNative),
+            median_ProportionNative = median(ProportionNative),
+            IQR_ProportionNative = IQR(ProportionNative),
+            sd_ProportionNative = sd(ProportionNative),
+            var_ProportionNative = var(ProportionNative),
+            se_ProportionNative = sd(ProportionNative)/sqrt(27))
+
+
+# weed list vs. central sp.
+library(ggplot2)
+PropNative <- ggplot(data = SurveyData_Combined, 
+                             aes(y = ProportionNative, ##Change this to variable name
+                                 x = CentralSpecies)) + ##Change this to variable name
+  geom_boxplot(aes(x = factor(CentralSpecies, level=c('Native', 'Paraserianthes lophantha', 'Ligustrum lucidum', 'Solanum mauritianum'))), fill = "#77C66E", notch = TRUE, varwidth = TRUE) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Proportion Native") + xlab("Central Species") +   ##Change axis titles
+  theme(axis.text.x=element_text(face = "italic", size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+PropNative
   
+#anova
+# ANOVA
+model <- lm(ProportionNative~CentralSpecies, data = SurveyData_Combined)
+
+anova(model)
+
+#### Table for Neobiota Edits ####
+
+library(readr)
+PlotData <- read_csv("Fieldwork/PlotData_Clean_WN_removed_PopnDensity.csv")
+
+
+# Assigning the Site a unique numeric value
+PlotData$Site <- as.numeric(as.factor(PlotData$Site))
+# Assigning W and N unique numeric values (weed is now 2, native is now 1)
+PlotData$Weed_Native <- as.numeric(as.factor(PlotData$Weed_Native))
+
+# Create another Column for WeedvsNative central species
+PlotData$WN <- PlotData$Weed_Native
+# Making a column for site so I can add it as a factor
+PlotData$Place <- PlotData$Site
+
+
+# Now combine this into unique numerical plot names
+library(tidyr)
+PlotData_Combined <- PlotData %>%
+  unite(Plot, Site, Plot, sep = "-")
+
+library(dplyr)
+library(tidyr)
+
+Plot_pairs <- PlotData_Combined %>%
+  mutate(
+    Native = if_else(Weed_Native == 1, CentralSpecies, NA_character_),
+    Weed   = if_else(Weed_Native == 2, CentralSpecies, NA_character_)
+  ) %>%
+  group_by(Plot) %>%
+  summarise(
+    Native = first(na.omit(Native)),
+    Weed   = first(na.omit(Weed)),
+    .groups = "drop"
+  )
+
+table_native_weed <- Plot_pairs %>%
+  count(Native, Weed) %>%
+  pivot_wider(
+    names_from = Weed,
+    values_from = n,
+    values_fill = 0
+  )
+
+table_native_weed <- table_native_weed %>%
+  arrange(desc(rowSums(across(-Native))))
+
+library(officer)
+library(flextable)
+
+ft <- flextable(table_native_weed) %>%
+  autofit() %>%
+  theme_booktabs() %>%
+  fontsize(size = 11, part = "all") %>%
+  align(align = "center", part = "all") %>%
+  bold(part = "header")
+
+doc <- read_docx()
+doc <- body_add_par(doc, "Native × Weed Central Species Pairings", style = "heading 1")
+doc <- body_add_flextable(doc, ft)
+
+print(doc, target = "Native_Weed_Pairings_Table.docx")
+
+
+#### add percent frequencies to common plants table ####
+library(dplyr)
+
+freq_table <- SurveyData_Combined %>%
+  group_by(CentralSpecies, ScientificName) %>%
+  summarise(n = n(), .groups = "drop_last") %>%
+  mutate(
+    total = sum(n),
+    percent = 100 * n / total
+  ) %>%
+  ungroup()
+
+

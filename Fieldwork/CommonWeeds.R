@@ -176,3 +176,4 @@ Unique <-
 count_status_1 <- sum(Native$Status == 1)
 
 print(count_status_1)
+

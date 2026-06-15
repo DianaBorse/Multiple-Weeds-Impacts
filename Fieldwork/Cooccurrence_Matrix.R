@@ -33,7 +33,6 @@ library("tidyverse")
 # Check for updates
 tidyverse_update()
 
-
 #### Cleaning up the data ####
 
 library(dplyr)
@@ -148,13 +147,120 @@ cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = FALSE, spp_names =
 
 Prob_table <- prob.table(cooccur.Survey)
 
-# now I need to see what the relationship is between co-occurring and both being bird dispersed
-
 #change column name
 colnames(SurveyData_Combined)[6:6] <- c("sp1_name")
   
-Prob_table <- SurveyData_Combined %>%
-  left_join(Prob_table, select(BirdDisp), by = "sp1_name")
+# now I need to see what the relationship is between co-occurring and both being bird dispersed
+Prob_table <- Prob_table %>%
+  left_join(SurveyData_Combined %>% dplyr::select(sp1_name, BirdDisp), by = "sp1_name")
+
+# Rename column - SP1BirdDisp
+colnames(Prob_table)[12:12] <- c("SP1BirdDisp")
+
+#change column name
+colnames(SurveyData_Combined)[6:6] <- c("sp2_name")
+
+# now I need to see what the relationship is between co-occurring and both being bird dispersed
+Prob_table <- Prob_table %>%
+  left_join(SurveyData_Combined %>% dplyr::select(sp2_name, BirdDisp), by = "sp2_name")
+
+library(dplyr)
+Prob_table <- distinct(Prob_table)
+
+# Rename column - SP1BirdDisp
+colnames(Prob_table)[13:13] <- c("SP2BirdDisp")
+
+Prob_table <- Prob_table %>% 
+  mutate(Total = SP1BirdDisp + SP2BirdDisp)
+
+# Save Prob_table for later
+#library(writexl)
+
+#write_xlsx(Prob_table, "C:/Users/bella/Documents/ProbTable15June.xlsx")
+
+# regression 
+library(lme4)
+model <- lm (obs_cooccur ~ Total, data = Prob_table)
+
+summary(model)
+
+coefficients(model) 
+residuals(model)
+
+autoplot(model, smooth.colour = NA)
+
+ggplot(data = Prob_table, aes(x = Total, y = obs_cooccur)) +
+  geom_point() +
+  geom_smooth(method = "lm", level=0.95) +
+  theme_bw()+
+  labs( x = "Proportion black", y = "Age (years)")
+
+# try a different regression
+# probability of co-occurrence
+library(betareg)
+library(statmod)
+Prob_table$Total <- factor(Prob_table$Total, levels = c(0,1,2), ordered = TRUE)
+
+model <- betareg(prob_cooccur ~ Total, data = Prob_table)
+
+summary(model)
+
+# post hoc
+library(emmeans)
+emmeans(model, pairwise ~ Total, type = "response")
+
+# visualisation
+library(ggplot2)
+ProbPlot <- ggplot(data = Prob_table, 
+                       aes(y = prob_cooccur, ##Change this to variable name
+                           x = Total)) + ##Change this to variable name
+  geom_boxplot(aes(x = factor(Total)), fill = "lightblue3", notch = FALSE, varwidth = TRUE) +
+#  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Probability of Coocurrence") + xlab("Bird dispersal") +   ##Change axis titles
+  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+ProbPlot
+
+# summary stats
+library(dplyr)
+summ_Prob_table <- Prob_table %>%
+  group_by(Total) %>%
+  summarise(mean_prob_cooccur = mean(prob_cooccur),
+            median_prob_cooccur = median(prob_cooccur),
+            IQR_prob_cooccur = IQR(prob_cooccur),
+            sd_prob_cooccur = sd(prob_cooccur),
+            var_prob_cooccur = var(prob_cooccur),
+            se_prob_cooccur = sd(prob_cooccur)/sqrt(177))
+
+# how much they cooccur
+library(MASS)
+
+Prob_table$Total <- factor(Prob_table$Total, levels = c(0,1,2), ordered = TRUE)
+
+model_nb <- glm.nb(
+  obs_cooccur ~ Total,
+  data = Prob_table
+)
+
+summary(model_nb)
+
+#check for overdispersion
+
+overdispersion_ratio <- sum(residuals(model_pois, type = "pearson")^2) /
+  df.residual(model_pois)
+
+overdispersion_ratio
+
+library(emmeans)
+
+emmeans(model_nb, pairwise ~ Total, type = "response")
 
 
 #### Weed Co-occurrence matrix with seedlings only ####
