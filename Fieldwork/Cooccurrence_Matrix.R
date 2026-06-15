@@ -117,6 +117,45 @@ plot <- plot(cooccur.Survey, legend = NULL) # add "plotrand = TRUE" to include c
 plot + theme(legend.position = "none") + ggtitle(NULL) + 
   scale_fill_manual(values = c("#90CBCD","#E5E5E5", "#C75DAA")) #Change axis title text font etc
 
+#### calculate probability that shared bird-dispersal increases probability of co-occurring ####
+
+PresenceAbsence <-SurveyData_Combined %>%
+  pivot_wider(id_cols = ScientificName, names_from=Plot, values_from=Plot,
+              values_fn=function(x) any(unique(x) == x) * 1, values_fill = 0)
+
+# instead of being a tibble, I wanted to convert it back to a data frame
+PresenceAbsence_df = as.data.frame(PresenceAbsence)
+
+
+# Needs to remove the first column of numbers as row names and make the Scientific 
+# names of species into the row names
+row.names(PresenceAbsence_df) <- PresenceAbsence_df$ScientificName 
+# Remove the first column from the data frame 
+PresenceAbsence_df <- PresenceAbsence_df[, -1]
+
+# devtools::install_local("C:/Users/bella/OneDrive/Desktop/Thesis/Analysis/Multiple-Weeds-Impacts/Fieldwork/cooccur_1.3.tar.gz")
+library(cooccur)
+
+
+cooccur.Survey <- cooccur(PresenceAbsence_df,
+                          type = "spp_site",
+                          thresh = FALSE,
+                          spp_name = TRUE)
+class(cooccur.Survey)
+
+summary(cooccur.Survey)
+cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = FALSE, spp_names = TRUE)
+
+Prob_table <- prob.table(cooccur.Survey)
+
+# now I need to see what the relationship is between co-occurring and both being bird dispersed
+
+#change column name
+colnames(SurveyData_Combined)[6:6] <- c("sp1_name")
+  
+Prob_table <- SurveyData_Combined %>%
+  left_join(Prob_table, select(BirdDisp), by = "sp1_name")
+
 
 #### Weed Co-occurrence matrix with seedlings only ####
 
@@ -249,6 +288,15 @@ summary(cooccur.Survey)
 cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = TRUE, spp_names = TRUE)
 
 Prob_table <- prob.table(cooccur.Survey)
+
+# Using EcoSimR
+library(EcoSimR)
+cooc <- cooc_null_model(PresenceAbsence_df,
+                        algo = "sim9",   # fixed row + fixed column sums
+                        metric = "cooc") # number of co-occurrences
+
+summary(cooc)
+plot(cooc)
 
 
 #### Co-occurrence Matrix with top 15 most commonly occurring scientific name ####
