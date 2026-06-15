@@ -49,9 +49,9 @@ SurveyData$Site <- as.numeric(as.factor(SurveyData$Site))
 # Assigning W and N unique numeric values (weed is now 2, native is now 1)
 SurveyData$W_N <- as.numeric(as.factor(SurveyData$W_N))
 
-library(writexl)
+#library(writexl)
 
-write_xlsx(SurveyData, "C:/Users/bella/Documents/SurveyData.xlsx")
+#write_xlsx(SurveyData, "C:/Users/bella/Documents/SurveyData.xlsx")
 
 # Now combine this into unique numerical plot names
 library(tidyr)
@@ -144,9 +144,9 @@ PlotData$Site <- as.numeric(as.factor(PlotData$Site))
 # Assigning W and N unique numeric values (weed is now 2, native is now 1)
 PlotData$Weed_Native <- as.numeric(as.factor(PlotData$Weed_Native))
 
-library(writexl)
+#library(writexl)
 
-write_xlsx(PlotData, "C:/Users/bella/Documents/PlotData.xlsx")
+#write_xlsx(PlotData, "C:/Users/bella/Documents/PlotData.xlsx")
 
 # Create another Column for WeedvsNative central species
 PlotData$WN <- PlotData$Weed_Native
@@ -309,72 +309,100 @@ model.noplace <- glm(Richness ~ RichnessResidentNatives + RichnessResidentWeeds 
 
 anova(model.place, model.noplace)
 
-# Dredge
+#Dredge
 model.full <- glmer(Richness ~ RichnessResidentNatives + RichnessResidentWeeds + Height + DBH +
                       Slope + Canopy + Vascular + Disturbance + WN +
                       Housing + PopDensityHist + PopDensityCurr +
                       (1 | Place),
                     data = df_Env_Species.pca,
                     family = poisson,
-                    na.action = na.fail)   # critical for dredge
+                    na.action = na.fail, glmerControl(autoscale = TRUE))   # critical for dredge
 dd <- dredge(model.full, rank = "AICc")
 head(dd)          # top models
 summary(dd)       # overview
+#library(readxl)
+#dd.df <- read_excel("Fieldwork/dredgeresultsGLM10June.xlsx")
 
 # Model comparison and averaging 
+library(MuMIn)
+
+best_weight <- dd$weight[1]
+best_weight
+
+# Subset to delta < 2
+LowDelta <- get.models(dd, subset = delta < 2)
+
+par(mar = c(3,5,6,4))
+plot(dd, labAsExpr = TRUE)
+
+# Model average models with delta AICc < 2
+model.avg(dd, subset = delta < 2)
+
+#or as a 95% confidence set:
+model.avg(dd, subset = cumsum(weight) <= .95) # get averaged coefficients
+
+#'Best' model
+summary(get.models(dd, 1)[[1]])
+
+# output column tells you how much better the top model is compared to the other models
+dd <- dd %>%
+  mutate(evidence_ratio = best_weight / weight)
+
+# compare top models
+
+# Top 10 models out
+top10 <- dd.df %>%
+  arrange(AICc) %>% 
+  slice_head(n = 10)
+
+lapply(top10, summary)
+
+# model averaging
+avg <- model.avg(dd, subset = delta < 2)
+
+summary(avg)
+confint(avg)
 
 
+#### Table output ####
+top_idx <- which(dd$delta < 2)
+models <- get.models(dd, subset = delta < 2)
 
-# Run all iterations of the model
-dredge <- dredge(model.full, rank = "AICc", extra = c("R^2", adjRsq = function(x) summary(x)$adj.r.squared))
+library(stargazer)
 
-head(dredge, 10)
+stargazer(models,
+          type = "html",
+          out = "top_models_table.doc", 
+          title = "Top Models (ΔAICc < 2)",
+          dep.var.labels = "Response Variable",
+          column.labels = paste("Model", top_idx),
+          digits = 3,
+          no.space = TRUE,
+          add.lines = list(
+            c("AICc",   round(dd$AICc[top_idx], 3)),
+            c("ΔAICc",  round(dd$delta[top_idx], 3)),
+            c("Weight", round(dd$weight[top_idx], 3))
+          ))
 
-# Let's try it with just the factors from the top model of that result: housing 
-# density, 2023 population, 1996 population, SOLmau, PARlop, Slope, Vascular veg
-#model.full <- glm(Richness ~ Housing +
-#                  PopnHist + PopnCurr + Vascular +
-#                   Height + Erosion + Slope,
-#                  family = "poisson", data = df_Env_Species.pca)
+importance_tbl <- sw(dd) %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column("Predictor")
+importance_tbl
 
-#dredge <- dredge(model.full, rank = "AICc", extra = c("R^2", adjRsq = function(x) summary(x)$adj.r.squared))
-
-#head(dredge, 10)
 
 # Install and load the writexl package
-library(writexl)
+#library(writexl)
 
-write_xlsx(dd, "C:/Users/bella/Documents/dredgeresultsGLM10June.xlsx")
+#write_xlsx(dd, "C:/Users/bella/Documents/dredgeresultsGLM10June.xlsx")
 # This gives the simplest possible model which includes Housing Density, 96 Population, 
 # LitterCover, PARlop, SOLmau, and Slope
 
-# make individual models for the top 20 models
-
-# Table output for modelling 
-install.packages("stargazer")
-library(stargazer)
-stargazer(fFly1sr,fLatfly1,fsApp1r,gfsTimeR, report = "vcs*p", type = "html",  
-          title = "The relationship between weed seedling richness and plot attributes", 
-          align=TRUE, model.numbers  = FALSE,
-          single.row = TRUE,   intercept.bottom = FALSE, notes.align = "l",
-          out="Richness Model table 10 June 2026.doc")
-
-
-
-# Compare factors to how they relate to richness
-library(MASS) ## do to the GLM
-RichnessGLM <- glm.nb(Richness ~ Housing + PopDensityHist + Place +
-                        Vascular + RichnessResidentNatives,
-                      data = df_Env_Species.pca) ## this is a negative binominal generalised linear model as we are using count data and the data is quite widely dispersed
-summary(RichnessGLM)
 
 #R code for extracting effects and building a figure
 #top model 
-model.top <- glm(Richness ~ RichnessResidentNatives +  Vascular +
-                      Housing + PopDensityHist,
-                    data = df_Env_Species.pca,
-                    family = poisson,
-                    na.action = na.fail)
+library(effects)
+model.top <- glmer(Richness ~ RichnessResidentNatives + Vascular + 
+                       Housing + PopDensityHist + (1 | Place), family = "poisson", data = df_Env_Species.pca, na.action = na.fail)
 
 ss1r<- allEffects(model.top) #BothSingYNr is the name of the model
 
@@ -455,8 +483,6 @@ PopnPlot  <- ggplot() +theme_classic()+
   geom_smooth(method = "lm", se = TRUE, level = 0.95) +
   labs(y = "Weed richness", x = "1996 human population density") 
 PopnPlot
-
-
 
 #### Visualizing the results ####
 library(lattice)

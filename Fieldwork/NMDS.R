@@ -352,6 +352,34 @@ z.points$Group <- factor(z.points$Group, levels = c('Solanum mauritianum', 'Ligu
 # Sort the data frame based on the custom order
 z.points <- z.points[order(z.points$Group), ]
 
+centroids <- z.points %>%
+  group_by(Group) %>%
+  summarise(cMDS1 = mean(MDS1),
+            cMDS2 = mean(MDS2))
+
+z.points <- z.points %>%
+  left_join(centroids, by = "Group")
+
+
+# ggplot with centroids dimensions 1 and 2
+ggplot(z.points, aes(x = MDS1, y = MDS2, shape = Group, color = Group)) +
+  geom_point(size=2) +
+  scale_color_manual(values = c("#882265", "#88CCEE", "#332288")) + 
+  scale_shape_manual(values = c(16, 15, 17)) + 
+  stat_ellipse(aes(group = Group, fill = Group), geom = "polygon", alpha = 0.1) +
+  geom_point(data = z.points, aes(x = cMDS1, y = cMDS2, shape = Group, color = Group)) +
+  geom_segment(data = z.points, aes(xend = cMDS1, yend = cMDS2, 
+                                   color = Group), alpha = 0.5)+
+  
+  theme_classic()
+  
+
+plot_data <- z.points %>%
+  left_join(group_centroids, by = "Group") %>%
+  rename(Location = Group)
+
+library(ggplot2)
+
 
 plot_data<-data.frame(
   Location = z.points$Group,
