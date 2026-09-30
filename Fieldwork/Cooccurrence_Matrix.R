@@ -118,9 +118,29 @@ plot + theme(legend.position = "none") + ggtitle(NULL) +
 
 #### calculate probability that shared bird-dispersal increases probability of co-occurring ####
 
-PresenceAbsence <-SurveyData_Combined %>%
+# to look at only seedlings
+library(dplyr)
+
+SurveySeedlings <- SurveyData_Combined %>%
+  mutate(seedlings = case_when(
+    GrowthHabit %in% c("Tree", "Shrub") ~ Tier_1 - Tier_3,
+    GrowthHabit %in% c("Forb", "Vine", "Grass") ~ Tier_1 - Tier_2,
+    TRUE ~ NA_real_  # fallback for unexpected GrowthHabit values
+  ))
+
+SurveySeedlings <- subset(SurveySeedlings, seedlings != 0)
+
+# Choose which to run from below if you want to look at all individuals or just seedlings
+
+#just seedlings
+PresenceAbsence <-SurveySeedlings %>%
   pivot_wider(id_cols = ScientificName, names_from=Plot, values_from=Plot,
               values_fn=function(x) any(unique(x) == x) * 1, values_fill = 0)
+
+# All individuals
+# PresenceAbsence <-SurveyData_Combined %>%
+#   pivot_wider(id_cols = ScientificName, names_from=Plot, values_from=Plot,
+#               values_fn=function(x) any(unique(x) == x) * 1, values_fill = 0)
 
 # instead of being a tibble, I wanted to convert it back to a data frame
 PresenceAbsence_df = as.data.frame(PresenceAbsence)
@@ -147,23 +167,43 @@ cooccur(mat = PresenceAbsence_df, type = "spp_site", thresh = FALSE, spp_names =
 
 Prob_table <- prob.table(cooccur.Survey)
 
+# for all plants run:
 #change column name
-colnames(SurveyData_Combined)[6:6] <- c("sp1_name")
-  
+# colnames(SurveyData_Combined)[6:6] <- c("sp1_name")
+#   
+# # now I need to see what the relationship is between co-occurring and both being bird dispersed
+# Prob_table <- Prob_table %>%
+#   left_join(SurveyData_Combined %>% dplyr::select(sp1_name, BirdDisp), by = "sp1_name")
+# 
+# # Rename column - SP1BirdDisp
+# colnames(Prob_table)[12:12] <- c("SP1BirdDisp")
+# 
+# #change column name
+# colnames(SurveyData_Combined)[6:6] <- c("sp2_name")
+# 
+# # now I need to see what the relationship is between co-occurring and both being bird dispersed
+# Prob_table <- Prob_table %>%
+#   left_join(SurveyData_Combined %>% dplyr::select(sp2_name, BirdDisp), by = "sp2_name")
+
+# For seedlings run:
+#change column name
+colnames(SurveySeedlings)[6:6] <- c("sp1_name")
+
 # now I need to see what the relationship is between co-occurring and both being bird dispersed
 Prob_table <- Prob_table %>%
-  left_join(SurveyData_Combined %>% dplyr::select(sp1_name, BirdDisp), by = "sp1_name")
+  left_join(SurveySeedlings %>% dplyr::select(sp1_name, BirdDisp), by = "sp1_name")
 
 # Rename column - SP1BirdDisp
 colnames(Prob_table)[12:12] <- c("SP1BirdDisp")
 
 #change column name
-colnames(SurveyData_Combined)[6:6] <- c("sp2_name")
+colnames(SurveySeedlings)[6:6] <- c("sp2_name")
 
 # now I need to see what the relationship is between co-occurring and both being bird dispersed
 Prob_table <- Prob_table %>%
-  left_join(SurveyData_Combined %>% dplyr::select(sp2_name, BirdDisp), by = "sp2_name")
+  left_join(SurveySeedlings %>% dplyr::select(sp2_name, BirdDisp), by = "sp2_name")
 
+# for either run
 library(dplyr)
 Prob_table <- distinct(Prob_table)
 
@@ -176,24 +216,7 @@ Prob_table <- Prob_table %>%
 # Save Prob_table for later
 #library(writexl)
 
-#write_xlsx(Prob_table, "C:/Users/bella/Documents/ProbTable15June.xlsx")
-
-# regression 
-library(lme4)
-model <- lm (obs_cooccur ~ Total, data = Prob_table)
-
-summary(model)
-
-coefficients(model) 
-residuals(model)
-
-autoplot(model, smooth.colour = NA)
-
-ggplot(data = Prob_table, aes(x = Total, y = obs_cooccur)) +
-  geom_point() +
-  geom_smooth(method = "lm", level=0.95) +
-  theme_bw()+
-  labs( x = "Proportion black", y = "Age (years)")
+#write_xlsx(Prob_table, "C:/Users/bella/Documents/ProbTable15June.xlsx"
 
 # try a different regression
 # probability of co-occurrence
@@ -209,6 +232,19 @@ summary(model)
 library(emmeans)
 emmeans(model, pairwise ~ Total, type = "response")
 
+# log transform for visualisation
+Prob_table <- Prob_table %>%
+  mutate(logProb = log(prob_cooccur))
+
+# Define a custom function
+cuberoot <- function(x) {
+  sign(x) * abs(x)^(1/3)
+}
+
+# cuberoot transform for visualisation
+Prob_table <- Prob_table %>%
+  mutate(CubeProb = cuberoot(prob_cooccur))
+
 # visualisation
 library(ggplot2)
 ProbPlot <- ggplot(data = Prob_table, 
@@ -216,7 +252,7 @@ ProbPlot <- ggplot(data = Prob_table,
                            x = Total)) + ##Change this to variable name
   geom_boxplot(aes(x = factor(Total)), fill = "lightblue3", notch = FALSE, varwidth = TRUE) +
 #  geom_jitter(color="black", size=0.4, alpha=0.9) +
-  ylab("Probability of Coocurrence") + xlab("Bird dispersal") +   ##Change axis titles
+  ylab("Probability of Coocurrence") + xlab("Number of bird-dispersed species") +   ##Change axis titles
   theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
         axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
         axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
@@ -227,6 +263,141 @@ ProbPlot <- ggplot(data = Prob_table,
         panel.background = element_blank(),    #If you want to remove background
         axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
 ProbPlot
+
+# visualisation 2
+library(ggplot2)
+ProbPlot <- ggplot(data = Prob_table, 
+                   aes(y = logProb, ##Change this to variable name
+                       x = Total)) + ##Change this to variable name
+  geom_boxplot(aes(x = factor(Total)), fill = "lightblue3", notch = FALSE, varwidth = TRUE) +
+  #  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Log Probability of Coocurrence") + xlab("Number of bird-dispersed species") +   ##Change axis titles
+  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+ProbPlot
+
+# visualisation 3
+library(ggplot2)
+ProbPlot <- ggplot(data = Prob_table, 
+                   aes(y = CubeProb, ##Change this to variable name
+                       x = Total)) + ##Change this to variable name
+  geom_boxplot(aes(x = factor(Total)), fill = "lightblue3", notch = FALSE, varwidth = TRUE) +
+  #  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Cube Root Probability of Coocurrence") + xlab("Number of bird-dispersed species") +   ##Change axis titles
+  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+ProbPlot
+
+# How about comparing shade tolerant to not?
+# For seedlings run:
+# now I need to see what the relationship is between co-occurring and both being bird dispersed
+Prob_table <- Prob_table %>%
+  left_join(SurveySeedlings %>% dplyr::select(sp2_name, ShadeTolerant), by = "sp2_name")
+
+#Change column name
+colnames(Prob_table)[17:17] <- c("ShadeTolerantSp2")
+
+#change column name
+colnames(SurveySeedlings)[6:6] <- c("sp1_name")
+
+# now I need to see what the relationship is between co-occurring and both being bird dispersed
+Prob_table <- Prob_table %>%
+  left_join(SurveySeedlings %>% dplyr::select(sp1_name, ShadeTolerant), by = "sp1_name")
+
+# Rename column - SP1BirdDisp
+colnames(Prob_table)[18:18] <- c("ShadeTolerantSp1")
+
+# for either run
+library(dplyr)
+Prob_table <- distinct(Prob_table)
+
+Prob_table <- Prob_table %>% 
+  mutate(TotalShade = ShadeTolerantSp1 + ShadeTolerantSp2)
+
+# probability of co-occurrence
+library(betareg)
+library(statmod)
+Prob_table$TotalShade <- factor(Prob_table$TotalShade, levels = c(0,1,2), ordered = TRUE)
+
+model <- betareg(prob_cooccur ~ TotalShade, data = Prob_table)
+
+summary(model)
+
+# post hoc
+library(emmeans)
+emmeans(model, pairwise ~ TotalShade, type = "response")
+
+# visualisation
+library(ggplot2)
+ProbPlot <- ggplot(data = Prob_table, 
+                   aes(y = prob_cooccur, ##Change this to variable name
+                       x = TotalShade)) + ##Change this to variable name
+  geom_boxplot(aes(x = factor(TotalShade)), fill = "#31487A", notch = FALSE, varwidth = TRUE) +
+  #  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Probability of Coocurrence") + xlab("Number of Shade Tolerant Species") +   ##Change axis titles
+  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+ProbPlot
+
+# visualisation 2
+library(ggplot2)
+ProbPlot <- ggplot(data = Prob_table, 
+                   aes(y = logProb, ##Change this to variable name
+                       x = TotalShade)) + ##Change this to variable name
+  geom_boxplot(aes(x = factor(TotalShade)), fill = "#31487A", notch = FALSE, varwidth = TRUE) +
+  #  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Log Probability of Coocurrence") + xlab("Number of Shade Tolerant Species") +   ##Change axis titles
+  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+ProbPlot
+
+# visualisation 3
+library(ggplot2)
+ProbPlot <- ggplot(data = Prob_table, 
+                   aes(y = CubeProb, ##Change this to variable name
+                       x = TotalShade)) + ##Change this to variable name
+  geom_boxplot(aes(x = factor(TotalShade)), fill = "#31487A", notch = FALSE, varwidth = TRUE) +
+  #  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  ylab("Cube Root Probability of Coocurrence") + xlab("Number of Shade Tolerant Species") +   ##Change axis titles
+  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
+        legend.title = element_blank(), #If you want to remove the legend
+        legend.position = "none",
+        panel.grid.major = element_blank(),#If you want to remove gridlines
+        panel.grid.minor = element_blank(),#If you want to remove gridlines
+        panel.background = element_blank(),    #If you want to remove background
+        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
+ProbPlot
+
 
 # summary stats
 library(dplyr)
@@ -354,6 +525,7 @@ Woolly_Cooccur <- pair(mod = cooccur.Survey, spp = "Solanum mauritianum")
 pair(mod = cooccur.Survey, spp = "Ligustrum lucidum")
 
 pair(mod = cooccur.Survey, spp = "Paraserianthes lophantha")
+pair(mod = cooccur.Survey, spp = "Tradescantia fluminensis")
 
 # Try subsetting to non-seedlings
 

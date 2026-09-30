@@ -509,7 +509,7 @@ summary(M1)
 install.packages("effects")
 library(effects)
 
-eff <- allEffects(model.full)
+eff <- allEffects(model.top)
 summary(eff)
 plot(eff)
 
