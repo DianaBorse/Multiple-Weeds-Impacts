@@ -228,22 +228,90 @@ model <- betareg(prob_cooccur ~ Total, data = Prob_table)
 
 summary(model)
 
-# post hoc
-library(emmeans)
-emmeans(model, pairwise ~ Total, type = "response")
+# but there are a lot of zeros, so I need to either do a transformation or use a
+# different regression
 
-# log transform for visualisation
-Prob_table <- Prob_table %>%
-  mutate(logProb = log(prob_cooccur))
+Prob_table$PairID <- interaction(Prob_table$sp1, Prob_table$sp2, drop = TRUE)
 
-# Define a custom function
-cuberoot <- function(x) {
-  sign(x) * abs(x)^(1/3)
-}
+# model for 0s
+model <- glm(I(prob_cooccur > 0) ~ Total, family = binomial, data = Prob_table)
 
-# cuberoot transform for visualisation
-Prob_table <- Prob_table %>%
-  mutate(CubeProb = cuberoot(prob_cooccur))
+summary(model)
+
+simulationOutput <- DHARMa :: simulateResiduals(model)
+plot(simulationOutput)
+
+DHARMa :: testDispersion(simulationOutput)
+
+DHARMa :: testZeroInflation(simulationOutput)
+
+# visualise
+zeros <- data.frame(
+  Total = factor(c(0, 1, 2), levels = c(0, 1, 2))
+)
+
+pred <- predict(model, zeros, type = "link", se.fit = TRUE)
+zeros$fit   = plogis(pred$fit)
+zeros$lower = plogis(pred$fit - 1.96 * pred$se.fit)
+zeros$upper = plogis(pred$fit + 1.96 * pred$se.fit)
+
+
+library(ggplot2)
+
+ggplot(zeros, aes(x = Total, y = fit)) +
+  geom_point(size = 3) +
+  geom_line(aes(group = 1), linewidth = 1) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.3) +
+  labs(
+    x = "Number of Bird-Dispersed species",
+    y = "Probability of any co-occurrence") +
+  theme_classic()
+
+# model for non-zeros
+model <- glmmTMB(
+  prob_cooccur ~ Total + (1|PairID),
+  family = Gamma(),
+  data = subset(Prob_table, prob_cooccur > 0)
+)
+
+summary(model)
+
+simulationOutput <- DHARMa :: simulateResiduals(model)
+plot(simulationOutput)
+
+DHARMa :: testDispersion(simulationOutput)
+
+library(ggplot2)
+
+ggplot(subset(Prob_table, prob_cooccur > 0),
+       aes(x = factor(Total), y = prob_cooccur)) +
+  
+  geom_violin(fill = "paleturquoise4", alpha = 0.4, trim = FALSE) +
+ # geom_boxplot(width = 0.15, fill = "white", alpha = 0.7, outlier.shape = NA) +
+  geom_jitter(width = 0.2, alpha = 0.1, color = "paleturquoise4") +
+  
+  labs(
+    x = "Number of bird-dispersed species",
+    y = "Co-occurrence probability (non-zero values only)"
+  ) +
+  theme_classic()
+
+# # post hoc# post hocmodel
+# library(emmeans)
+# emmeans(model, pairwise ~ Total, type = "response")
+# 
+# # log transform for visualisation
+# Prob_table <- Prob_table %>%
+#   mutate(logProb = log(prob_cooccur))
+# 
+# # Define a custom function
+# cuberoot <- function(x) {
+#   sign(x) * abs(x)^(1/3)
+# }
+# 
+# # cuberoot transform for visualisation
+# Prob_table <- Prob_table %>%
+#   mutate(CubeProb = cuberoot(prob_cooccur))
 
 # visualisation
 library(ggplot2)
@@ -264,44 +332,6 @@ ProbPlot <- ggplot(data = Prob_table,
         axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
 ProbPlot
 
-# visualisation 2
-library(ggplot2)
-ProbPlot <- ggplot(data = Prob_table, 
-                   aes(y = logProb, ##Change this to variable name
-                       x = Total)) + ##Change this to variable name
-  geom_boxplot(aes(x = factor(Total)), fill = "lightblue3", notch = FALSE, varwidth = TRUE) +
-  #  geom_jitter(color="black", size=0.4, alpha=0.9) +
-  ylab("Log Probability of Coocurrence") + xlab("Number of bird-dispersed species") +   ##Change axis titles
-  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
-        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
-        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
-        legend.title = element_blank(), #If you want to remove the legend
-        legend.position = "none",
-        panel.grid.major = element_blank(),#If you want to remove gridlines
-        panel.grid.minor = element_blank(),#If you want to remove gridlines
-        panel.background = element_blank(),    #If you want to remove background
-        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
-ProbPlot
-
-# visualisation 3
-library(ggplot2)
-ProbPlot <- ggplot(data = Prob_table, 
-                   aes(y = CubeProb, ##Change this to variable name
-                       x = Total)) + ##Change this to variable name
-  geom_boxplot(aes(x = factor(Total)), fill = "lightblue3", notch = FALSE, varwidth = TRUE) +
-  #  geom_jitter(color="black", size=0.4, alpha=0.9) +
-  ylab("Cube Root Probability of Coocurrence") + xlab("Number of bird-dispersed species") +   ##Change axis titles
-  theme(axis.text.x=element_text(size=10, color = 'black'), #Change axis text font size and angle and colour etc
-        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
-        axis.title=element_text(size=17,face="bold"), #Change axis title text font etc
-        legend.title = element_blank(), #If you want to remove the legend
-        legend.position = "none",
-        panel.grid.major = element_blank(),#If you want to remove gridlines
-        panel.grid.minor = element_blank(),#If you want to remove gridlines
-        panel.background = element_blank(),    #If you want to remove background
-        axis.line = element_line(colour = "black"))   ##If you want to add an axis colour
-ProbPlot
-
 # How about comparing shade tolerant to not?
 # For seedlings run:
 # now I need to see what the relationship is between co-occurring and both being bird dispersed
@@ -309,7 +339,7 @@ Prob_table <- Prob_table %>%
   left_join(SurveySeedlings %>% dplyr::select(sp2_name, ShadeTolerant), by = "sp2_name")
 
 #Change column name
-colnames(Prob_table)[17:17] <- c("ShadeTolerantSp2")
+colnames(Prob_table)[16:16] <- c("ShadeTolerantSp2")
 
 #change column name
 colnames(SurveySeedlings)[6:6] <- c("sp1_name")
@@ -319,7 +349,7 @@ Prob_table <- Prob_table %>%
   left_join(SurveySeedlings %>% dplyr::select(sp1_name, ShadeTolerant), by = "sp1_name")
 
 # Rename column - SP1BirdDisp
-colnames(Prob_table)[18:18] <- c("ShadeTolerantSp1")
+colnames(Prob_table)[17:17] <- c("ShadeTolerantSp1")
 
 # for either run
 library(dplyr)
@@ -336,6 +366,71 @@ Prob_table$TotalShade <- factor(Prob_table$TotalShade, levels = c(0,1,2), ordere
 model <- betareg(prob_cooccur ~ TotalShade, data = Prob_table)
 
 summary(model)
+
+# model for 0s
+model <- glm(I(prob_cooccur > 0) ~ TotalShade, family = binomial, data = Prob_table)
+
+summary(model)
+
+simulationOutput <- DHARMa :: simulateResiduals(model)
+plot(simulationOutput)
+
+DHARMa :: testDispersion(simulationOutput)
+
+DHARMa :: testZeroInflation(simulationOutput)
+
+# visualise
+zeros <- data.frame(
+  TotalShade = factor(c(0, 1, 2), levels = c(0, 1, 2))
+)
+
+pred <- predict(model, zeros, type = "link", se.fit = TRUE)
+zeros$fit   = plogis(pred$fit)
+zeros$lower = plogis(pred$fit - 1.96 * pred$se.fit)
+zeros$upper = plogis(pred$fit + 1.96 * pred$se.fit)
+
+
+library(ggplot2)
+
+ggplot(zeros, aes(x = TotalShade, y = fit)) +
+  geom_point(size = 3) +
+  geom_line(aes(group = 1), linewidth = 1) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2) +
+  labs(
+    x = "Number of shade-tolerant species",
+    y = "Probability of any co-occurrence") +
+  theme_classic()
+
+
+# model for non-zeros
+model <- glmmTMB(
+  prob_cooccur ~ TotalShade + (1|PairID),
+  family = Gamma(link="log"),
+  data = subset(Prob_table, prob_cooccur > 0)
+)
+
+summary(model)
+
+simulationOutput <- DHARMa :: simulateResiduals(model)
+plot(simulationOutput)
+
+DHARMa :: testDispersion(simulationOutput)
+
+library(ggplot2)
+
+ggplot(subset(Prob_table, prob_cooccur > 0),
+       aes(x = factor(TotalShade), y = prob_cooccur)) +
+  
+  geom_violin(fill = "#31487A", alpha = 0.4, trim = FALSE) +
+  # geom_boxplot(width = 0.15, fill = "white", alpha = 0.7, outlier.shape = NA) +
+  geom_jitter(width = 0.2, alpha = 0.1, color = "#31487A") +
+  
+  labs(
+    x = "Number of shade-tolerant species",
+    y = "Co-occurrence probability (non-zero values only)"
+  ) +
+  theme_classic()
+
 
 # post hoc
 library(emmeans)
