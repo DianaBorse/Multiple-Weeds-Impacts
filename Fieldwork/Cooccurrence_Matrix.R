@@ -259,8 +259,8 @@ zeros$upper = plogis(pred$fit + 1.96 * pred$se.fit)
 library(ggplot2)
 
 ggplot(zeros, aes(x = Total, y = fit)) +
-  geom_point(size = 3) +
-  geom_line(aes(group = 1), linewidth = 1) +
+  geom_point(size = 5, colour = "paleturquoise4") +
+#  geom_line(aes(group = 1), linewidth = 1) +
   geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.3) +
   labs(
     x = "Number of Bird-Dispersed species",
@@ -393,8 +393,8 @@ zeros$upper = plogis(pred$fit + 1.96 * pred$se.fit)
 library(ggplot2)
 
 ggplot(zeros, aes(x = TotalShade, y = fit)) +
-  geom_point(size = 3) +
-  geom_line(aes(group = 1), linewidth = 1) +
+  geom_point(size = 5, colour = "#31487A") +
+#  geom_line(aes(group = 1), linewidth = 1) +
   geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2) +
   labs(
     x = "Number of shade-tolerant species",

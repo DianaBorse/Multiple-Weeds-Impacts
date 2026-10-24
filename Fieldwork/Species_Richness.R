@@ -401,7 +401,7 @@ SurveyData_Combined <- SurveyData_Combined %>%
 SurveyData_Combined <- subset(SurveyData_Combined, seedlings != 0)
 
 #change column name
-colnames(SurveyData_Combined)[20:20] <- c("ProportionNative")
+colnames(SurveyData_Combined)[21:21] <- c("ProportionNative")
 
 library(dplyr)
 summ_ProportionNative <- SurveyData_Combined %>%

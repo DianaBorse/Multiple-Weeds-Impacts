@@ -260,9 +260,9 @@ grp <- Plot_Species$CentralSpecies
 # data.scores <- as.data.frame(scores(z))  #Using the scores function from vegan to extract the site scores and convert to a data.frame
 #data.scores$site <- rownames(z)  # create a column of site names, from the rownames of data.scores
 #data.scores$grp <- grp  #  add the grp variable created earlier
-# head(data.scores)  #look at the data
-hcl.colors(8, palette = "Cividis")
-hcl.colors(8, palette = "Tropic")
+# # head(data.scores)  #look at the data
+# hcl.colors(8, palette = "Cividis")
+# hcl.colors(8, palette = "Tropic")
 
 # Create a data frame of NMDS results with group information
 z.points$Group <- Plot_Species$CentralSpecies # Replace with your group column
