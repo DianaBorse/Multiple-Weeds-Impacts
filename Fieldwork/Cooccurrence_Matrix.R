@@ -258,14 +258,16 @@ zeros$upper = plogis(pred$fit + 1.96 * pred$se.fit)
 
 library(ggplot2)
 
-ggplot(zeros, aes(x = Total, y = fit)) +
+ggplot(zeros, aes(x = Total, y = fit)) + theme_classic() +
   geom_point(size = 5, colour = "paleturquoise4") +
 #  geom_line(aes(group = 1), linewidth = 1) +
   geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.3) +
   labs(
     x = "Number of Bird-Dispersed species",
     y = "Probability of any co-occurrence") +
-  theme_classic()
+  theme(axis.text.x=element_text(size=15, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold")) 
 
 # model for non-zeros
 model <- glmmTMB(
@@ -284,7 +286,7 @@ DHARMa :: testDispersion(simulationOutput)
 library(ggplot2)
 
 ggplot(subset(Prob_table, prob_cooccur > 0),
-       aes(x = factor(Total), y = prob_cooccur)) +
+       aes(x = factor(Total), y = prob_cooccur)) + theme_classic() +
   
   geom_violin(fill = "paleturquoise4", alpha = 0.4, trim = FALSE) +
  # geom_boxplot(width = 0.15, fill = "white", alpha = 0.7, outlier.shape = NA) +
@@ -293,8 +295,10 @@ ggplot(subset(Prob_table, prob_cooccur > 0),
   labs(
     x = "Number of bird-dispersed species",
     y = "Co-occurrence probability (non-zero values only)"
-  ) +
-  theme_classic()
+  )  +
+  theme(axis.text.x=element_text(size=15, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"))
 
 # # post hoc# post hocmodel
 # library(emmeans)
@@ -392,14 +396,16 @@ zeros$upper = plogis(pred$fit + 1.96 * pred$se.fit)
 
 library(ggplot2)
 
-ggplot(zeros, aes(x = TotalShade, y = fit)) +
+ggplot(zeros, aes(x = TotalShade, y = fit)) + theme_classic() +
   geom_point(size = 5, colour = "#31487A") +
 #  geom_line(aes(group = 1), linewidth = 1) +
   geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2) +
   labs(
     x = "Number of shade-tolerant species",
-    y = "Probability of any co-occurrence") +
-  theme_classic()
+    y = "Probability of any co-occurrence")  +
+  theme(axis.text.x=element_text(size=15, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"))
 
 
 # model for non-zeros
@@ -419,7 +425,7 @@ DHARMa :: testDispersion(simulationOutput)
 library(ggplot2)
 
 ggplot(subset(Prob_table, prob_cooccur > 0),
-       aes(x = factor(TotalShade), y = prob_cooccur)) +
+       aes(x = factor(TotalShade), y = prob_cooccur)) + theme_classic() +
   
   geom_violin(fill = "#31487A", alpha = 0.4, trim = FALSE) +
   # geom_boxplot(width = 0.15, fill = "white", alpha = 0.7, outlier.shape = NA) +
@@ -428,8 +434,10 @@ ggplot(subset(Prob_table, prob_cooccur > 0),
   labs(
     x = "Number of shade-tolerant species",
     y = "Co-occurrence probability (non-zero values only)"
-  ) +
-  theme_classic()
+  )  +
+  theme(axis.text.x=element_text(size=15, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"))
 
 
 # post hoc

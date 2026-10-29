@@ -451,7 +451,10 @@ Housing  <- ggplot() +theme_classic()+
   stat_smooth(data=housing.df, method = "gam", formula = y ~ s(x, k = 5),
               aes(y=fit,x=Housing),se=FALSE, linewidth=3, colour = "royalblue" ) +
   geom_smooth(method = "lm", se = TRUE, level = 0.95) +
-  labs(y = "Weed richness", x = "Housing density within 250 meters") 
+  labs(y = "Weed richness", x = "Housing density within 250 meters") +
+  theme(axis.text.x=element_text(size=15, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"))
   Housing
 
   # Richness Resident native species plot
@@ -461,7 +464,10 @@ RichnessNativePlot  <- ggplot() +theme_classic()+
   stat_smooth(data=RN.df, method = "gam", formula = y ~ s(x, k = 5),
               aes(y=fit,x=RichnessResidentNatives),se=FALSE, linewidth=3, colour = "darkgreen" ) +
   geom_smooth(method = "lm", se = TRUE, level = 0.95) +
-  labs(y = "Weed richness", x = "Richness resident native species") 
+  labs(y = "Weed richness", x = "Richness resident native species") +
+theme(axis.text.x=element_text(size=15, color = 'black'), #Change axis text font size and angle and colour etc
+      axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+      axis.title=element_text(size=17,face="bold"))
 RichnessNativePlot
 
   # Vascular Plant Cover plot
@@ -471,7 +477,10 @@ VascularPlot  <- ggplot() +theme_classic()+
   stat_smooth(data=Vascular.df, method = "gam", formula = y ~ s(x, k = 5),
               aes(y=fit,x=Vascular),se=FALSE, linewidth=3, colour = "#660099" ) +
   geom_smooth(method = "lm", se = TRUE, level = 0.95) +
-  labs(y = "Weed richness", x = "Percent vascular plant cover") 
+  labs(y = "Weed richness", x = "Percent vascular plant cover")  +
+  theme(axis.text.x=element_text(size=15, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"))
 VascularPlot  
 
 # 1996 Population Density plot
@@ -481,7 +490,10 @@ PopnPlot  <- ggplot() +theme_classic()+
   stat_smooth(data=PopnDensity.df, method = "gam", formula = y ~ s(x, k = 5),
               aes(y=fit,x=PopDensityHist),se=FALSE, linewidth=3, colour = "maroon" ) +
   geom_smooth(method = "lm", se = TRUE, level = 0.95) +
-  labs(y = "Weed richness", x = "1996 human population density") 
+  labs(y = "Weed richness", x = "1996 human population density")  +
+  theme(axis.text.x=element_text(size=15, color = 'black'), #Change axis text font size and angle and colour etc
+        axis.text.y=element_text(size=15, hjust = 1, colour = 'black'), 
+        axis.title=element_text(size=17,face="bold"))
 PopnPlot
 
 #### Visualizing the results ####
